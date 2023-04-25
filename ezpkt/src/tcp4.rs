@@ -242,7 +242,7 @@ impl TcpFlow {
                           send_ack: bool,
                           frag_off: u16,
                           ) -> Vec<Packet> {
-        self.sv_tx(self.cl().frag_off(frag_off).push(bytes));
+        self.cl_tx(self.cl().frag_off(frag_off).push(bytes));
         if send_ack {
             self.sv_tx(self.sv().ack());
         }
