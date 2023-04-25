@@ -1,7 +1,7 @@
 [package]
 edition = "2018"
 name = "resynth"
-version = "0.1.11"
+version = "0.1.12-alpha"
 description = "A packet synthesis language"
 authors = ["Gianni Tedesco <gianni@scaramanga.co.uk>"]
 license = "MIT"
@@ -42,16 +42,17 @@ lto = true
 [workspace]
 
 [dependencies]
-pkt = { path = "pkt", version = "0.1.11" }
-ezpkt = { path = "ezpkt", version = "0.1.11" }
+pkt = { path = "pkt", version = "0.1.12-alpha" }
+ezpkt = { path = "ezpkt", version = "0.1.12-alpha" }
 
-lazy-regex = "2.2.2"
-regex = "1.5.4"
-phf = { version = "0.10.1", features = ["macros"] }
+lazy-regex = "2.5"
+regex = "1.8"
+phf = { version = "0.11", features = ["macros"] }
 
-clap = {version = "3.2.14", optional = true}
-atty = {version = "0.2.14", optional = true}
-termcolor = {version = "1.1.2", optional = true}
+# For cli
+atty = { version = "0.2.14", optional = true}
+termcolor = {version = "1.2", optional = true}
+clap = {version = "4.1", optional = true}
 
 [[bin]]
 name = "resynth"

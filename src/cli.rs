@@ -3,11 +3,12 @@ use pkt::PcapWriter;
 use resynth::{Error, Loc, Lexer, EOF, Parser, Program};
 use resynth::{warn, error, ok};
 
+use std::borrow::Cow;
 use std::path::{Path, PathBuf};
 use std::io::BufRead;
 use std::{fs, io};
 
-use clap::{Arg, Command, ErrorKind};
+use clap::{Arg, ArgAction, Command, error::ErrorKind, value_parser};
 use termcolor::{ColorChoice, StandardStream, Color, ColorSpec, WriteColor};
 
 /// A [source code location](Loc) and an [error code](Error)
@@ -108,43 +109,48 @@ fn resynth() -> Result<(), ()> {
         .about("Packet synthesis language")
         .arg(Arg::new("color")
             .long("color")
-            .help("always|ansi|auto"))
+            .value_parser(["always", "ansi", "auto", "never"])
+            .default_value("auto")
+            .help("always|ansi|auto|never"))
         .arg(Arg::new("verbose")
             .short('v')
             .long("verbose")
+            .action(ArgAction::SetTrue)
             .help("Print packets"))
         .arg(Arg::new("keep")
             .short('k')
             .long("keep")
+            .action(ArgAction::SetTrue)
             .help("Keep pcap files on error"))
         .arg(Arg::new("out")
             .short('o')
             .long("output")
             .value_name("FILE")
             .required(false)
-            .multiple_values(true)
+            .value_parser(value_parser!(PathBuf))
+            .action(ArgAction::Append)
             .help("Filenames for pcap output"))
         .arg(Arg::new("outdir")
             .long("out-dir")
             .value_name("DIR")
             .default_value(".")
             .conflicts_with("out")
-            .help("Directory to write pcap files to")
-            .takes_value(true))
+            .value_parser(value_parser!(PathBuf))
+            .help("Directory to write pcap files to"))
         .arg(Arg::new("in")
             .help("Sets the input file to use")
             .value_name("FILE")
             .required(true)
-            .multiple_values(true)
+            .action(ArgAction::Append)
             .index(1));
 
     let argv = cmd.clone().get_matches();
 
-    let verbose = argv.is_present("verbose");
-    let keep = argv.is_present("keep");
+    let verbose = argv.get_one::<bool>("verbose").copied().unwrap();
+    let keep = argv.get_one::<bool>("keep").copied().unwrap();
 
-    let preference = argv.value_of("color").unwrap_or("auto");
-    let color = match preference {
+    let preference: &String = argv.get_one("color").expect("default");
+    let color = match preference.as_str() {
         "always" => ColorChoice::Always,
         "ansi" => ColorChoice::AlwaysAnsi,
         "auto" => {
@@ -162,8 +168,8 @@ fn resynth() -> Result<(), ()> {
 
     let in_args = argv.get_many::<String>("in").unwrap();
 
-    let out_args = argv.get_many::<String>("out").unwrap_or_default().collect::<Vec<_>>();
-    let out_dir = argv.get_one::<String>("outdir");
+    let out_args = argv.get_many::<PathBuf>("out").unwrap_or_default().collect::<Vec<_>>();
+    let out_dir = argv.get_one::<PathBuf>("outdir");
 
     if use_filenames && out_args.len() != in_args.len() {
         cmd.error(
@@ -180,12 +186,15 @@ fn resynth() -> Result<(), ()> {
     for (i, input) in in_args.enumerate() {
         let p = Path::new(input);
         let out = if use_filenames {
-            PathBuf::from(out_args[i])
+            Cow::Borrowed(out_args[i])
         } else {
-            let mut out = PathBuf::from(out_dir.unwrap());
+            let mut out = match out_dir {
+                Some(p) => p.clone(),
+                None => PathBuf::new(),
+            };
             out.push(p.file_stem().unwrap());
             out.set_extension("pcap");
-            out
+            Cow::Owned(out)
         };
 
         let result = process_file(&mut stdout, p, &out, verbose);
@@ -199,13 +208,13 @@ fn resynth() -> Result<(), ()> {
                 print!("{}:{}:{}: ", p.display(), loc.line(), loc.col());
             }
             error!(stdout, "error");
-            println!(": {}", err);
+            println!(": process_file: {}", err);
 
             if !keep {
-                if let Err(rm_err) = fs::remove_file(&out) {
+                if let Err(rm_err) = fs::remove_file(out.as_ref()) {
                     print!("{}: ", p.display());
                     error!(stdout, "error");
-                    println!(": {}", rm_err);
+                    println!(": delete: {}", rm_err);
                 }
             }
 
