@@ -4,6 +4,9 @@ pub mod opcode {
     pub const QUERY: u8 = 0;
     pub const IQUERY: u8 = 1;
     pub const STATUS: u8 = 2;
+    pub const NOTIFY: u8 = 4;
+    pub const UPDATE: u8 = 5;
+    pub const DSO:    u8 = 6;
 }
 
 pub mod rcode {
@@ -36,8 +39,17 @@ pub mod flags {
     /// Recursion available
     pub const RA: u16 = 0x0080;
 
+    /// Must be zero
+    pub const Z: u16 = 0x0040;
+
+    /// Authentic data (DNSSEC)
+    pub const AD: u16 = 0x0020;
+
+    /// Checking Disabled (DNSSEC)
+    pub const CD: u16 = 0x0010;
+
     pub fn from_opcode(opcode: u8) -> u16 {
-        ((opcode & 7) as u16) << 14
+        ((opcode & 7) as u16) << 11
     }
 
     pub fn from_rcode(opcode: u8) -> u16 {
@@ -281,6 +293,36 @@ impl DnsFlags {
     }
 
     #[must_use]
+    pub fn z(mut self, flag: bool) -> Self {
+        if flag {
+            self.flags |= flags::Z;
+        } else {
+            self.flags &= !flags::Z;
+        }
+        self
+    }
+
+    #[must_use]
+    pub fn ad(mut self, flag: bool) -> Self {
+        if flag {
+            self.flags |= flags::AD;
+        } else {
+            self.flags &= !flags::AD;
+        }
+        self
+    }
+
+    #[must_use]
+    pub fn cd(mut self, flag: bool) -> Self {
+        if flag {
+            self.flags |= flags::CD;
+        } else {
+            self.flags &= !flags::CD;
+        }
+        self
+    }
+
+    #[must_use]
     pub fn rcode(mut self, opcode: u8) -> Self {
         self.flags |= flags::from_rcode(opcode);
         self
@@ -296,6 +338,20 @@ impl DnsName {
         DnsName {
             buf: Vec::new(),
         }
+    }
+
+    pub fn ptr(ptr: u16) -> Self {
+        DnsName {
+            buf: Vec::from(Self::compression_pointer(ptr)),
+        }
+    }
+
+    pub fn label(label: &[u8]) -> Self {
+        let mut this = DnsName {
+            buf: Vec::new(),
+        };
+        this.push(label);
+        this
     }
 
     pub fn from(name: &[u8]) -> Self {
@@ -318,11 +374,28 @@ impl DnsName {
         }
     }
 
+    #[inline(always)]
+    pub fn compression_pointer(ptr: u16) -> [u8; 2] {
+        // Of course, we allow invalid pointers
+        let hi: u8 = 0xc0 | (ptr >> 8) as u8;
+        let lo: u8 = (ptr & 0xff) as u8;
+
+        [hi, lo]
+    }
+
+    #[inline(always)]
     pub fn push(&mut self, component: &[u8]) {
+        // we absolutely allow invalid lengths here
         self.buf.push(component.len() as u8);
         self.buf.extend(component);
     }
 
+    #[inline(always)]
+    pub fn push_raw(&mut self, bytes: &[u8]) {
+        self.buf.extend(bytes);
+    }
+
+    #[inline(always)]
     pub fn finish(&mut self) {
         self.buf.push(0);
     }
