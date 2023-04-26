@@ -16,6 +16,9 @@ pub(self) use util::Serialize;
 use std::fmt;
 use std::fmt::Write;
 
+#[cfg(test)]
+mod test;
+
 #[derive(Debug)]
 pub struct Hdr<T> {
     off: u16,
