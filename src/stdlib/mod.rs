@@ -43,3 +43,6 @@ pub fn toplevel_module(name: &str) -> Option<&'static Module> {
         },
     }
 }
+
+#[cfg(test)]
+mod test;

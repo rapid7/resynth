@@ -18,6 +18,9 @@ const OPCODE: phf::Map<&'static str, Symbol> = phf_map! {
     "QUERY" => Symbol::u8(opcode::QUERY),
     "IQUERY" => Symbol::u8(opcode::IQUERY),
     "STATUS" => Symbol::u8(opcode::STATUS),
+    "NOTIFY" => Symbol::u8(opcode::NOTIFY),
+    "UPDATE" => Symbol::u8(opcode::UPDATE),
+    "DSO" => Symbol::u8(opcode::DSO),
 };
 
 const RCODE: phf::Map<&'static str, Symbol> = phf_map! {
@@ -112,29 +115,57 @@ const CLASS: phf::Map<&'static str, Symbol> = phf_map! {
     "ANY" => Symbol::u16(class::ANY),
 };
 
-const DNS_NAME: FuncDef = func_def! (
+pub(crate) const DNS_NAME: FuncDef = func_def! (
     "dns::name";
     ValType::Str;
 
     =>
+    "complete" => ValDef::Bool(true),
     =>
     ValType::Str;
 
     |mut args| {
+        let complete: bool = args.next().into();
         let v = args.extra_args();
 
-        let name = match v.len() {
-            0 => DnsName::root(),
-            1 => DnsName::from(v[0].as_ref()),
-            _ => {
-                let mut name = DnsName::new();
-                for arg in v {
-                    name.push(arg.as_ref());
+        let name = if complete {
+            match v.len() {
+                0 => DnsName::root(),
+                1 => DnsName::from(v[0].as_ref()),
+                _ => {
+                    let mut name = DnsName::new();
+                    for arg in v {
+                        name.push(arg.as_ref());
+                    }
+                    name.finish();
+                    name
                 }
-                name.finish();
-                name
             }
+        } else {
+            let mut name = DnsName::new();
+            for arg in v {
+                name.push(arg.as_ref());
+            }
+            name
         };
+
+        Ok(Val::Str(Buf::from(name.as_ref())))
+    }
+);
+
+const DNS_POINTER: FuncDef = func_def! (
+    "dns::pointer";
+    ValType::Str;
+
+    =>
+    "offset" => ValDef::U16(0x0c),
+    =>
+    ValType::Void;
+
+    |mut args| {
+        let offset: u16 = args.next().into();
+
+        let name = DnsName::compression_pointer(offset);
 
         Ok(Val::Str(Buf::from(name.as_ref())))
     }
@@ -151,6 +182,9 @@ const DNS_FLAGS: FuncDef = func_def!(
     "tc" => ValDef::Bool(false),
     "rd" => ValDef::Bool(false),
     "ra" => ValDef::Bool(false),
+    "z" => ValDef::Bool(false),
+    "ad" => ValDef::Bool(false),
+    "cd" => ValDef::Bool(false),
     "rcode" => ValDef::U8(rcode::NOERROR),
     =>
     ValType::Void;
@@ -163,6 +197,9 @@ const DNS_FLAGS: FuncDef = func_def!(
         let tc: bool = args.next().into();
         let rd: bool = args.next().into();
         let ra: bool = args.next().into();
+        let z: bool = args.next().into();
+        let ad: bool = args.next().into();
+        let cd: bool = args.next().into();
         let rcode: u8 = args.next().into();
 
         Ok(Val::U16(DnsFlags::default()
@@ -172,6 +209,9 @@ const DNS_FLAGS: FuncDef = func_def!(
             .tc(tc)
             .rd(rd)
             .ra(ra)
+            .z(z)
+            .ad(ad)
+            .cd(cd)
             .rcode(rcode)
             .build())
         )
@@ -355,6 +395,7 @@ pub const DNS: phf::Map<&'static str, Symbol> = phf_map! {
     "flags" => Symbol::Func(&DNS_FLAGS),
     "hdr" => Symbol::Func(&DNS_HDR),
     "name" => Symbol::Func(&DNS_NAME),
+    "pointer" => Symbol::Func(&DNS_POINTER),
     "question" => Symbol::Func(&DNS_QUESTION),
     "answer" => Symbol::Func(&DNS_ANSWER),
     "host" => Symbol::Func(&DNS_HOST),
