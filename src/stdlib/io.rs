@@ -29,7 +29,7 @@ const IO_FILE: FuncDef = func_def!(
         let mut buf = Vec::new();
         f.read_to_end(&mut buf)?;
 
-        Ok(Val::Str(Buf::from(buf)))
+        Ok(Val::str(buf))
     }
 );
 
