@@ -87,7 +87,7 @@ impl Args {
         let ret = strs.join(j);
 
         // Which we can then convert into a buf
-        Val::Str(Buf::from(ret))
+        Val::str(ret)
     }
 
     /// Dumps all remaining, untaken args
@@ -174,7 +174,7 @@ impl<T> From<&T> for ArgSpec where T: AsRef<[u8]> + ? Sized {
     fn from(s: &T) -> Self {
         Self {
             name: None,
-            val: Val::Str(Buf::from(s)),
+            val: Val::str(s),
         }
     }
 }
