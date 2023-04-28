@@ -222,7 +222,7 @@ impl From<ValDef> for Val {
             U64(uint) => Val::U64(uint),
             Ip4(ip) => Val::Ip4(ip),
             Sock4(sock) => Val::Sock4(sock),
-            Str(s) => Val::Str(Buf::from(s)),
+            Str(s) => Val::str(s),
             Type(_) => Val::Nil,
         }
     }
@@ -476,6 +476,12 @@ impl Typed for Val {
 }
 
 impl Val {
+    pub fn str<T>(v: T) -> Self
+        where Buf: From<T>
+    {
+        Val::Str(Buf::from(v))
+    }
+
     pub fn from_token(tok: &Token) -> Result<Self, Error> {
         use Val::*;
         use TokType::*;

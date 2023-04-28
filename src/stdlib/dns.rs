@@ -149,7 +149,7 @@ pub(crate) const DNS_NAME: FuncDef = func_def! (
             name
         };
 
-        Ok(Val::Str(Buf::from(name.as_ref())))
+        Ok(Val::str(name.as_ref()))
     }
 );
 
@@ -167,7 +167,7 @@ const DNS_POINTER: FuncDef = func_def! (
 
         let name = DnsName::compression_pointer(offset);
 
-        Ok(Val::Str(Buf::from(name.as_ref())))
+        Ok(Val::str(name.as_ref()))
     }
 );
 
@@ -249,7 +249,7 @@ const DNS_HDR: FuncDef = func_def!(
             .arcount(arcount)
             .build();
 
-        Ok(Val::Str(Buf::from(hdr.as_bytes())))
+        Ok(Val::str(hdr.as_bytes()))
     }
 );
 
@@ -275,7 +275,7 @@ const DNS_QUESTION: FuncDef = func_def!(
         q.extend(qtype.to_be_bytes());
         q.extend(qclass.to_be_bytes());
 
-        Ok(Val::Str(Buf::from(q)))
+        Ok(Val::str(q))
     }
 );
 
@@ -307,7 +307,7 @@ const DNS_ANSWER: FuncDef = func_def!(
         a.extend((data.len() as u16).to_be_bytes()); // dsize
         a.extend(data.as_ref());
 
-        Ok(Val::Str(Buf::from(a)))
+        Ok(Val::str(a))
     }
 );
 
