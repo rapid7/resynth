@@ -127,7 +127,7 @@ const HDR: FuncDef = func_def!(
             hdr = hdr.file(f);
         }
 
-        Ok(Val::Str(Buf::from(&hdr)))
+        Ok(Val::str(&hdr))
     }
 );
 
@@ -144,7 +144,7 @@ const OPTION: FuncDef = func_def!(
         let opt: u8 = args.next().into();
         let data = args.join_extra(b"");
         let optbuf = dhcp_opt::create(opt, &data);
-        Ok(Val::Str(Buf::from(optbuf)))
+        Ok(Val::str(optbuf))
     }
 );
 

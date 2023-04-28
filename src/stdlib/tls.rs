@@ -847,7 +847,7 @@ const TLS_MESSAGE: FuncDef = func_def! (
 		/* extensions I guess? */
         msg.extend(bytes.as_ref());
 
-        Ok(Val::Str(Buf::from(msg)))
+        Ok(Val::str(msg))
     }
 );
 
@@ -877,7 +877,7 @@ const TLS_CIPHERS: FuncDef = func_def! (
             msg.extend(id.to_be_bytes());
         }
 
-        Ok(Val::Str(Buf::from(msg)))
+        Ok(Val::str(msg))
     }
 );
 
@@ -926,7 +926,7 @@ const TLS_CLIENT_HELLO: FuncDef = func_def! (
             msg.extend(extensions.as_ref());
         }
 
-        Ok(Val::Str(Buf::from(msg)))
+        Ok(Val::str(msg))
     }
 );
 
@@ -976,7 +976,7 @@ const TLS_SERVER_HELLO: FuncDef = func_def! (
             msg.extend(extensions.as_ref());
         }
 
-        Ok(Val::Str(Buf::from(msg)))
+        Ok(Val::str(msg))
     }
 );
 
@@ -1007,7 +1007,7 @@ const TLS_SNI: FuncDef = func_def! (
             msg.extend(name.as_ref());
         }
 
-        Ok(Val::Str(Buf::from(msg)))
+        Ok(Val::str(msg))
     }
 );
 
@@ -1037,7 +1037,7 @@ const TLS_CERTIFICATES: FuncDef = func_def! (
             msg.extend(cert.as_ref());
         }
 
-        Ok(Val::Str(Buf::from(msg)))
+        Ok(Val::str(msg))
     }
 );
 
