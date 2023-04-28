@@ -5,6 +5,7 @@ pub mod dns;
 pub mod dhcp;
 pub mod tls;
 pub mod vxlan;
+pub mod netbios;
 
 mod pcap;
 pub use pcap::{PcapWriter, LinkType};
