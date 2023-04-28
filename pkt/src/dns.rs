@@ -49,7 +49,7 @@ pub mod flags {
     pub const CD: u16 = 0x0010;
 
     pub fn from_opcode(opcode: u8) -> u16 {
-        ((opcode & 7) as u16) << 11
+        ((opcode & 0xf) as u16) << 11
     }
 
     pub fn from_rcode(opcode: u8) -> u16 {
