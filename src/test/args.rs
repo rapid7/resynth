@@ -36,9 +36,9 @@ fn argvec_simple() {
             None,
             vec!(
                 Val::U64(1),
-                Val::Str(Buf::from(Buf::from(b"hello"))),
+                Val::str(b"hello"),
                 Val::U64(123),
-                Val::Str(Buf::from(b"hello")),
+                Val::str(b"hello"),
                 Val::Nil,
             ),
             vec!(),
@@ -61,9 +61,9 @@ fn argvec_nullable() {
             None,
             vec!(
                 Val::U64(1),
-                Val::Str(Buf::from(Buf::from(b"hello"))),
+                Val::str(Buf::from(b"hello")),
                 Val::U64(123),
-                Val::Str(Buf::from(b"hello")),
+                Val::str(b"hello"),
                 Val::Bool(true),
             ),
             vec!(),
@@ -126,9 +126,9 @@ fn argvec_named_positionals() {
     assert_eq!(
         Ok(ArgVec::new(None, vec!(
             Val::U64(0),
-            Val::Str(Buf::from(b"goodbye")),
+            Val::str(b"goodbye"),
             Val::U64(123),
-            Val::Str(Buf::from(b"hello")),
+            Val::str(b"hello"),
             Val::Nil,
         ), vec!())),
         PLAIN.argvec(None, args),
@@ -175,9 +175,9 @@ fn argvec_many_named_args() {
     assert_eq!(
         Ok(ArgVec::new(None, vec!(
             Val::U64(5),
-            Val::Str(Buf::from(b"hello")),
+            Val::str(b"hello"),
             Val::U64(123),
-            Val::Str(Buf::from(b"hello")),
+            Val::str(b"hello"),
             Val::Nil,
         ), vec!())),
         PLAIN.argvec(None, args),
@@ -236,8 +236,8 @@ fn collect_with_named() {
                 Val::U64(234),
             ),
             vec!(
-                Val::Str(Buf::from(b"hello")),
-                Val::Str(Buf::from(b"world")),
+                Val::str(b"hello"),
+                Val::str(b"world"),
             ),
         )),
         COLLECT.argvec(None, args),
@@ -260,8 +260,8 @@ fn collect_with_defaults() {
                 Val::U64(123),
             ),
             vec!(
-                Val::Str(Buf::from(b"hello")),
-                Val::Str(Buf::from(b"world")),
+                Val::str(b"hello"),
+                Val::str(b"world"),
             ),
         )),
         COLLECT.argvec(None, args),
@@ -328,8 +328,8 @@ fn argvec_empty_extra() {
             vec!(
             ),
             vec!(
-                Val::Str(Buf::from(b"hello")),
-                Val::Str(Buf::from(b"world")),
+                Val::str(b"hello"),
+                Val::str(b"world"),
             ),
         )),
         EMPTY.argvec(None, args)
