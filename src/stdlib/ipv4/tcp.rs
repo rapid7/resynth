@@ -95,6 +95,44 @@ const TCP_SV_HOLE: FuncDef = func_def!(
     }
 );
 
+const TCP_CL_HDR: FuncDef = func_def!(
+    "ipv4::tcp::flow.client_hdr";
+    ValType::Str;
+
+    =>
+    "bytes" => ValDef::U32(0),
+    =>
+    ValType::Void;
+
+    |mut args| {
+        let obj = args.take_this();
+        let mut r = obj.borrow_mut();
+        let this: &mut TcpFlow = r.as_mut_any().downcast_mut().unwrap();
+        let bytes: u32 = args.next().into();
+
+        Ok(Val::Str(Buf::from(this.client_hdr(bytes))))
+    }
+);
+
+const TCP_SV_HDR: FuncDef = func_def!(
+    "ipv4::tcp::flow.server_hdr";
+    ValType::Str;
+
+    =>
+    "bytes" => ValDef::U32(0),
+    =>
+    ValType::Void;
+
+    |mut args| {
+        let obj = args.take_this();
+        let mut r = obj.borrow_mut();
+        let this: &mut TcpFlow = r.as_mut_any().downcast_mut().unwrap();
+        let bytes: u32 = args.next().into();
+
+        Ok(Val::Str(Buf::from(this.server_hdr(bytes))))
+    }
+);
+
 const TCP_CL_MSG: FuncDef = func_def!(
     "ipv4::tcp::flow.client_message";
     ValType::PktGen;
@@ -167,6 +205,8 @@ impl Class for TcpFlow {
             "server_message" => Symbol::Func(&TCP_SV_MSG),
             "client_hole" => Symbol::Func(&TCP_CL_HOLE),
             "server_hole" => Symbol::Func(&TCP_SV_HOLE),
+            "client_hdr" => Symbol::Func(&TCP_CL_HDR),
+            "server_hdr" => Symbol::Func(&TCP_SV_HDR),
         }
     }
 

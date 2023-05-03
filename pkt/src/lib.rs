@@ -167,6 +167,13 @@ impl Packet {
         self.headroom += hdr.len();
     }
 
+    /// Get a byte slice to the part of the buffer corresponding to this header
+    pub fn get_hdr_bytes<T>(&self, hdr: Hdr<T>) -> &[u8] {
+        let sz = std::mem::size_of::<T>();
+        let off = hdr.off as usize;
+        &self.buf[off..off + sz]
+    }
+
     /// Get a reference to the part of the buffer corresponding to this header
     pub fn get_hdr<T>(&self, hdr: Hdr<T>) -> &T {
         let sz = std::mem::size_of::<T>();
