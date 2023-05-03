@@ -1,5 +1,14 @@
 use std::net::Ipv4Addr;
 
+use crate::Serialize;
+use crate::util::AsBytes;
+
+pub mod flags {
+    pub const EVIL: u16 = 0x8000;
+    pub const DF: u16 = 0x4000;
+    pub const MF: u16 = 0x2000;
+}
+
 #[repr(C, packed(1))]
 #[derive(Debug, Copy, Clone)]
 pub struct ip_hdr {
@@ -14,6 +23,8 @@ pub struct ip_hdr {
     pub saddr: u32,
     pub daddr: u32,
 }
+
+impl Serialize for ip_hdr {}
 
 impl ip_hdr {
     pub fn init(&mut self) -> &mut Self {
@@ -33,8 +44,10 @@ impl ip_hdr {
         self
     }
 
+    /// Set fragment offset, in units of 8 bytes
     pub fn frag_off(&mut self, frag_off: u16) -> &mut Self {
-        self.frag_off = frag_off.to_be();
+        let flags: u16 = u16::from_be(self.frag_off) & 0xe000;
+        self.frag_off = (frag_off | flags).to_be();
         self
     }
 
@@ -58,6 +71,58 @@ impl ip_hdr {
         let ip: u32 = addr.into();
         self.daddr = ip.to_be();
         self
+    }
+
+    pub fn mf(&mut self, mf: bool) -> &mut Self {
+        let mut frag_off: u16 = u16::from_be(self.frag_off);
+
+        if mf {
+            frag_off |= flags::MF;
+        } else {
+            frag_off &= !flags::MF;
+        }
+
+        self.frag_off = frag_off.to_be();
+
+        self
+    }
+
+    pub fn df(&mut self, df: bool) -> &mut Self {
+        let mut frag_off: u16 = u16::from_be(self.frag_off);
+
+        if df {
+            frag_off |= flags::DF;
+        } else {
+            frag_off &= !flags::DF;
+        }
+
+        self.frag_off = frag_off.to_be();
+
+        self
+    }
+
+    pub fn evil(&mut self, evil: bool) -> &mut Self {
+        let mut frag_off: u16 = u16::from_be(self.frag_off);
+
+        if evil {
+            frag_off |= flags::EVIL;
+        } else {
+            frag_off &= !flags::EVIL;
+        }
+
+        self.frag_off = frag_off.to_be();
+
+        self
+    }
+
+    pub fn csum(&mut self, csum: u16) -> &mut Self {
+        self.csum = csum.to_be();
+        self
+    }
+
+    pub fn calc_csum(&mut self) -> &mut Self {
+        self.csum = 0;
+        self.csum(ip_csum(self.as_bytes()))
     }
 }
 
@@ -253,7 +318,9 @@ pub fn ip_csum(buf: &[u8]) -> u16 {
         sum += val as u32;
     }
 
-    sum += (remainder[0] as u32) << 8;
+    if !remainder.is_empty() {
+        sum += (remainder[0] as u32) << 8;
+    }
 
     sum = (sum & 0xffffu32) + (sum >> 16);
     sum = (sum & 0xffffu32) + (sum >> 16);

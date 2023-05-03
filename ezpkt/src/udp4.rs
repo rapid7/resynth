@@ -106,7 +106,8 @@ impl UdpDgram {
     #[must_use]
     fn update_tot_len(mut self) -> Self {
         self.pkt.get_mut_hdr(self.ip)
-            .tot_len(self.tot_len as u16);
+            .tot_len(self.tot_len as u16)
+            .calc_csum();
         self
     }
 
