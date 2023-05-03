@@ -81,18 +81,22 @@ impl TcpSeg {
         self
     }
 
-    fn push(mut self, bytes: &[u8]) -> Self {
+    fn push(mut self) -> Self {
         self.pkt.get_mut_hdr(self.tcp)
             .ack(self.st.rcv_nxt)
             .push();
-        self.seq += bytes.len() as u32;
-        self.push_bytes(bytes)
+        self
     }
 
-    fn push_bytes(mut self, bytes: &[u8]) -> Self {
+    fn append_data(mut self, bytes: &[u8]) -> Self {
         self.pkt.push_bytes(bytes);
         self.tot_len += bytes.len() as u32;
+        self.seq += bytes.len() as u32;
         self.update_tot_len()
+    }
+
+    fn push_bytes(self, bytes: &[u8]) -> Self {
+        self.push().append_data(bytes)
     }
 
     fn fin(mut self) -> Self {
@@ -121,6 +125,10 @@ impl TcpSeg {
 
     fn seq_consumed(&self) -> u32 {
         self.seq
+    }
+
+    fn tcp_hdr_bytes(&self) -> &[u8] {
+        self.pkt.get_hdr_bytes(self.tcp)
     }
 }
 
@@ -242,7 +250,7 @@ impl TcpFlow {
                           send_ack: bool,
                           frag_off: u16,
                           ) -> Vec<Packet> {
-        self.cl_tx(self.cl().frag_off(frag_off).push(bytes));
+        self.cl_tx(self.cl().frag_off(frag_off).push_bytes(bytes));
         if send_ack {
             self.sv_tx(self.sv().ack());
         }
@@ -255,11 +263,31 @@ impl TcpFlow {
                           send_ack: bool,
                           frag_off: u16,
                           ) -> Vec<Packet> {
-        self.sv_tx(self.sv().frag_off(frag_off).push(bytes));
+        self.sv_tx(self.sv().frag_off(frag_off).push_bytes(bytes));
         if send_ack {
             self.cl_tx(self.cl().ack());
         }
 
         std::mem::take(&mut self.pkts)
+    }
+
+    pub fn client_hdr(&mut self,
+                          dlen: u32,
+                          ) -> Vec<u8> {
+        let seg = self.cl().push();
+        let hdr = seg.tcp_hdr_bytes();
+        self.cl_seq += dlen;
+
+        Vec::from(hdr)
+    }
+
+    pub fn server_hdr(&mut self,
+                          dlen: u32,
+                          ) -> Vec<u8> {
+        let seg = self.sv().push();
+        let hdr = seg.tcp_hdr_bytes();
+        self.sv_seq += dlen;
+
+        Vec::from(hdr)
     }
 }
