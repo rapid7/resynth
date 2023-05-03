@@ -98,7 +98,7 @@ impl FuncDef {
                     },
                     State::Extra => {
                         if !self.is_collect() {
-                            println!("ERR: Unexpected extra arguments");
+                            println!("ERR: {} Unexpected extra arguments", self.name);
                             return Err(TypeError);
                         }else if !arg.is_anon() {
                             state = State::Unexpected;
@@ -110,7 +110,8 @@ impl FuncDef {
                         }
                     },
                     State::Unexpected => {
-                        println!("ERR: Unexpected named arguments");
+                        println!("ERR: {}: Unexpected named arguments \"{}\"",
+                                 self.name, arg.name.unwrap());
                         return Err(TypeError);
                     }
                 }
