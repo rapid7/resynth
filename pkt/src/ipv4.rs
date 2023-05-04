@@ -10,7 +10,7 @@ pub mod flags {
 }
 
 #[repr(C, packed(1))]
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub struct ip_hdr {
     pub ihl_version: u8,
     pub tos: u8,
@@ -26,12 +26,37 @@ pub struct ip_hdr {
 
 impl Serialize for ip_hdr {}
 
+impl Default for ip_hdr {
+    fn default() -> Self {
+        Self {
+            ihl_version: 0x45,
+            tos: 0,
+            tot_len: (std::mem::size_of::<Self>() as u16).to_be(),
+            id: 0,
+            frag_off: 0,
+            ttl: 64,
+            protocol: 0,
+            csum: 0,
+            saddr: 0,
+            daddr: 0,
+        }
+    }
+}
+
 impl ip_hdr {
     pub fn init(&mut self) -> &mut Self {
         self.ihl_version = 0x45;
         self.tot_len = (std::mem::size_of::<Self>() as u16).to_be();
         self.ttl = 64;
         self
+    }
+
+    pub fn get_saddr(&self) -> u32 {
+        u32::from_be(self.saddr)
+    }
+
+    pub fn get_daddr(&self) -> u32 {
+        u32::from_be(self.daddr)
     }
 
     pub fn tot_len(&mut self, tot_len: u16) -> &mut Self {

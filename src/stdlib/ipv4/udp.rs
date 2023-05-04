@@ -113,12 +113,12 @@ impl Class for UdpFlow {
     }
 
     fn class_name(&self) -> &'static str {
-        "ipv4::udp4.flow"
+        "ipv4::udp.flow"
     }
 }
 
 const FLOW: FuncDef = func_def!(
-    "flow";
+    "ipv4::udp::flow";
     ValType::Obj;
 
     "cl" => ValType::Sock4,

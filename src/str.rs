@@ -12,6 +12,10 @@ impl Buf {
     pub fn len(&self) -> usize {
         self.inner.len()
     }
+
+    pub fn cow_buffer(self) -> Vec<u8> {
+        Rc::try_unwrap(self.inner).unwrap_or_else(|rc| (*rc).clone())
+    }
 }
 
 impl AsRef<[u8]> for Buf {
