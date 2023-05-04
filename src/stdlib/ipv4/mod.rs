@@ -5,8 +5,10 @@ use pkt::{Packet, Hdr};
 use pkt::eth::eth_hdr;
 use pkt::ipv4::ip_hdr;
 
+use ezpkt::IpFrag;
+
 use crate::val::{ValType, Val, ValDef};
-use crate::libapi::{FuncDef, ArgDecl};
+use crate::libapi::{FuncDef, ArgDecl, Class};
 use crate::sym::Symbol;
 use crate::str::Buf;
 use crate::func_def;
@@ -86,9 +88,124 @@ const DGRAM: FuncDef = func_def!(
     }
 );
 
+const FRAG_FRAGMENT: FuncDef = func_def!(
+    "ipv4::frag.fragment";
+    ValType::Pkt;
+
+    "frag_off" => ValType::U16,
+    "len" => ValType::U16,
+    =>
+    =>
+    ValType::Str;
+
+    |mut args| {
+        let obj = args.take_this();
+        let mut r = obj.borrow_mut();
+        let this: &mut IpFrag = r.as_mut_any().downcast_mut().unwrap();
+
+        let frag_off: u16 = args.next().into();
+        let len: u16 = args.next().into();
+
+        Ok(this.fragment(frag_off, len).into())
+    }
+);
+
+const FRAG_TAIL: FuncDef = func_def!(
+    "ipv4::frag.tail";
+    ValType::Pkt;
+
+    "frag_off" => ValType::U16,
+    =>
+    =>
+    ValType::Str;
+
+    |mut args| {
+        let obj = args.take_this();
+        let mut r = obj.borrow_mut();
+        let this: &mut IpFrag = r.as_mut_any().downcast_mut().unwrap();
+
+        let frag_off: u16 = args.next().into();
+
+        Ok(this.tail(frag_off).into())
+    }
+);
+
+const FRAG_DATAGRAM: FuncDef = func_def!(
+    "ipv4::frag.datagram";
+    ValType::Pkt;
+
+    =>
+    =>
+    ValType::Str;
+
+    |mut args| {
+        let obj = args.take_this();
+        let mut r = obj.borrow_mut();
+        let this: &mut IpFrag = r.as_mut_any().downcast_mut().unwrap();
+
+        Ok(this.datagram().into())
+    }
+);
+
+impl Class for IpFrag {
+    fn symbols(&self) -> phf::Map<&'static str, Symbol> {
+        phf_map! {
+            "fragment" => Symbol::Func(&FRAG_FRAGMENT),
+            "tail" => Symbol::Func(&FRAG_TAIL),
+            "datagram" => Symbol::Func(&FRAG_DATAGRAM),
+        }
+    }
+
+    fn class_name(&self) -> &'static str {
+        "ipv4::frag"
+    }
+}
+
+const FRAG: FuncDef = func_def!(
+    "ipv4::frag";
+    ValType::Obj;
+
+    "src" => ValType::Ip4,
+    "dst" => ValType::Ip4,
+    =>
+    "id" => ValDef::U16(0),
+    "evil" => ValDef::Bool(false),
+    "df" => ValDef::Bool(false),
+    "ttl" => ValDef::U8(64),
+    "proto" => ValDef::U8(17),
+    =>
+    ValType::Str;
+
+    |mut args| {
+        let src: Ipv4Addr = args.next().into();
+        let dst: Ipv4Addr = args.next().into();
+
+        let id: u16 = args.next().into();
+        let evil: bool = args.next().into();
+        let df: bool = args.next().into();
+        let ttl: u8= args.next().into();
+        let proto: u8 = args.next().into();
+
+        let payload: Buf = args.join_extra(b"").into();
+
+        let mut iph: ip_hdr = Default::default();
+        iph
+            .id(id)
+            .evil(evil)
+            .df(df)
+            .ttl(ttl)
+            .protocol(proto)
+            .saddr(src)
+            .daddr(dst);
+
+        Ok(Val::from(IpFrag::new(iph, payload.cow_buffer())))
+    }
+);
+
 pub const IPV4: phf::Map<&'static str, Symbol> = phf_map! {
     "tcp" => Symbol::Module(&TCP4),
     "udp" => Symbol::Module(&UDP4),
     "icmp" => Symbol::Module(&ICMP4),
     "datagram" => Symbol::Func(&DGRAM),
+    "frag" => Symbol::Func(&FRAG),
 };
