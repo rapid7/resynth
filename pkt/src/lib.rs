@@ -140,6 +140,12 @@ impl Packet {
         hdr
     }
 
+    pub fn push_hdr_from<T>(&mut self, init: &T) -> Hdr<T> where T: AsBytes {
+        let hdr = Hdr::new(self.buf.len());
+        self.push_bytes(init.as_bytes());
+        hdr
+    }
+
     /// Apped a bunch of bytes
     pub fn push_bytes<T: AsRef<[u8]>>(&mut self, buf: T) {
         self.buf.extend_from_slice(buf.as_ref());
