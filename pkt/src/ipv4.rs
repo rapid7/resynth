@@ -3,6 +3,13 @@ use std::net::Ipv4Addr;
 use crate::Serialize;
 use crate::util::AsBytes;
 
+pub mod proto {
+    pub const ICMP: u8 = 1;
+    pub const TCP: u8 = 6;
+    pub const UDP: u8 = 17;
+    pub const GRE: u8 = 47;
+}
+
 pub mod flags {
     pub const EVIL: u16 = 0x8000;
     pub const DF: u16 = 0x4000;

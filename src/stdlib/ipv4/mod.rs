@@ -3,7 +3,7 @@ use std::net::Ipv4Addr;
 
 use pkt::{Packet, Hdr};
 use pkt::eth::eth_hdr;
-use pkt::ipv4::ip_hdr;
+use pkt::ipv4::{ip_hdr, proto};
 
 use ezpkt::IpFrag;
 
@@ -20,6 +20,13 @@ mod icmp;
 use tcp::TCP4;
 use udp::UDP4;
 use icmp::ICMP4;
+
+const PROTO: phf::Map<&'static str, Symbol> = phf_map! {
+    "ICMP" => Symbol::u8(proto::ICMP),
+    "TCP" => Symbol::u8(proto::TCP),
+    "UDP" => Symbol::u8(proto::UDP),
+    "GRE" => Symbol::u8(proto::GRE),
+};
 
 const IPV4_DGRAM_OVERHEAD: usize =
     std::mem::size_of::<eth_hdr>()
@@ -38,7 +45,7 @@ const DGRAM: FuncDef = func_def!(
     "mf" => ValDef::Bool(false),
     "ttl" => ValDef::U8(64),
     "frag_off" => ValDef::U16(0),
-    "proto" => ValDef::U8(17),
+    "proto" => ValDef::U8(proto::UDP),
     =>
     ValType::Str;
 
@@ -172,7 +179,7 @@ const FRAG: FuncDef = func_def!(
     "evil" => ValDef::Bool(false),
     "df" => ValDef::Bool(false),
     "ttl" => ValDef::U8(64),
-    "proto" => ValDef::U8(17),
+    "proto" => ValDef::U8(proto::UDP),
     =>
     ValType::Str;
 
@@ -208,4 +215,5 @@ pub const IPV4: phf::Map<&'static str, Symbol> = phf_map! {
     "icmp" => Symbol::Module(&ICMP4),
     "datagram" => Symbol::Func(&DGRAM),
     "frag" => Symbol::Func(&FRAG),
+    "proto" => Symbol::Module(&PROTO),
 };
