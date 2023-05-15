@@ -320,6 +320,7 @@ const DNS_HOST: FuncDef = func_def!(
     =>
     "ttl" => ValDef::U32(229),
     "ns" => ValDef::Ip4(Ipv4Addr::new(1, 1, 1, 1)),
+    "raw" => ValDef::Bool(false),
     =>
     ValType::Ip4;
 
@@ -328,12 +329,14 @@ const DNS_HOST: FuncDef = func_def!(
         let qname: DnsName = DnsName::from(args.next().as_ref());
         let ttl: u32 = args.next().into();
         let ns: Ipv4Addr = args.next().into();
+        let raw: bool = args.next().into();
 
         let mut pkts: Vec<Packet> = Vec::with_capacity(2);
 
         let mut flow = UdpFlow::new(
             SocketAddrV4::new(client, 32768),
             SocketAddrV4::new(ns, 53),
+            raw,
         );
 
         let mut msg: Vec<u8> = Vec::new();

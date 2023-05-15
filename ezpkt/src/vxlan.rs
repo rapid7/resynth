@@ -9,6 +9,7 @@ pub struct VxlanFlow {
     cl: SocketAddrV4,
     sv: SocketAddrV4,
     vni: u32,
+    raw: bool,
 }
 
 pub struct VxlanDgram {
@@ -16,9 +17,13 @@ pub struct VxlanDgram {
 }
 
 impl VxlanDgram {
-    fn new(src: SocketAddrV4, dst: SocketAddrV4, vni: u32) -> Self {
+    fn new(src: SocketAddrV4,
+           dst: SocketAddrV4,
+           vni: u32,
+           raw: bool,
+           ) -> Self {
         Self {
-            outer: UdpDgram::with_capacity(std::mem::size_of::<vxlan_hdr>())
+            outer: UdpDgram::with_capacity(std::mem::size_of::<vxlan_hdr>(), raw)
                 .src(src)
                 .dst(dst)
                 .push(vxlan_hdr::with_vni(vni).as_bytes()),
@@ -38,17 +43,22 @@ impl From<VxlanDgram> for Packet {
 }
 
 impl VxlanFlow {
-    pub fn new(cl: SocketAddrV4, sv: SocketAddrV4, vni: u32) -> Self {
+    pub fn new(cl: SocketAddrV4,
+               sv: SocketAddrV4,
+               vni: u32,
+               raw: bool,
+               ) -> Self {
         //println!("trace: vxlan:flow({:?}, {:?}, {:#x})", cl, sv, vni);
         Self {
             cl,
             sv,
             vni,
+            raw,
         }
     }
 
     fn dgram(&self) -> VxlanDgram {
-        VxlanDgram::new(self.cl, self.sv, self.vni)
+        VxlanDgram::new(self.cl, self.sv, self.vni, self.raw)
     }
 
     pub fn encap(&mut self, bytes: &[u8]) -> Packet {

@@ -8,17 +8,21 @@ use pkt::{Packet, Hdr};
 pub struct UdpFlow {
     cl: SocketAddrV4,
     sv: SocketAddrV4,
+    raw: bool,
 }
+
+const UDP_RAW_DGRAM_OVERHEAD: usize =
+    std::mem::size_of::<ip_hdr>()
+    + std::mem::size_of::<udp_hdr>();
 
 const UDP_DGRAM_OVERHEAD: usize =
     std::mem::size_of::<eth_hdr>()
-    + std::mem::size_of::<ip_hdr>()
-    + std::mem::size_of::<udp_hdr>();
+    + UDP_RAW_DGRAM_OVERHEAD;
 
 /// Helper for creating UDP datagrams
 pub struct UdpDgram {
     pkt: Packet,
-    eth: Hdr<eth_hdr>,
+    eth: Option<Hdr<eth_hdr>>,
     ip: Hdr<ip_hdr>,
     udp: Hdr<udp_hdr>,
     tot_len: usize,
@@ -27,12 +31,20 @@ pub struct UdpDgram {
 
 impl UdpDgram {
     #[must_use]
-    pub fn with_capacity(payload_sz: usize) -> Self {
-        let mut pkt = Packet::with_capacity(UDP_DGRAM_OVERHEAD + payload_sz);
+    pub fn with_capacity(payload_sz: usize, raw: bool) -> Self {
+        let mut pkt = if raw {
+            Packet::with_capacity(UDP_RAW_DGRAM_OVERHEAD + payload_sz)
+        } else {
+            Packet::with_capacity(UDP_DGRAM_OVERHEAD + payload_sz)
+        };
 
-        let eth: Hdr<eth_hdr> = pkt.push_hdr();
-        pkt.get_mut_hdr(eth)
-            .proto(0x0800);
+        let eth = if raw {
+            None
+        } else {
+            let eth: Hdr<eth_hdr> = pkt.push_hdr();
+            pkt.get_mut_hdr(eth).proto(0x0800);
+            Some(eth)
+        };
 
         let ip: Hdr<ip_hdr> = pkt.push_hdr();
         pkt.get_mut_hdr(ip)
@@ -57,7 +69,15 @@ impl UdpDgram {
 
     #[must_use]
     pub fn new() -> Self {
-        Self::with_capacity(0)
+        Self::with_capacity(0, false)
+    }
+
+    pub fn raw() -> Self {
+        Self::with_capacity(0, true)
+    }
+
+    pub fn of_type(raw: bool) -> Self {
+        Self::with_capacity(0, raw)
     }
 
     #[must_use]
@@ -74,7 +94,9 @@ impl UdpDgram {
 
     #[must_use]
     pub fn src(mut self, src: SocketAddrV4) -> Self {
-        self.pkt.get_mut_hdr(self.eth).src_from_ip(*src.ip());
+        if let Some(eth) = self.eth {
+            self.pkt.get_mut_hdr(eth).src_from_ip(*src.ip());
+        }
         self.pkt.get_mut_hdr(self.ip).saddr(*src.ip());
         self.pkt.get_mut_hdr(self.udp).sport(src.port());
         self
@@ -82,7 +104,9 @@ impl UdpDgram {
 
     #[must_use]
     pub fn dst(mut self, dst: SocketAddrV4) -> Self {
-        self.pkt.get_mut_hdr(self.eth).dst_from_ip(*dst.ip());
+        if let Some(eth) = self.eth {
+            self.pkt.get_mut_hdr(eth).dst_from_ip(*dst.ip());
+        }
         self.pkt.get_mut_hdr(self.ip).daddr(*dst.ip());
         self.pkt.get_mut_hdr(self.udp).dport(dst.port());
         self
@@ -90,7 +114,9 @@ impl UdpDgram {
 
     #[must_use]
     pub fn broadcast(mut self) -> Self {
-        self.pkt.get_mut_hdr(self.eth).broadcast();
+        if let Some(eth) = self.eth {
+            self.pkt.get_mut_hdr(eth).broadcast();
+        }
         self
     }
 
@@ -132,20 +158,21 @@ impl From<UdpDgram> for Packet {
 }
 
 impl UdpFlow {
-    pub fn new(cl: SocketAddrV4, sv: SocketAddrV4) -> Self {
+    pub fn new(cl: SocketAddrV4, sv: SocketAddrV4, raw: bool) -> Self {
         //println!("trace: udp:flow({:?}, {:?})", cl, sv);
         Self {
             cl,
             sv,
+            raw,
         }
     }
 
     fn clnt(&self) -> UdpDgram {
-        UdpDgram::new().src(self.cl).dst(self.sv)
+        UdpDgram::of_type(self.raw).src(self.cl).dst(self.sv)
     }
 
     fn srvr(&self) -> UdpDgram {
-        UdpDgram::new().src(self.sv).dst(self.cl)
+        UdpDgram::of_type(self.raw).src(self.sv).dst(self.cl)
     }
 
     pub fn client_dgram(&mut self, bytes: &[u8]) -> Packet {
