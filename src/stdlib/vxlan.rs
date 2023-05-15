@@ -4,7 +4,7 @@ use phf::{phf_map, phf_ordered_map};
 
 use pkt::Packet;
 
-use crate::val::{ValType, Val};
+use crate::val::{Val, ValDef, ValType};
 use crate::libapi::{FuncDef, ArgDecl, Class};
 use crate::sym::Symbol;
 use ezpkt::VxlanFlow;
@@ -74,6 +74,7 @@ const SESSION: FuncDef = func_def!(
     "sv" => ValType::Sock4,
     "sessionid" => ValType::U32,
     =>
+    "raw" => ValDef::Bool(false),
     =>
     ValType::Void;
 
@@ -81,7 +82,8 @@ const SESSION: FuncDef = func_def!(
         let cl = args.next();
         let sv = args.next();
         let vni: u32 = args.next().into();
-        Ok(Val::from(VxlanFlow::new(cl.into(), sv.into(), vni)))
+        let raw: bool = args.next().into();
+        Ok(Val::from(VxlanFlow::new(cl.into(), sv.into(), vni, raw)))
     }
 );
 

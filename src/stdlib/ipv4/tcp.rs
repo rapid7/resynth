@@ -224,6 +224,7 @@ const TCP_FLOW: FuncDef = func_def!(
     =>
     "cl_seq" => ValDef::U32(1),
     "sv_seq" => ValDef::U32(1),
+    "raw" => ValDef::Bool(false),
     =>
     ValType::Void;
 
@@ -232,7 +233,8 @@ const TCP_FLOW: FuncDef = func_def!(
         let sv = args.next();
         let cl_seq: u32 = args.next().into();
         let sv_seq: u32 = args.next().into();
-        Ok(Val::from(TcpFlow::new(cl.into(), sv.into(), cl_seq, sv_seq)))
+        let raw: bool = args.next().into();
+        Ok(Val::from(TcpFlow::new(cl.into(), sv.into(), cl_seq, sv_seq, raw)))
     }
 );
 

@@ -19,6 +19,7 @@ const BROADCAST: FuncDef = func_def!(
     "dst" => ValType::Sock4,
     =>
     "srcip" => ValDef::Type(ValType::Ip4),
+    "raw" => ValDef::Bool(false),
     =>
     ValType::Str;
 
@@ -26,9 +27,10 @@ const BROADCAST: FuncDef = func_def!(
         let src = args.next();
         let dst = args.next();
         let srcip: Option<Ipv4Addr> = args.next().into();
+        let raw: bool = args.next().into();
         let buf: Buf = args.join_extra(b"").into();
 
-        let mut dgram = UdpDgram::with_capacity(buf.len())
+        let mut dgram = UdpDgram::with_capacity(buf.len(), raw)
             .src(src.into())
             .dst(dst.into())
             .broadcast()
@@ -50,14 +52,16 @@ const UNICAST: FuncDef = func_def!(
     "src" => ValType::Sock4,
     "dst" => ValType::Sock4,
     =>
+    "raw" => ValDef::Bool(false),
     =>
     ValType::Str;
 
     |mut args| {
         let src = args.next();
         let dst = args.next();
+        let raw: bool = args.next().into();
         let buf: Buf = args.join_extra(b"").into();
-        let dgram: Packet = UdpDgram::with_capacity(buf.len())
+        let dgram: Packet = UdpDgram::with_capacity(buf.len(), raw)
             .src(src.into())
             .dst(dst.into())
             .push(buf)
@@ -153,13 +157,15 @@ const FLOW: FuncDef = func_def!(
     "cl" => ValType::Sock4,
     "sv" => ValType::Sock4,
     =>
+    "raw" => ValDef::Bool(false),
     =>
     ValType::Void;
 
     |mut args| {
         let cl = args.next();
         let sv = args.next();
-        Ok(Val::from(UdpFlow::new(cl.into(), sv.into())))
+        let raw = args.next();
+        Ok(Val::from(UdpFlow::new(cl.into(), sv.into(), raw.into())))
     }
 );
 
