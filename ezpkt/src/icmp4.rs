@@ -1,7 +1,7 @@
 use std::net::Ipv4Addr;
 
 use pkt::eth::eth_hdr;
-use pkt::ipv4::{ip_hdr, icmp_hdr, icmp_echo_hdr, ip_csum, ICMP_ECHOREPLY, ICMP_ECHO};
+use pkt::ipv4::{ip_hdr, icmp_hdr, icmp_echo_hdr, ip_csum, proto, ICMP_ECHOREPLY, ICMP_ECHO};
 use pkt::{Packet, Hdr};
 
 #[derive(Debug, PartialEq, Eq)]
@@ -41,7 +41,7 @@ impl IcmpDgram {
         let ip: Hdr<ip_hdr> = pkt.push_hdr();
         pkt.get_mut_hdr(ip)
             .init()
-            .protocol(1)
+            .protocol(proto::ICMP)
             .saddr(src)
             .daddr(dst);
 
