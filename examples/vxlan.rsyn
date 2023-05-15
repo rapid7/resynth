@@ -2,61 +2,68 @@ import ipv4;
 import dns;
 import vxlan;
 
-let vxlan = vxlan::session(
-  17.17.17.17:0,
-  34.34.34.34:4789,
-  1234,
+let client = 192.168.238.112;
+let server = 142.250.207.36;
+let google = 8.8.8.8;
+
+let vx = vxlan::session(
+  10.0.0.1:12345,
+  10.0.0.2/vxlan::DEFAULT_PORT,
+);
+
+vx.encap(
+  dns::host(
+    client,
+    "www.google.com",
+    ns: google,
+    server,
+  )
 );
 
 let dns = ipv4::udp::flow(
-  192.168.238.112:13749,
-  8.8.8.8:53,
+  client/13749,
+  google/53,
 );
 
-# There is a low-level DNS API which you can use to construct exact queries,
-# and even malformed queries
-vxlan.dgram(dns.client_dgram(
-    dns::hdr(
-      id: 0x1234,
-      flags: dns::flags(
-        opcode: dns::opcode::QUERY,
-        rd: 1,
-      ),
-      qdcount: 1,
+let req = dns.client_dgram(
+  dns::hdr(
+    id: 0x1234,
+    flags: dns::flags(
+      opcode: dns::opcode::QUERY,
+      rd: 1,
     ),
-    dns::question(
-      qname: dns::name("www", "google", "com"),
-      qtype: dns::type::A,
-      qclass: dns::class::IN,
-    )
-));
+    qdcount: 1,
+  ),
+  dns::question(
+    qname: dns::name("www", "google", "com"),
+    qtype: dns::type::A,
+    qclass: dns::class::IN,
+  )
+);
 
-vxlan.dgram(dns.server_dgram(
-    dns::hdr(
-      id: 0x1234,
-      flags: dns::flags(
-        response: 1,
-        opcode: dns::opcode::QUERY,
-        ra: 1,
-      ),
-      qdcount: 1,
-      ancount: 1,
+let resp = dns.server_dgram(
+  dns::hdr(
+    id: 0x1234,
+    flags: dns::flags(
+      response: 1,
+      opcode: dns::opcode::QUERY,
+      ra: 1,
     ),
-    dns::question(
-      qname: dns::name("www", "google", "com"),
-      qtype: dns::type::A,
-      qclass: dns::class::IN,
-    ),
-    dns::answer(
-      aname: dns::name("www", "google", "com"),
-      atype: dns::type::A,
-      aclass: dns::class::IN,
-      142.250.196.100,
-    ),
-));
+    qdcount: 1,
+    ancount: 1,
+  ),
+  dns::question(
+    qname: dns::name("www", "google", "com"),
+    qtype: dns::type::A,
+    qclass: dns::class::IN,
+  ),
+  dns::answer(
+    aname: dns::name("www", "google", "com"),
+    atype: dns::type::A,
+    aclass: dns::class::IN,
+    server,
+  ),
+);
 
-# And then there is the high level API which you can use to quickly generate a
-# query/response pair to make it lool like our hosts are doing DNS lookups
-let client = 192.168.238.112;
-let server = 142.250.207.36;
-vxlan.encap(dns::host(client, "www.google.com", ns: 8.8.8.8, server));
+vx.encap(req);
+vx.encap(resp);
