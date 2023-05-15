@@ -4,6 +4,8 @@ pub mod flags {
     pub const I: u8 = 8;
 }
 
+pub const DEFAULT_PORT: u16 = 4789;
+
 #[repr(C, packed(1))]
 #[derive(Debug, Copy, Clone, Default)]
 pub struct vxlan_hdr {
