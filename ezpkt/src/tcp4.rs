@@ -1,7 +1,7 @@
 use std::net::SocketAddrV4;
 
 use pkt::eth::eth_hdr;
-use pkt::ipv4::{ip_hdr, tcp_hdr};
+use pkt::ipv4::{ip_hdr, proto, tcp_hdr};
 use pkt::{Packet, Hdr};
 
 #[derive(Debug, PartialEq, Eq)]
@@ -35,7 +35,7 @@ impl TcpSeg {
         let ip: Hdr<ip_hdr> = pkt.push_hdr();
         pkt.get_mut_hdr(ip)
             .init()
-            .protocol(6)
+            .protocol(proto::TCP)
             .saddr(*src.ip())
             .daddr(*dst.ip());
 

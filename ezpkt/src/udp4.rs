@@ -1,7 +1,7 @@
 use std::net::{SocketAddrV4, Ipv4Addr};
 
 use pkt::eth::eth_hdr;
-use pkt::ipv4::{ip_hdr, udp_hdr};
+use pkt::ipv4::{ip_hdr, udp_hdr, proto};
 use pkt::{Packet, Hdr};
 
 #[derive(Debug, PartialEq, Eq)]
@@ -37,7 +37,7 @@ impl UdpDgram {
         let ip: Hdr<ip_hdr> = pkt.push_hdr();
         pkt.get_mut_hdr(ip)
             .init()
-            .protocol(17);
+            .protocol(proto::UDP);
 
         let udp: Hdr<udp_hdr> = pkt.push_hdr();
 
