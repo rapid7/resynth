@@ -2,7 +2,7 @@ use std::rc::Rc;
 
 use phf::{phf_map, phf_ordered_map};
 
-use pkt::Packet;
+use pkt::{Packet, vxlan};
 
 use crate::val::{Val, ValDef, ValType};
 use crate::libapi::{FuncDef, ArgDecl, Class};
@@ -72,8 +72,8 @@ const SESSION: FuncDef = func_def!(
 
     "cl" => ValType::Sock4,
     "sv" => ValType::Sock4,
-    "sessionid" => ValType::U32,
     =>
+    "sessionid" => ValDef::U32(0), // TODO: Make it optional
     "raw" => ValDef::Bool(false),
     =>
     ValType::Void;
@@ -89,5 +89,6 @@ const SESSION: FuncDef = func_def!(
 
 pub const MODULE: phf::Map<&'static str, Symbol> = phf_map! {
     "session" => Symbol::Func(&SESSION),
+    "DEFAULT_PORT" => Symbol::u16(vxlan::DEFAULT_PORT),
 };
 
