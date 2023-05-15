@@ -8,16 +8,20 @@ use pkt::{Packet, Hdr};
 pub struct IcmpFlow {
     cl: Ipv4Addr,
     sv: Ipv4Addr,
+    raw: bool,
     id: u16,
     ping_seq: u16,
     pong_seq: u16,
 }
 
-const ICMP_DGRAM_OVERHEAD: usize =
-    std::mem::size_of::<eth_hdr>()
-    + std::mem::size_of::<ip_hdr>()
+const ICMP_RAW_DGRAM_OVERHEAD: usize =
+    std::mem::size_of::<ip_hdr>()
     + std::mem::size_of::<icmp_echo_hdr>()
     + std::mem::size_of::<icmp_hdr>();
+
+const ICMP_DGRAM_OVERHEAD: usize =
+    std::mem::size_of::<eth_hdr>()
+    + ICMP_RAW_DGRAM_OVERHEAD;
 
 /// Helper for creating ICMP datagrams
 pub struct IcmpDgram {
@@ -29,14 +33,20 @@ pub struct IcmpDgram {
 }
 
 impl IcmpDgram {
-    fn new(src: Ipv4Addr, dst: Ipv4Addr) -> Self {
-        let mut pkt = Packet::with_capacity(ICMP_DGRAM_OVERHEAD);
+    fn new(src: Ipv4Addr, dst: Ipv4Addr, raw: bool) -> Self {
+        let mut pkt = if raw {
+            Packet::with_capacity(ICMP_RAW_DGRAM_OVERHEAD)
+        } else {
+            let mut pkt = Packet::with_capacity(ICMP_DGRAM_OVERHEAD);
 
-        let eth: Hdr<eth_hdr> = pkt.push_hdr();
-        pkt.get_mut_hdr(eth)
-            .dst_from_ip(dst)
-            .src_from_ip(src)
-            .proto(0x0800);
+            let eth: Hdr<eth_hdr> = pkt.push_hdr();
+            pkt.get_mut_hdr(eth)
+                .dst_from_ip(dst)
+                .src_from_ip(src)
+                .proto(0x0800);
+
+            pkt
+        };
 
         let ip: Hdr<ip_hdr> = pkt.push_hdr();
         pkt.get_mut_hdr(ip)
@@ -112,11 +122,12 @@ impl From<IcmpDgram> for Packet {
 }
 
 impl IcmpFlow {
-    pub fn new(cl: Ipv4Addr, sv: Ipv4Addr) -> Self {
+    pub fn new(cl: Ipv4Addr, sv: Ipv4Addr, raw: bool) -> Self {
         //println!("trace: icmp:flow({:?}, {:?})", cl, sv);
         Self {
             cl,
             sv,
+            raw,
             id: 0x1234,
             ping_seq: 0,
             pong_seq: 0,
@@ -124,11 +135,11 @@ impl IcmpFlow {
     }
 
     fn clnt(&self) -> IcmpDgram {
-        IcmpDgram::new(self.cl, self.sv)
+        IcmpDgram::new(self.cl, self.sv, self.raw)
     }
 
     fn srvr(&self) -> IcmpDgram {
-        IcmpDgram::new(self.sv, self.cl)
+        IcmpDgram::new(self.sv, self.cl, self.raw)
     }
 
     pub fn echo(&mut self, bytes: &[u8]) -> Packet {

@@ -10,7 +10,13 @@ struct TcpState {
     rcv_nxt: u32,
 }
 
-const TCPSEG_OVERHEAD: usize = 14 + 20 + 20;
+const TCPSEG_RAW_OVERHEAD: usize =
+    std::mem::size_of::<ip_hdr>()
+    + std::mem::size_of::<tcp_hdr>();
+
+const TCPSEG_OVERHEAD: usize =
+    std::mem::size_of::<eth_hdr>()
+    + TCPSEG_RAW_OVERHEAD;
 
 /// Helper for creating TCP segments
 pub struct TcpSeg {
@@ -23,14 +29,25 @@ pub struct TcpSeg {
 }
 
 impl TcpSeg {
-    fn new(src: SocketAddrV4, dst: SocketAddrV4, st: TcpState) -> Self {
-        let mut pkt = Packet::with_capacity(TCPSEG_OVERHEAD);
+    fn new(src: SocketAddrV4,
+           dst: SocketAddrV4,
+           st: TcpState,
+           raw: bool,
+           ) -> Self {
 
-        let eth: Hdr<eth_hdr> = pkt.push_hdr();
-        pkt.get_mut_hdr(eth)
-            .dst_from_ip(*dst.ip())
-            .src_from_ip(*src.ip())
-            .proto(0x0800);
+        let mut pkt = if raw {
+            Packet::with_capacity(TCPSEG_RAW_OVERHEAD)
+        } else {
+            let mut pkt = Packet::with_capacity(TCPSEG_OVERHEAD);
+
+            let eth: Hdr<eth_hdr> = pkt.push_hdr();
+            pkt.get_mut_hdr(eth)
+                .dst_from_ip(*dst.ip())
+                .src_from_ip(*src.ip())
+                .proto(0x0800);
+
+            pkt
+        };
 
         let ip: Hdr<ip_hdr> = pkt.push_hdr();
         pkt.get_mut_hdr(ip)
@@ -145,6 +162,7 @@ pub struct TcpFlow {
     sv: SocketAddrV4,
     cl_seq: u32,
     sv_seq: u32,
+    raw: bool,
     pkts: Vec<Packet>,
 }
 
@@ -153,12 +171,14 @@ impl TcpFlow {
                sv: SocketAddrV4,
                cl_seq: u32,
                sv_seq: u32,
+               raw: bool,
                ) -> Self {
         Self {
             cl,
             sv,
             cl_seq,
             sv_seq,
+            raw,
             pkts: Vec::new(),
         }
     }
@@ -178,11 +198,11 @@ impl TcpFlow {
     }
 
     fn cl(&self) -> TcpSeg {
-        TcpSeg::new(self.cl, self.sv, self.cl_state())
+        TcpSeg::new(self.cl, self.sv, self.cl_state(), self.raw)
     }
 
     fn sv(&self) -> TcpSeg {
-        TcpSeg::new(self.sv, self.cl, self.sv_state())
+        TcpSeg::new(self.sv, self.cl, self.sv_state(), self.raw)
     }
     
     fn cl_tx(&mut self, seg: TcpSeg) {
