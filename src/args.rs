@@ -180,7 +180,9 @@ impl From<u64> for ArgSpec {
     }
 }
 
-impl<T> From<&T> for ArgSpec where T: AsRef<[u8]> + ? Sized {
+// Must take ref because otherwise AsRef<[u8]> can be implemented by stdlib from any other type we
+// convert from in the future and then this would be ambiguous
+impl<T> From<&T> for ArgSpec where T: AsRef<[u8]> + ?Sized {
     fn from(s: &T) -> Self {
         Self {
             name: None,

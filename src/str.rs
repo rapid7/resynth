@@ -44,6 +44,7 @@ impl From<Vec<u8>> for Buf {
     }
 }
 
+// Must take reference here because otherwise trait can be implented for self
 impl<T> From<&T> for Buf where T: AsRef<[u8]> + ?Sized {
     #[inline]
     fn from(s: &T) -> Self {

@@ -66,9 +66,17 @@ impl ip_hdr {
         u32::from_be(self.daddr)
     }
 
+    pub fn get_tot_len(&self) -> u16 {
+        u16::from_be(self.tot_len)
+    }
+
     pub fn tot_len(&mut self, tot_len: u16) -> &mut Self {
         self.tot_len = tot_len.to_be();
         self
+    }
+
+    pub fn add_tot_len(&mut self, more: u16) -> &mut Self {
+        self.tot_len(self.get_tot_len() + more)
     }
 
     pub fn id(&mut self, id: u16) -> &mut Self {
@@ -94,14 +102,12 @@ impl ip_hdr {
     }
 
     pub fn saddr(&mut self, addr: Ipv4Addr) -> &mut Self {
-        let ip: u32 = addr.into();
-        self.saddr = ip.to_be();
+        self.saddr = u32::from(addr).to_be();
         self
     }
 
     pub fn daddr(&mut self, addr: Ipv4Addr) -> &mut Self {
-        let ip: u32 = addr.into();
-        self.daddr = ip.to_be();
+        self.daddr = u32::from(addr).to_be();
         self
     }
 
@@ -257,6 +263,14 @@ impl udp_hdr {
     pub fn len(&mut self, len: u16) -> &mut Self {
         self.len = len.to_be();
         self
+    }
+
+    pub fn get_len(&self) -> u16 {
+        u16::from_be(self.len)
+    }
+
+    pub fn add_len(&mut self, more: u16) -> &mut Self {
+        self.len(self.get_len() + more)
     }
 }
 

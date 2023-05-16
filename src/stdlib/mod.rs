@@ -22,6 +22,8 @@ mod dhcp;
 mod arp;
 mod tls;
 mod vxlan;
+mod gre;
+mod eth;
 
 const STDLIB: phf::Map<&'static str, Symbol> = phf_map! {
     "text" => Symbol::Module(&text::MODULE),
@@ -33,6 +35,8 @@ const STDLIB: phf::Map<&'static str, Symbol> = phf_map! {
     "arp" => Symbol::Module(&arp::MODULE),
     "tls" => Symbol::Module(&tls::TLS),
     "vxlan" => Symbol::Module(&vxlan::MODULE),
+    "gre" => Symbol::Module(&gre::MODULE),
+    "eth" => Symbol::Module(&eth::MODULE),
 };
 
 pub fn toplevel_module(name: &str) -> Option<&'static Module> {

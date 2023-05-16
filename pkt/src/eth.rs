@@ -1,5 +1,18 @@
 use std::net::Ipv4Addr;
 
+pub mod ethertype {
+    pub const VLAN: u16 = 0x8100;
+    pub const FABRICPATH: u16 = 0x8903;
+
+    pub const IPV4: u16 = 0x0800;
+    pub const IPV6: u16 = 0x86dd;
+
+    pub const PPTP: u16 = 0x880b;
+    pub const GRETAP: u16 = 0x6558;
+    pub const ERSPAN_1_2: u16 = 0x88be;
+    pub const ERSPAN_3: u16 = 0x22eb;
+}
+
 #[repr(C, packed(1))]
 #[derive(Debug, Copy, Clone)]
 pub struct eth_addr {
