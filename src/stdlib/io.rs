@@ -60,8 +60,8 @@ impl BufIo {
     }
 }
 
-impl<T> From<&T> for BufIo where T: AsRef<[u8]> + ?Sized {
-    fn from(s: &T) -> Self {
+impl<T> From<T> for BufIo where T: AsRef<[u8]> {
+    fn from(s: T) -> Self {
         Self {
             buf: Vec::from(s.as_ref()),
             taken: 0,

@@ -10,25 +10,24 @@ struct TcpState {
     rcv_nxt: u32,
 }
 
-const TCPSEG_RAW_OVERHEAD: usize =
-    std::mem::size_of::<ip_hdr>()
-    + std::mem::size_of::<tcp_hdr>();
-
-const TCPSEG_OVERHEAD: usize =
-    std::mem::size_of::<eth_hdr>()
-    + TCPSEG_RAW_OVERHEAD;
-
 /// Helper for creating TCP segments
 pub struct TcpSeg {
     pkt: Packet,
     ip: Hdr<ip_hdr>,
     tcp: Hdr<tcp_hdr>,
     st: TcpState,
-    tot_len: u32,
     seq: u32,
 }
 
 impl TcpSeg {
+    const RAW_OVERHEAD: usize =
+        std::mem::size_of::<ip_hdr>()
+        + std::mem::size_of::<tcp_hdr>();
+
+    const OVERHEAD: usize =
+        std::mem::size_of::<eth_hdr>()
+        + Self::RAW_OVERHEAD;
+
     fn new(src: SocketAddrV4,
            dst: SocketAddrV4,
            st: TcpState,
@@ -36,9 +35,9 @@ impl TcpSeg {
            ) -> Self {
 
         let mut pkt = if raw {
-            Packet::with_capacity(TCPSEG_RAW_OVERHEAD)
+            Packet::with_capacity(Self::RAW_OVERHEAD)
         } else {
-            let mut pkt = Packet::with_capacity(TCPSEG_OVERHEAD);
+            let mut pkt = Packet::with_capacity(Self::OVERHEAD);
 
             let eth: Hdr<eth_hdr> = pkt.push_hdr();
             pkt.get_mut_hdr(eth)
@@ -53,6 +52,7 @@ impl TcpSeg {
         pkt.get_mut_hdr(ip)
             .init()
             .protocol(proto::TCP)
+            .tot_len(Self::RAW_OVERHEAD as u16)
             .saddr(*src.ip())
             .daddr(*dst.ip())
             .calc_csum();
@@ -64,18 +64,13 @@ impl TcpSeg {
             .sport(src.port())
             .dport(dst.port());
 
-        let tot_len = (ip.len() + tcp.len()) as u32;
-
-        let ret = Self {
+        Self {
             pkt,
             ip,
             tcp,
-            tot_len,
             st,
             seq: 0,
-        };
-
-        ret.update_tot_len()
+        }
     }
 
     fn syn(mut self) -> Self {
@@ -107,9 +102,8 @@ impl TcpSeg {
 
     fn append_data(mut self, bytes: &[u8]) -> Self {
         self.pkt.push_bytes(bytes);
-        self.tot_len += bytes.len() as u32;
         self.seq += bytes.len() as u32;
-        self.update_tot_len()
+        self.update_tot_len(bytes.len() as u16)
     }
 
     fn push_bytes(self, bytes: &[u8]) -> Self {
@@ -134,9 +128,9 @@ impl TcpSeg {
         self
     }
 
-    fn update_tot_len(mut self) -> Self {
+    fn update_tot_len(mut self, more: u16) -> Self {
         self.pkt.get_mut_hdr(self.ip)
-            .tot_len(self.tot_len as u16)
+            .add_tot_len(more)
             .calc_csum();
         self
     }

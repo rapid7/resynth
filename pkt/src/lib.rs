@@ -1,6 +1,7 @@
 pub mod arp;
 pub mod eth;
 pub mod ipv4;
+pub mod gre;
 pub mod dns;
 pub mod dhcp;
 pub mod tls;
