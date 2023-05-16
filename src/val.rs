@@ -44,6 +44,10 @@ pub trait Typed {
         self.val_type() == typ
     }
 
+    fn type_matches<T: Typed>(&self, other: &T) -> bool {
+        self.is_type(other.val_type())
+    }
+
     // Check if the value is nil, by testing if it is of type [ValType::Void]
     fn is_nil(&self) -> bool {
         self.is_type(ValType::Void)
@@ -51,6 +55,10 @@ pub trait Typed {
 
     fn is_str(&self) -> bool {
         self.is_type(ValType::Str)
+    }
+
+    fn is_pktgen(&self) -> bool {
+        self.is_type(ValType::PktGen)
     }
 
     fn is_integral(&self) -> bool {
@@ -61,10 +69,6 @@ pub trait Typed {
             | ValType::U32
             | ValType::U64
         )
-    }
-
-    fn type_matches<T: Typed>(&self, other: &T) -> bool {
-        self.is_type(other.val_type())
     }
 
     fn is_string_coercible(&self) -> bool {
@@ -78,10 +82,17 @@ pub trait Typed {
         )
     }
 
+    fn is_pktgen_coercible(&self) -> bool {
+        matches!(self.val_type(),
+            ValType::PktGen
+            | ValType::Pkt)
+    }
+
     fn compatible_with<T: Typed>(&self, other: &T) -> bool {
         self.type_matches(other)
             || self.is_integral() && other.is_integral()
             || (self.is_str() && other.is_string_coercible())
+            || (self.is_pktgen() && other.is_pktgen_coercible())
     }
 }
 
@@ -368,6 +379,10 @@ impl From<Val> for Rc<Vec<Packet>> {
     fn from(v: Val) -> Self {
         match v {
             Val::PktGen(g) => g,
+            Val::Pkt(pkt) => vec!(
+                // unstable(feature = "arc_unwrap_or_clone")
+                Rc::try_unwrap(pkt).unwrap_or_else(|rc| (*rc).clone())
+            ).into(),
             _ => unreachable!()
         }
     }
