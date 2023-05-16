@@ -11,31 +11,29 @@ pub struct UdpFlow {
     raw: bool,
 }
 
-const UDP_RAW_DGRAM_OVERHEAD: usize =
-    std::mem::size_of::<ip_hdr>()
-    + std::mem::size_of::<udp_hdr>();
-
-const UDP_DGRAM_OVERHEAD: usize =
-    std::mem::size_of::<eth_hdr>()
-    + UDP_RAW_DGRAM_OVERHEAD;
-
 /// Helper for creating UDP datagrams
 pub struct UdpDgram {
     pkt: Packet,
     eth: Option<Hdr<eth_hdr>>,
     ip: Hdr<ip_hdr>,
     udp: Hdr<udp_hdr>,
-    tot_len: usize,
-    dgram_len: usize,
 }
 
 impl UdpDgram {
+    const RAW_OVERHEAD: usize =
+        std::mem::size_of::<ip_hdr>()
+        + std::mem::size_of::<udp_hdr>();
+
+    const OVERHEAD: usize =
+        std::mem::size_of::<eth_hdr>()
+        + Self::RAW_OVERHEAD;
+
     #[must_use]
     pub fn with_capacity(payload_sz: usize, raw: bool) -> Self {
         let mut pkt = if raw {
-            Packet::with_capacity(UDP_RAW_DGRAM_OVERHEAD + payload_sz)
+            Packet::with_capacity(Self::RAW_OVERHEAD + payload_sz)
         } else {
-            Packet::with_capacity(UDP_DGRAM_OVERHEAD + payload_sz)
+            Packet::with_capacity(Self::OVERHEAD + payload_sz)
         };
 
         let eth = if raw {
@@ -49,22 +47,19 @@ impl UdpDgram {
         let ip: Hdr<ip_hdr> = pkt.push_hdr();
         pkt.get_mut_hdr(ip)
             .init()
+            .tot_len(Self::RAW_OVERHEAD as u16)
             .protocol(proto::UDP);
 
         let udp: Hdr<udp_hdr> = pkt.push_hdr();
+        pkt.get_mut_hdr(udp)
+            .len(std::mem::size_of::<udp_hdr>() as u16);
 
-        let tot_len = ip.len() + udp.len();
-
-        let ret = Self {
+        Self {
             pkt,
             eth,
             ip,
             udp,
-            tot_len,
-            dgram_len: ::std::mem::size_of::<udp_hdr>(),
-        };
-
-        ret.update_tot_len().update_dgram_len()
+        }
     }
 
     #[must_use]
@@ -124,23 +119,21 @@ impl UdpDgram {
     pub fn push<T: AsRef<[u8]>>(mut self, bytes: T) -> Self {
         let buf = bytes.as_ref();
         self.pkt.push_bytes(buf);
-        self.tot_len += buf.len();
-        self.dgram_len += buf.len();
-        self.update_tot_len().update_dgram_len()
+        self.update_tot_len(buf.len() as u16).update_dgram_len(buf.len() as u16)
     }
 
     #[must_use]
-    fn update_tot_len(mut self) -> Self {
+    fn update_tot_len(mut self, more: u16) -> Self {
         self.pkt.get_mut_hdr(self.ip)
-            .tot_len(self.tot_len as u16)
+            .add_tot_len(more)
             .calc_csum();
         self
     }
 
     #[must_use]
-    fn update_dgram_len(mut self) -> Self {
+    fn update_dgram_len(mut self, more: u16) -> Self {
         self.pkt.get_mut_hdr(self.udp)
-            .len(self.dgram_len as u16);
+            .add_len(more);
         self
     }
 }
