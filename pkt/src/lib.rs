@@ -57,7 +57,7 @@ impl<T> Hdr<T> {
     }
 }
 
-#[derive(Eq, PartialEq)]
+#[derive(Clone, Eq, PartialEq)]
 pub struct Packet {
     buf: Vec<u8>,
     headroom: usize,
