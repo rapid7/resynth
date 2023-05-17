@@ -7,6 +7,7 @@ pub mod dhcp;
 pub mod tls;
 pub mod vxlan;
 pub mod netbios;
+pub mod erspan2;
 
 mod pcap;
 pub use pcap::{PcapWriter, LinkType};
@@ -201,6 +202,11 @@ impl Packet {
         unsafe {
             &mut *(bytes.as_mut_ptr() as *mut T)
         }
+    }
+
+    /// Assign into a header
+    pub fn set_hdr<T>(&mut self, hdr: Hdr<T>, val: T) {
+        *self.get_mut_hdr(hdr) = val;
     }
 
     pub fn get_mut_slice(&mut self, off: usize, len: usize) -> Option<&mut [u8]> {
