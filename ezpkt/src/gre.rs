@@ -2,13 +2,14 @@ use std::net::Ipv4Addr;
 
 use pkt::eth::eth_hdr;
 use pkt::ipv4::{ip_hdr, proto};
-use pkt::gre::gre_hdr;
+use pkt::gre::{GreFlags, gre_hdr, gre_hdr_seq};
 use pkt::{Packet, Hdr};
 
 /// Helper for creating GRE frames
 pub struct GreFrame {
-    pkt: Packet,
+    pub pkt: Packet,
     ip: Hdr<ip_hdr>,
+    seq: Option<Hdr<gre_hdr_seq>>,
 }
 
 impl GreFrame {
@@ -41,36 +42,68 @@ impl GreFrame {
             pkt
         };
 
+        let mut ip_len = Self::RAW_OVERHEAD;
+
         let ip: Hdr<ip_hdr> = pkt.push_hdr();
+
+        let gre: Hdr<gre_hdr> = pkt.push_hdr();
+        pkt.get_mut_hdr(gre)
+            .init()
+            .flags(GreFlags::default().seq(true))
+            .proto(proto);
+
+        let seq = if pkt.get_hdr(gre).get_seq() {
+            let seq: Hdr<gre_hdr_seq> = pkt.push_hdr();
+            ip_len += seq.len();
+            Some(seq)
+        } else {
+            None
+        };
+
         pkt.get_mut_hdr(ip)
             .init()
             .protocol(proto::GRE)
-            .tot_len(Self::RAW_OVERHEAD as u16)
+            .tot_len(ip_len as u16)
             .saddr(src)
-            .daddr(dst);
-
-        let gre: Hdr<gre_hdr> = pkt.push_hdr();
-        *pkt.get_mut_hdr(gre) = gre_hdr::new(proto);
+            .daddr(dst)
+            .calc_csum();
 
         Self {
             pkt,
             ip,
+            seq,
         }
     }
 
-    fn update_tot_len(mut self, more: u16) -> Self {
+    fn update_tot_len(&mut self, more: u16) {
         self.pkt.get_mut_hdr(self.ip)
             .add_tot_len(more)
             .calc_csum();
-        self
+    }
+
+    pub fn push_hdr<T>(&mut self) -> Hdr<T> {
+        let ret: Hdr<T> = self.pkt.push_hdr();
+        self.update_tot_len(ret.len() as u16);
+        ret
     }
 
     pub fn push<T: AsRef<[u8]>>(mut self, bytes: T) -> Self {
         let b = bytes.as_ref();
 
         self.pkt.push_bytes(b);
-        self.update_tot_len(b.len() as u16)
+        self.update_tot_len(b.len() as u16);
+
+        self
     }
+
+    pub fn seq(self, seq: u32) -> Self {
+        if let Some(shdr) = self.seq {
+            self.pkt.get_hdr(shdr)
+                .seq(seq);
+        };
+        self
+    }
+
 }
 
 impl From<GreFrame> for Packet {
@@ -85,6 +118,7 @@ pub struct GreFlow {
     sv: Ipv4Addr,
     ethertype: u16,
     raw: bool,
+    seq: u32,
 }
 
 impl GreFlow {
@@ -99,11 +133,21 @@ impl GreFlow {
             sv,
             ethertype,
             raw,
+            seq: 0,
         }
     }
 
-    fn dgram(&self, extra: usize) -> GreFrame {
+    fn next_seq(&mut self) -> u32 {
+        let ret = self.seq;
+
+        self.seq += 1;
+
+        ret
+    }
+
+    fn dgram(&mut self, extra: usize) -> GreFrame {
         GreFrame::new(self.cl, self.sv, self.ethertype, self.raw, extra)
+            .seq(self.next_seq())
     }
 
     pub fn encap(&mut self, bytes: &[u8]) -> Packet {

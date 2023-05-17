@@ -117,18 +117,25 @@ pub struct gre_hdr {
 
 impl gre_hdr {
     pub fn new(proto: u16) -> Self {
-        Self::default()
-            .flags(GreFlags::default())
-            .proto(proto)
+        Self {
+            flags: GreFlags::default().into(),
+            proto,
+        }
     }
 
-    pub fn flags<T>(mut self, flags: T) -> Self where u16: From<T> {
+    pub fn init(&mut self) -> &mut Self {
+        *self = Self::default();
+        self
+    }
+
+    pub fn flags<T>(&mut self, flags: T) -> &mut Self
+                    where u16: From<T> {
         let f: u16 = flags.into();
         self.flags = f.to_be();
         self
     }
 
-    pub fn proto(mut self, proto: u16) -> Self {
+    pub fn proto(&mut self, proto: u16) -> &mut Self {
         self.proto = proto.to_be();
         self
     }
@@ -137,19 +144,19 @@ impl gre_hdr {
         u16::from_be(self.flags)
     }
 
-    pub fn csum(&self) -> bool {
+    pub fn get_csum(&self) -> bool {
         (self.get_flags() & flags::C) != 0
     }
 
-    pub fn key(&self) -> bool {
+    pub fn get_key(&self) -> bool {
         (self.get_flags() & flags::K) != 0
     }
 
-    pub fn seq(&self) -> bool {
+    pub fn get_seq(&self) -> bool {
         (self.get_flags() & flags::S) != 0
     }
 
-    pub fn ver(&self) -> u8 {
+    pub fn get_ver(&self) -> u8 {
         (self.get_flags() & flags::V) as u8
     }
 }
