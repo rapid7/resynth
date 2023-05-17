@@ -24,6 +24,7 @@ mod tls;
 mod vxlan;
 mod gre;
 mod eth;
+mod erspan2;
 
 const STDLIB: phf::Map<&'static str, Symbol> = phf_map! {
     "text" => Symbol::Module(&text::MODULE),
@@ -37,6 +38,7 @@ const STDLIB: phf::Map<&'static str, Symbol> = phf_map! {
     "vxlan" => Symbol::Module(&vxlan::MODULE),
     "gre" => Symbol::Module(&gre::MODULE),
     "eth" => Symbol::Module(&eth::MODULE),
+    "erspan2" => Symbol::Module(&erspan2::MODULE),
 };
 
 pub fn toplevel_module(name: &str) -> Option<&'static Module> {
