@@ -54,7 +54,8 @@ impl TcpSeg {
             .protocol(proto::TCP)
             .tot_len(Self::RAW_OVERHEAD as u16)
             .saddr(*src.ip())
-            .daddr(*dst.ip());
+            .daddr(*dst.ip())
+            .calc_csum();
 
         let tcp: Hdr<tcp_hdr> = pkt.push_hdr();
         pkt.get_mut_hdr(tcp)
@@ -95,9 +96,8 @@ impl TcpSeg {
 
     fn push(mut self) -> Self {
         self.pkt.get_mut_hdr(self.tcp)
-            .ack(self.st.rcv_nxt)
             .push();
-        self
+        self.ack()
     }
 
     fn append_data(mut self, bytes: &[u8]) -> Self {
@@ -124,7 +124,7 @@ impl TcpSeg {
     }
 
     fn frag_off(mut self, frag_off: u16) -> Self {
-        self.pkt.get_mut_hdr(self.ip).frag_off(frag_off);
+        self.pkt.get_mut_hdr(self.ip).frag_off(frag_off).calc_csum();
         self
     }
 
@@ -291,7 +291,8 @@ impl TcpFlow {
                           ) -> Vec<u8> {
         let seg = self.cl().push();
         let hdr = seg.tcp_hdr_bytes();
-        self.cl_seq += dlen;
+
+        self.cl_seq += seg.seq_consumed() + dlen;
 
         Vec::from(hdr)
     }
@@ -301,7 +302,8 @@ impl TcpFlow {
                           ) -> Vec<u8> {
         let seg = self.sv().push();
         let hdr = seg.tcp_hdr_bytes();
-        self.sv_seq += dlen;
+
+        self.sv_seq += seg.seq_consumed() + dlen;
 
         Vec::from(hdr)
     }
