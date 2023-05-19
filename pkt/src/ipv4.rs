@@ -181,6 +181,9 @@ pub struct tcp_hdr {
     pub urp: u16,
 }
 
+impl Serialize for udp_hdr {}
+impl Serialize for tcp_hdr {}
+
 pub const TCP_FIN: u8 = 0x01;
 pub const TCP_SYN: u8 = 0x02;
 pub const TCP_RST: u8 = 0x04;
