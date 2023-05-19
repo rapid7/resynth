@@ -2,7 +2,7 @@ use phf::{phf_map, phf_ordered_map};
 
 use std::net::Ipv4Addr;
 
-use pkt::Packet;
+use pkt::{AsBytes, Packet, ipv4::udp_hdr};
 use ezpkt::{UdpDgram, UdpFlow};
 
 use crate::val::{ValType, Val, ValDef};
@@ -63,6 +63,35 @@ const UNICAST: FuncDef = func_def!(
             .push(buf)
             .into();
         Ok(dgram.into())
+    }
+);
+
+const HDR: FuncDef = func_def!(
+    "ipv4::udp::hdr";
+    ValType::Str;
+
+    "src" => ValType::U16,
+    "dst" => ValType::U16,
+    =>
+    "len" => ValDef::U16(0),
+    "csum" => ValDef::U16(0),
+    =>
+    ValType::Void;
+
+    |mut args| {
+        let src: u16 = args.next().into();
+        let dst: u16 = args.next().into();
+        let len: u16 = args.next().into();
+        let csum: u16 = args.next().into();
+
+        let hdr = udp_hdr {
+            sport: src.to_be(),
+            dport: dst.to_be(),
+            len: (len + std::mem::size_of::<udp_hdr>() as u16).to_be(),
+            csum: csum.to_be(),
+        };
+
+        Ok(Val::Str(Buf::from(hdr.as_bytes())))
     }
 );
 
@@ -138,5 +167,6 @@ pub const UDP4: phf::Map<&'static str, Symbol> = phf_map! {
     "flow" => Symbol::Func(&FLOW),
     "broadcast" => Symbol::Func(&BROADCAST),
     "unicast" => Symbol::Func(&UNICAST),
+    "hdr" => Symbol::Func(&HDR),
 };
 
