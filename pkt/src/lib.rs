@@ -221,20 +221,34 @@ impl Packet {
         Some(bytes)
     }
 
-    pub fn get_buf(&mut self, off: usize, len: usize) -> &mut [u8] {
+    pub fn get_mut(&mut self, off: usize, len: usize) -> &mut [u8] {
         &mut self.buf[off..off + len]
     }
 
-    pub fn bytes_from<T>(&mut self, hdr: Hdr<T>, len: usize) -> &mut [u8] {
+    pub fn mut_bytes_from<T>(&mut self, hdr: Hdr<T>, len: usize) -> &mut [u8] {
         let off = hdr.off();
         &mut self.buf[off..off + len]
     }
 
-    pub fn bytes_after<T>(&mut self, hdr: Hdr<T>, len: usize) -> &mut [u8] {
+    pub fn mut_bytes_after<T>(&mut self, hdr: Hdr<T>, len: usize) -> &mut [u8] {
         let off = hdr.off();
         let start = off + hdr.len();
-        let end = off + len;
-        &mut self.buf[start..end]
+        &mut self.buf[start..start + len]
+    }
+
+    pub fn get_buf(&self, off: usize, len: usize) -> &[u8] {
+        &self.buf[off..off + len]
+    }
+
+    pub fn bytes_from<T>(&self, hdr: Hdr<T>, len: usize) -> &[u8] {
+        let off = hdr.off();
+        &self.buf[off..off + len]
+    }
+
+    pub fn bytes_after<T>(&self, hdr: Hdr<T>, len: usize) -> &[u8] {
+        let off = hdr.off();
+        let start = off + hdr.len();
+        &self.buf[start..start + len]
     }
 
     pub fn hex_dump_line(&self, pos: usize, width: usize) -> String {
