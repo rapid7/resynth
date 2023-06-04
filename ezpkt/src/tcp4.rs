@@ -1,7 +1,7 @@
 use std::net::SocketAddrV4;
 
 use pkt::eth::eth_hdr;
-use pkt::ipv4::{ip_hdr, proto, tcp_hdr};
+use pkt::ipv4::{ip_hdr, ip_csum_fold, ip_csum_partial, ip_pseudo_hdr, proto, tcp_hdr};
 use pkt::{Packet, Hdr};
 
 #[derive(Debug, PartialEq, Eq)]
@@ -16,7 +16,8 @@ pub struct TcpSeg {
     ip: Hdr<ip_hdr>,
     tcp: Hdr<tcp_hdr>,
     st: TcpState,
-    seq: u32,
+    data_len: u32,
+    extra_seq: u32,
 }
 
 impl TcpSeg {
@@ -69,14 +70,15 @@ impl TcpSeg {
             ip,
             tcp,
             st,
-            seq: 0,
+            data_len: 0,
+            extra_seq: 0,
         }
     }
 
     fn syn(mut self) -> Self {
         self.pkt.get_mut_hdr(self.tcp)
             .syn();
-        self.seq += 1;
+        self.extra_seq += 1;
         self
     }
 
@@ -84,7 +86,7 @@ impl TcpSeg {
         self.pkt.get_mut_hdr(self.tcp)
             .syn()
             .ack(self.st.rcv_nxt);
-        self.seq += 1;
+        self.extra_seq += 1;
         self
     }
 
@@ -102,7 +104,7 @@ impl TcpSeg {
 
     fn append_data(mut self, bytes: &[u8]) -> Self {
         self.pkt.push_bytes(bytes);
-        self.seq += bytes.len() as u32;
+        self.data_len += bytes.len() as u32;
         self.update_tot_len(bytes.len() as u16)
     }
 
@@ -113,7 +115,7 @@ impl TcpSeg {
     fn fin(mut self) -> Self {
         self.pkt.get_mut_hdr(self.tcp)
             .fin();
-        self.seq += 1;
+        self.extra_seq += 1;
         self
     }
 
@@ -135,8 +137,28 @@ impl TcpSeg {
         self
     }
 
+    fn ip_pseudo_hdr(&self, len: u16) -> ip_pseudo_hdr {
+        self.pkt.get_hdr(self.ip).get_pseudo_hdr(len)
+    }
+
+    /// Checksum is the TCP header length plus the data length
+    fn csum_len(&self) -> u16 {
+        (self.data_len as usize + self.tcp.len()) as u16
+    }
+
+    fn tcp_csum(mut self) -> Self {
+        let ip_phdr = self.ip_pseudo_hdr(self.csum_len()).csum_partial();
+        let tcp_hdr = ip_csum_partial(self.pkt.get_hdr_bytes(self.tcp));
+        let payload = ip_csum_partial(self.pkt.bytes_after(self.tcp, self.data_len as usize));
+
+        self.pkt.get_mut_hdr(self.tcp)
+            .csum(ip_csum_fold(ip_phdr + tcp_hdr + payload));
+
+        self
+    }
+
     fn seq_consumed(&self) -> u32 {
-        self.seq
+        self.data_len + self.extra_seq
     }
 
     fn tcp_hdr_bytes(&self) -> &[u8] {
@@ -209,12 +231,12 @@ impl TcpFlow {
     
     fn cl_tx(&mut self, seg: TcpSeg) {
         self.cl_update(seg.seq_consumed());
-        self.pkts.push(seg.into());
+        self.pkts.push(seg.tcp_csum().into());
     }
     
     fn sv_tx(&mut self, seg: TcpSeg) {
         self.sv_update(seg.seq_consumed());
-        self.pkts.push(seg.into());
+        self.pkts.push(seg.tcp_csum().into());
     }
 
     pub fn push_state(&mut self,
@@ -282,26 +304,26 @@ impl TcpFlow {
 
     pub fn client_data_segment(&mut self,
                                bytes: &[u8],
-                               ) -> TcpSeg {
+                               ) -> Packet {
         let ret = self.cl_seg(bytes, 0);
         self.cl_update(ret.seq_consumed());
-        ret
+        ret.tcp_csum().into()
     }
 
     pub fn server_data_segment(&mut self,
                                bytes: &[u8],
-                               ) -> TcpSeg {
+                               ) -> Packet {
         let ret = self.sv_seg(bytes, 0);
         self.sv_update(ret.seq_consumed());
-        ret
+        ret.tcp_csum().into()
     }
 
     pub fn client_ack(&self) -> Packet {
-        self.cl_ack().into()
+        self.cl_ack().tcp_csum().into()
     }
 
     pub fn server_ack(&self) -> Packet {
-        self.sv_ack().into()
+        self.sv_ack().tcp_csum().into()
     }
 
     pub fn client_message(&mut self,
