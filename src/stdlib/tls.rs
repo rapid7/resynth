@@ -865,15 +865,14 @@ const TLS_CIPHERS: FuncDef = func_def! (
     ValType::U16;
 
     |mut args| {
-        let extra = args.extra_args();
+        let extra: Vec<u16> = args.collect_extra_args();
         let list_len = extra.len() * 2;
 
         let mut msg: Vec<u8> = Vec::with_capacity(2 + list_len);
 
 
         msg.extend((list_len as u16).to_be_bytes());
-        for cipher in extra {
-            let id: u16 = cipher.into();
+        for id in extra {
             msg.extend(id.to_be_bytes());
         }
 
@@ -989,7 +988,7 @@ const TLS_SNI: FuncDef = func_def! (
     ValType::Str;
 
     |mut args| {
-        let names = args.extra_args();
+        let names: Vec<Buf> = args.collect_extra_args();
         let names_len: usize = names.iter().map(|x| -> Buf { x.into() }).map(|x| x.len()).sum();
         let name_list_len = 3 * names.len() + names_len;
         let tot_len = 2 + name_list_len;
@@ -1000,8 +999,7 @@ const TLS_SNI: FuncDef = func_def! (
         msg.extend((tot_len as u16).to_be_bytes());
 
         msg.extend((name_list_len as u16).to_be_bytes());
-        for val in names {
-            let name: Buf = val.into();
+        for name in names {
             msg.push(0);
             msg.extend((name.len() as u16).to_be_bytes());
             msg.extend(name.as_ref());
@@ -1020,7 +1018,7 @@ const TLS_CERTIFICATES: FuncDef = func_def! (
     ValType::Str;
 
     |mut args| {
-        let certs = args.extra_args();
+        let certs: Vec<Buf> = args.collect_extra_args();
         let certs_len: usize = certs.iter().map(|x| -> Buf { x.into() }).map(|x| x.len()).sum();
         let cert_list_len = 3 * certs.len() + certs_len;
         let tot_len = 3 + cert_list_len;
@@ -1031,8 +1029,7 @@ const TLS_CERTIFICATES: FuncDef = func_def! (
         msg.extend(len24(tot_len));
 
         msg.extend(len24(cert_list_len));
-        for val in certs {
-            let cert: Buf = val.into();
+        for cert in certs {
             msg.extend(len24(cert.len()));
             msg.extend(cert.as_ref());
         }
