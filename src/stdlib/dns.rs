@@ -126,7 +126,7 @@ pub(crate) const DNS_NAME: FuncDef = func_def! (
 
     |mut args| {
         let complete: bool = args.next().into();
-        let v = args.extra_args();
+        let v: Vec<Buf> = args.collect_extra_args();
 
         let name = if complete {
             match v.len() {
