@@ -70,6 +70,16 @@ impl ip_hdr {
         u16::from_be(self.tot_len)
     }
 
+    pub fn get_pseudo_hdr(&self, len: u16) -> ip_pseudo_hdr {
+        ip_pseudo_hdr {
+            src: self.saddr,
+            dst: self.daddr,
+            z: 0,
+            proto: self.protocol,
+            len: len.to_be(),
+        }
+    }
+
     pub fn tot_len(&mut self, tot_len: u16) -> &mut Self {
         self.tot_len = tot_len.to_be();
         self
@@ -222,6 +232,12 @@ impl tcp_hdr {
         self
     }
 
+    pub fn ack(&mut self, ack: u32) -> &mut Self {
+        self.ack = ack.to_be();
+        self.flags |= TCP_ACK;
+        self
+    }
+
     pub fn syn(&mut self) -> &mut Self {
         self.flags |= TCP_SYN;
         self
@@ -242,9 +258,18 @@ impl tcp_hdr {
         self
     }
 
-    pub fn ack(&mut self, ack: u32) -> &mut Self {
-        self.ack = ack.to_be();
-        self.flags |= TCP_ACK;
+    pub fn win(&mut self, win: u16) -> &mut Self {
+        self.win = win.to_be();
+        self
+    }
+
+    pub fn csum(&mut self, csum: u16) -> &mut Self {
+        self.csum = csum.to_be();
+        self
+    }
+
+    pub fn urp(&mut self, urp: u16) -> &mut Self {
+        self.urp = urp.to_be();
         self
     }
 }
@@ -349,7 +374,20 @@ impl icmp_echo_hdr {
     }
 }
 
-pub fn ip_csum(buf: &[u8]) -> u16 {
+impl Serialize for icmp_hdr {}
+impl Serialize for icmp_echo_hdr {}
+
+pub fn ip_csum_fold(running: u32) -> u16 {
+    let mut sum = running;
+
+    sum = (sum & 0xffffu32) + (sum >> 16);
+    sum = (sum & 0xffffu32) + (sum >> 16);
+    sum = !sum & 0xffffu32;
+
+    sum as u16
+}
+
+pub fn ip_csum_partial(buf: &[u8]) -> u32 {
     let mut sum: u32 = 0;
 
     let it = buf.chunks_exact(2);
@@ -371,9 +409,45 @@ pub fn ip_csum(buf: &[u8]) -> u16 {
         sum += (remainder[0] as u32) << 8;
     }
 
-    sum = (sum & 0xffffu32) + (sum >> 16);
-    sum = (sum & 0xffffu32) + (sum >> 16);
-    sum = !sum & 0xffffu32;
-
-    sum as u16
+    sum
 }
+
+pub fn ip_csum(buf: &[u8]) -> u16 {
+    ip_csum_fold(ip_csum_partial(buf))
+}
+
+#[repr(C, packed(1))]
+#[derive(Debug, Copy, Clone)]
+pub struct ip_pseudo_hdr {
+    src: u32,
+    dst: u32,
+    z: u8,
+    proto: u8,
+    len: u16,
+}
+
+impl ip_pseudo_hdr {
+    pub fn new(src: Ipv4Addr, dst: Ipv4Addr, proto: u8, len: u16) -> Self {
+        Self {
+            src: u32::from(src).to_be(),
+            dst: u32::from(dst).to_be(),
+            z: 0,
+            proto,
+            len: len.to_be(),
+        }
+    }
+
+    pub fn tcp(src: Ipv4Addr, dst: Ipv4Addr, len: u16) -> Self {
+        Self::new(src, dst, proto::TCP, len)
+    }
+
+    pub fn udp(src: Ipv4Addr, dst: Ipv4Addr, len: u16) -> Self {
+        Self::new(src, dst, proto::UDP, len)
+    }
+
+    pub fn csum_partial(self) -> u32 {
+        ip_csum_partial(self.as_bytes())
+    }
+}
+
+impl Serialize for ip_pseudo_hdr {}
