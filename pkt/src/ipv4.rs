@@ -349,7 +349,52 @@ impl icmp_echo_hdr {
     }
 }
 
-pub fn ip_csum(buf: &[u8]) -> u16 {
+impl Serialize for icmp_hdr {}
+impl Serialize for icmp_echo_hdr {}
+
+#[repr(C, packed(1))]
+#[derive(Debug, Copy, Clone)]
+pub struct ip_pseudo_hdr {
+    src: u32,
+    dst: u32,
+    z: u8,
+    proto: u8,
+    len: u16,
+}
+
+impl ip_pseudo_hdr {
+    pub fn new(src: Ipv4Addr, dst: Ipv4Addr, proto: u8, len: u16) -> Self {
+        Self {
+            src: u32::from(src).to_be(),
+            dst: u32::from(dst).to_be(),
+            z: 0,
+            proto,
+            len: len.to_be(),
+        }
+    }
+
+    pub fn tcp(src: Ipv4Addr, dst: Ipv4Addr, len: u16) -> Self {
+        Self::new(src, dst, proto::TCP, len)
+    }
+
+    pub fn udp(src: Ipv4Addr, dst: Ipv4Addr, len: u16) -> Self {
+        Self::new(src, dst, proto::UDP, len)
+    }
+}
+
+impl Serialize for ip_pseudo_hdr {}
+
+pub fn ip_csum_fold(running: u32) -> u16 {
+    let mut sum = running;
+
+    sum = (sum & 0xffffu32) + (sum >> 16);
+    sum = (sum & 0xffffu32) + (sum >> 16);
+    sum = !sum & 0xffffu32;
+
+    sum as u16
+}
+
+pub fn ip_csum_partial(buf: &[u8]) -> u32 {
     let mut sum: u32 = 0;
 
     let it = buf.chunks_exact(2);
@@ -371,9 +416,9 @@ pub fn ip_csum(buf: &[u8]) -> u16 {
         sum += (remainder[0] as u32) << 8;
     }
 
-    sum = (sum & 0xffffu32) + (sum >> 16);
-    sum = (sum & 0xffffu32) + (sum >> 16);
-    sum = !sum & 0xffffu32;
+    sum
+}
 
-    sum as u16
+pub fn ip_csum(buf: &[u8]) -> u16 {
+    ip_csum_fold(ip_csum_partial(buf))
 }
