@@ -305,15 +305,16 @@ impl<'a> Program<'a> {
         match val {
             Val::Nil => {},
             Val::Pkt(mut ptr) => {
+                /* XXX: cloning the packet here is wasteful */
                 if let Some(ref mut wr) = self.wr {
-                    /* FIXME: error handling */
-                    let pkt = Rc::get_mut(&mut ptr).unwrap();
+                    let pkt = Rc::make_mut(&mut ptr);
                     wr.write_packet(pkt).expect("failed to write packet");
                 };
             }
             Val::PktGen(mut gen) => {
+                /* XXX: cloning the packets here is wasteful */
                 if let Some(ref mut wr) = self.wr {
-                    let inner = Rc::get_mut(&mut gen).unwrap();
+                    let inner = Rc::make_mut(&mut gen);
                     for pkt in inner {
                         wr.write_packet(pkt).expect("failed to write packet");
                     }
@@ -321,7 +322,7 @@ impl<'a> Program<'a> {
             }
             _ => {
                 if let Some(ref mut func) = self.warning {
-                    (func)(self.loc, &format!("disarded value {:?}", val));
+                    (func)(self.loc, &format!("discarded value {:?}", val));
                 }
             }
         };
