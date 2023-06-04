@@ -53,20 +53,26 @@ impl Args {
     pub fn next(&mut self) -> Val {
         self.it.next().unwrap()
     }
-
-    pub fn extra_args(&mut self) -> Vec<Val> {
-        std::mem::take(&mut self.extra_args)
-    }
     
     pub fn extra_len(&self) -> usize {
         self.extra_args.len()
     }
 
-    // Collect all extra args into a vec of the given type
-    pub fn collect_extra_args<T>(&mut self) -> Vec<T> where T: From<Val> {
-        self.extra_args().into_iter().map(|x| -> T { x.into() } ).collect()
+    /// Extra args can be of any type which is coercible into the specified type so it may be
+    /// dangerous to use this function because you're going to have to remember to coerce
+    /// everything into the right type yourself.
+    pub fn raw_extra_args(&mut self) -> Vec<Val> {
+        std::mem::take(&mut self.extra_args)
     }
 
+    /// Collect all extra args into a vec of the given type
+    pub fn collect_extra_args<T>(&mut self) -> Vec<T> where T: From<Val> {
+        let source_vec = std::mem::take(&mut self.extra_args);
+
+        source_vec.into_iter().map(|x| -> T { x.into() } ).collect()
+    }
+
+    /// Assume extra args are strings and join them up
     pub fn join_extra(&mut self, j: &[u8]) -> Val {
         // We have to collect all the extra_args in to a vec so they can stay owning the bytes that
         // they reference
@@ -79,7 +85,7 @@ impl Args {
         // not owning the strings so that we can have a vec of unowned references for Vec::join to
         // use.
         //
-        // Itertools crate has a better "join" implementation from this use-case. And intersperse
+        // Itertools crate has a better "join" implementation for this use-case. And intersperse
         // in nightly also solves this reasonably well.
         let strs: Vec<&[u8]> = cargs.iter().map(|x| x.as_ref()).collect();
 
