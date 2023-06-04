@@ -141,6 +141,10 @@ impl ArgSpec {
     pub fn is_anon(&self) -> bool {
         self.name.is_none()
     }
+
+    pub fn is_named(&self) -> bool {
+        self.name.is_some()
+    }
 }
 
 impl From<ValDef> for ArgSpec {
