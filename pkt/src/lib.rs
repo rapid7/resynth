@@ -251,6 +251,14 @@ impl Packet {
         &self.buf[start..start + len]
     }
 
+    pub fn len_from<T>(&self, hdr: Hdr<T>) -> usize {
+        self.buf.len() - hdr.off()
+    }
+
+    pub fn len_after<T>(&self, hdr: Hdr<T>) -> usize {
+        self.buf.len() - (hdr.off() + hdr.len())
+    }
+
     pub fn hex_dump_line(&self, pos: usize, width: usize) -> String {
         let mut s = String::new();
         let valid = if pos + width < self.buf.len() {
