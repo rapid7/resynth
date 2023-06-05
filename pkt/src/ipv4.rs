@@ -58,12 +58,12 @@ impl ip_hdr {
         self
     }
 
-    pub fn get_saddr(&self) -> u32 {
-        u32::from_be(self.saddr)
+    pub fn get_saddr(&self) -> Ipv4Addr {
+        u32::from_be(self.saddr).into()
     }
 
-    pub fn get_daddr(&self) -> u32 {
-        u32::from_be(self.daddr)
+    pub fn get_daddr(&self) -> Ipv4Addr {
+        u32::from_be(self.daddr).into()
     }
 
     pub fn get_tot_len(&self) -> u16 {
@@ -80,48 +80,48 @@ impl ip_hdr {
         }
     }
 
-    pub fn tot_len(&mut self, tot_len: u16) -> &mut Self {
+    pub fn set_tot_len(&mut self, tot_len: u16) -> &mut Self {
         self.tot_len = tot_len.to_be();
         self
     }
 
     pub fn add_tot_len(&mut self, more: u16) -> &mut Self {
-        self.tot_len(self.get_tot_len() + more)
+        self.set_tot_len(self.get_tot_len() + more)
     }
 
-    pub fn id(&mut self, id: u16) -> &mut Self {
+    pub fn set_id(&mut self, id: u16) -> &mut Self {
         self.id = id.to_be();
         self
     }
 
     /// Set fragment offset, in units of 8 bytes
-    pub fn frag_off(&mut self, frag_off: u16) -> &mut Self {
+    pub fn set_frag_off(&mut self, frag_off: u16) -> &mut Self {
         let flags: u16 = u16::from_be(self.frag_off) & 0xe000;
         self.frag_off = (frag_off | flags).to_be();
         self
     }
 
-    pub fn ttl(&mut self, ttl: u8) -> &mut Self {
+    pub fn set_ttl(&mut self, ttl: u8) -> &mut Self {
         self.ttl = ttl;
         self
     }
 
-    pub fn protocol(&mut self, protocol: u8) -> &mut Self {
+    pub fn set_protocol(&mut self, protocol: u8) -> &mut Self {
         self.protocol = protocol;
         self
     }
 
-    pub fn saddr(&mut self, addr: Ipv4Addr) -> &mut Self {
+    pub fn set_saddr(&mut self, addr: Ipv4Addr) -> &mut Self {
         self.saddr = u32::from(addr).to_be();
         self
     }
 
-    pub fn daddr(&mut self, addr: Ipv4Addr) -> &mut Self {
+    pub fn set_daddr(&mut self, addr: Ipv4Addr) -> &mut Self {
         self.daddr = u32::from(addr).to_be();
         self
     }
 
-    pub fn mf(&mut self, mf: bool) -> &mut Self {
+    pub fn set_mf(&mut self, mf: bool) -> &mut Self {
         let mut frag_off: u16 = u16::from_be(self.frag_off);
 
         if mf {
@@ -135,7 +135,7 @@ impl ip_hdr {
         self
     }
 
-    pub fn df(&mut self, df: bool) -> &mut Self {
+    pub fn set_df(&mut self, df: bool) -> &mut Self {
         let mut frag_off: u16 = u16::from_be(self.frag_off);
 
         if df {
@@ -149,7 +149,7 @@ impl ip_hdr {
         self
     }
 
-    pub fn evil(&mut self, evil: bool) -> &mut Self {
+    pub fn set_evil(&mut self, evil: bool) -> &mut Self {
         let mut frag_off: u16 = u16::from_be(self.frag_off);
 
         if evil {
@@ -163,24 +163,15 @@ impl ip_hdr {
         self
     }
 
-    pub fn csum(&mut self, csum: u16) -> &mut Self {
+    pub fn set_csum(&mut self, csum: u16) -> &mut Self {
         self.csum = csum.to_be();
         self
     }
 
     pub fn calc_csum(&mut self) -> &mut Self {
         self.csum = 0;
-        self.csum(ip_csum(self.as_bytes()))
+        self.set_csum(ip_csum(self.as_bytes()))
     }
-}
-
-#[repr(C, packed(1))]
-#[derive(Debug, Copy, Clone)]
-pub struct udp_hdr {
-    pub sport: u16,
-    pub dport: u16,
-    pub len: u16,
-    pub csum: u16,
 }
 
 #[repr(C, packed(1))]
@@ -197,7 +188,6 @@ pub struct tcp_hdr {
     pub urp: u16,
 }
 
-impl Serialize for udp_hdr {}
 impl Serialize for tcp_hdr {}
 
 pub const TCP_FIN: u8 = 0x01;
@@ -209,83 +199,135 @@ pub const TCP_URG: u8 = 0x20;
 pub const TCP_ECE: u8 = 0x40;
 pub const TCP_CWR: u8 = 0x80;
 
+impl Default for tcp_hdr {
+    fn default() -> Self {
+        Self {
+            sport: 0,
+            dport: 0,
+            seq: 0,
+            ack: 0,
+            doff: Self::DFL_DOFF,
+            flags: 0,
+            win: u16::MAX.to_be(),
+            csum: 0,
+            urp: 0,
+        }
+    }
+}
+
 impl tcp_hdr {
+    /// Minimum size of TCP header
+    const MIN_SIZE: usize = std::mem::size_of::<Self>();
+
+    /// Default value for DOFF
+    const DFL_DOFF: u8 = ((Self::MIN_SIZE >> 2) << 4) as u8;
+
+    pub fn new(sport: u16, dport: u16) -> Self {
+        let mut ret: Self = Default::default();
+
+        ret.set_sport(sport);
+        ret.set_dport(dport);
+
+        ret
+    }
+
     pub fn init(&mut self) -> &mut Self {
-        let sz = std::mem::size_of::<Self>() as u8;
-        self.doff = (sz >> 2) << 4;
+        self.doff = Self::DFL_DOFF;
         self.win = u16::MAX.to_be();
         self
     }
 
-    pub fn sport(&mut self, sport: u16) -> &mut Self {
+    pub fn set_sport(&mut self, sport: u16) -> &mut Self {
         self.sport = sport.to_be();
         self
     }
 
-    pub fn dport(&mut self, dport: u16) -> &mut Self {
+    pub fn set_dport(&mut self, dport: u16) -> &mut Self {
         self.dport = dport.to_be();
         self
     }
 
-    pub fn seq(&mut self, seq: u32) -> &mut Self {
+    pub fn set_seq(&mut self, seq: u32) -> &mut Self {
         self.seq = seq.to_be();
         self
     }
 
-    pub fn ack(&mut self, ack: u32) -> &mut Self {
+    pub fn set_ack(&mut self, ack: u32) -> &mut Self {
         self.ack = ack.to_be();
         self.flags |= TCP_ACK;
         self
     }
 
-    pub fn syn(&mut self) -> &mut Self {
+    pub fn set_syn(&mut self) -> &mut Self {
         self.flags |= TCP_SYN;
         self
     }
 
-    pub fn push(&mut self) -> &mut Self {
+    pub fn set_push(&mut self) -> &mut Self {
         self.flags |= TCP_PSH;
         self
     }
 
-    pub fn fin(&mut self) -> &mut Self {
+    pub fn set_fin(&mut self) -> &mut Self {
         self.flags |= TCP_FIN;
         self
     }
 
-    pub fn rst(&mut self) -> &mut Self {
+    pub fn set_rst(&mut self) -> &mut Self {
         self.flags |= TCP_RST;
         self
     }
 
-    pub fn win(&mut self, win: u16) -> &mut Self {
+    pub fn set_win(&mut self, win: u16) -> &mut Self {
         self.win = win.to_be();
         self
     }
 
-    pub fn csum(&mut self, csum: u16) -> &mut Self {
+    pub fn set_csum(&mut self, csum: u16) -> &mut Self {
         self.csum = csum.to_be();
         self
     }
 
-    pub fn urp(&mut self, urp: u16) -> &mut Self {
+    pub fn set_urp(&mut self, urp: u16) -> &mut Self {
         self.urp = urp.to_be();
         self
     }
 }
 
+#[repr(C, packed(1))]
+#[derive(Debug, Copy, Clone)]
+pub struct udp_hdr {
+    pub sport: u16,
+    pub dport: u16,
+    pub len: u16,
+    pub csum: u16,
+}
+
+impl Serialize for udp_hdr {}
+
+impl Default for udp_hdr {
+    fn default() -> Self {
+        Self {
+            sport: 0,
+            dport: 0,
+            len: (std::mem::size_of::<udp_hdr>() as u16).to_be(),
+            csum: 0,
+        }
+    }
+}
+
 impl udp_hdr {
-    pub fn sport(&mut self, sport: u16) -> &mut Self {
+    pub fn set_sport(&mut self, sport: u16) -> &mut Self {
         self.sport = sport.to_be();
         self
     }
 
-    pub fn dport(&mut self, dport: u16) -> &mut Self {
+    pub fn set_dport(&mut self, dport: u16) -> &mut Self {
         self.dport = dport.to_be();
         self
     }
 
-    pub fn len(&mut self, len: u16) -> &mut Self {
+    pub fn set_len(&mut self, len: u16) -> &mut Self {
         self.len = len.to_be();
         self
     }
@@ -295,10 +337,10 @@ impl udp_hdr {
     }
 
     pub fn add_len(&mut self, more: u16) -> &mut Self {
-        self.len(self.get_len() + more)
+        self.set_len(self.get_len() + more)
     }
 
-    pub fn csum(&mut self, csum: u16) -> &mut Self {
+    pub fn set_csum(&mut self, csum: u16) -> &mut Self {
         self.csum = csum.to_be();
         self
     }
@@ -344,17 +386,17 @@ pub struct icmp_hdr {
 }
 
 impl icmp_hdr {
-    pub fn typ(&mut self, typ: u8) -> &mut Self {
+    pub fn set_typ(&mut self, typ: u8) -> &mut Self {
         self.typ = typ;
         self
     }
 
-    pub fn code(&mut self, code: u8) -> &mut Self {
+    pub fn set_code(&mut self, code: u8) -> &mut Self {
         self.code = code;
         self
     }
 
-    pub fn csum(&mut self, csum: u16) -> &mut Self {
+    pub fn set_csum(&mut self, csum: u16) -> &mut Self {
         self.csum = csum.to_be();
         self
     }
@@ -368,12 +410,12 @@ pub struct icmp_echo_hdr {
 }
 
 impl icmp_echo_hdr {
-    pub fn id(&mut self, id: u16) -> &mut Self {
+    pub fn set_id(&mut self, id: u16) -> &mut Self {
         self.id = id.to_be();
         self
     }
 
-    pub fn seq(&mut self, seq: u16) -> &mut Self {
+    pub fn set_seq(&mut self, seq: u16) -> &mut Self {
         self.seq = seq.to_be();
         self
     }
