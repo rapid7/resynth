@@ -297,6 +297,11 @@ impl udp_hdr {
     pub fn add_len(&mut self, more: u16) -> &mut Self {
         self.len(self.get_len() + more)
     }
+
+    pub fn csum(&mut self, csum: u16) -> &mut Self {
+        self.csum = csum.to_be();
+        self
+    }
 }
 
 pub const ICMP_ECHOREPLY: u8 = 0;       /* Echo Reply */
