@@ -1,7 +1,8 @@
 use std::net::{SocketAddrV4, Ipv4Addr};
+use std::rc::Rc;
 
 use pkt::eth::eth_hdr;
-use pkt::ipv4::{ip_hdr, udp_hdr, proto};
+use pkt::ipv4::{ip_hdr, ip_csum_fold, ip_csum_partial, ip_pseudo_hdr, udp_hdr, proto};
 use pkt::{Packet, Hdr};
 
 #[derive(Debug, PartialEq, Eq)]
@@ -136,11 +137,38 @@ impl UdpDgram {
             .add_len(more);
         self
     }
+
+    fn ip_pseudo_hdr(&self, len: u16) -> ip_pseudo_hdr {
+        self.pkt.get_hdr(self.ip).get_pseudo_hdr(len)
+    }
+
+    /// Checksum is the TCP header length plus the data length
+    fn csum_len(&self) -> u16 {
+        self.pkt.len_from(self.udp) as u16
+    }
+
+    pub fn csum(mut self) -> Self {
+        let ip_phdr = self.ip_pseudo_hdr(self.csum_len()).csum_partial();
+        let udp_hdr = ip_csum_partial(self.pkt.get_hdr_bytes(self.udp));
+        let payload = ip_csum_partial(self.pkt.bytes_after(self.udp,
+                                                           self.pkt.len_after(self.udp)));
+
+        self.pkt.get_mut_hdr(self.udp)
+            .csum(ip_csum_fold(ip_phdr + udp_hdr + payload));
+
+        self
+    }
 }
 
 impl Default for UdpDgram {
     fn default() -> Self {
         Self::new()
+    }
+}
+
+impl From<UdpDgram> for Rc<Packet> {
+    fn from(seg: UdpDgram) -> Self {
+        Rc::new(seg.pkt)
     }
 }
 
@@ -168,29 +196,13 @@ impl UdpFlow {
         UdpDgram::of_type(self.raw).src(self.sv).dst(self.cl)
     }
 
-    pub fn client_dgram(&mut self, bytes: &[u8]) -> Packet {
+    pub fn client_dgram(&mut self, bytes: &[u8]) -> UdpDgram {
         //println!("trace: udp:client({} bytes)", bytes.len());
-        self.clnt().push(bytes).into()
+        self.clnt().push(bytes)
     }
 
-    pub fn server_dgram(&mut self, bytes: &[u8]) -> Packet {
+    pub fn server_dgram(&mut self, bytes: &[u8]) -> UdpDgram {
         //println!("trace: udp:server({} bytes)", bytes.len());
-        self.srvr().push(bytes).into()
-    }
-
-    pub fn client_dgram_with_frag_off(&mut self,
-                                      bytes: &[u8],
-                                      frag_off: u16,
-                                      ) -> Packet {
-        //println!("trace: udp:client({} bytes)", bytes.len());
-        self.clnt().push(bytes).frag_off(frag_off).into()
-    }
-
-    pub fn server_dgram_with_frag_off(&mut self,
-                                      bytes: &[u8],
-                                      frag_off: u16,
-                                      ) -> Packet {
-        //println!("trace: udp:server({} bytes)", bytes.len());
-        self.srvr().push(bytes).frag_off(frag_off).into()
+        self.srvr().push(bytes)
     }
 }

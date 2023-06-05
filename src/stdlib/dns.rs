@@ -354,7 +354,7 @@ const DNS_HOST: FuncDef = func_def!(
         msg.extend(rrtype::A.to_be_bytes());
         msg.extend(class::IN.to_be_bytes());
 
-        pkts.push(flow.client_dgram(msg.as_ref()));
+        pkts.push(flow.client_dgram(msg.as_ref()).csum().into());
         msg.clear();
 
         let hdr = dns_hdr::builder()
@@ -383,7 +383,7 @@ const DNS_HOST: FuncDef = func_def!(
             msg.extend(u32::from(ip).to_be_bytes()); // ip
         }
 
-        pkts.push(flow.server_dgram(msg.as_ref()));
+        pkts.push(flow.server_dgram(msg.as_ref()).csum().into());
 
         Ok(pkts.into())
     }
