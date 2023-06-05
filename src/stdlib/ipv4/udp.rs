@@ -180,7 +180,7 @@ const CL_RAW_DGRAM: FuncDef = func_def!(
             dgram = dgram.csum();
         }
 
-        Ok(Val::str(dgram.udp_dgram_bytes()))
+        Ok(Val::str(dgram.into_udp_dgram()))
     }
 );
 
@@ -207,7 +207,7 @@ const SV_RAW_DGRAM: FuncDef = func_def!(
             dgram = dgram.csum();
         }
 
-        Ok(Val::str(dgram.udp_dgram_bytes()))
+        Ok(Val::str(dgram.into_udp_dgram()))
     }
 );
 
