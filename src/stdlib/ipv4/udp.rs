@@ -157,11 +157,67 @@ const SV_DGRAM: FuncDef = func_def!(
     }
 );
 
+const CL_RAW_DGRAM: FuncDef = func_def!(
+    "ipv4::udp::flow.client_raw_dgram";
+    ValType::Str;
+
+    =>
+    "csum" => ValDef::Bool(true),
+    =>
+    ValType::Str;
+
+    |mut args| {
+        let obj = args.take_this();
+        let mut r = obj.borrow_mut();
+        let this: &mut UdpFlow = r.as_mut_any().downcast_mut().unwrap();
+        let csum: bool = args.next().into();
+
+        let bytes: Buf = args.join_extra(b"").into();
+
+        let mut dgram = this.client_dgram(bytes.as_ref());
+
+        if csum {
+            dgram = dgram.csum();
+        }
+
+        Ok(Val::str(dgram.udp_dgram_bytes()))
+    }
+);
+
+const SV_RAW_DGRAM: FuncDef = func_def!(
+    "ipv4::udp::flow.server_raw_dgram";
+    ValType::Str;
+
+    =>
+    "csum" => ValDef::Bool(true),
+    =>
+    ValType::Str;
+
+    |mut args| {
+        let obj = args.take_this();
+        let mut r = obj.borrow_mut();
+        let this: &mut UdpFlow = r.as_mut_any().downcast_mut().unwrap();
+        let csum: bool = args.next().into();
+
+        let bytes: Buf = args.join_extra(b"").into();
+
+        let mut dgram = this.server_dgram(bytes.as_ref());
+
+        if csum {
+            dgram = dgram.csum();
+        }
+
+        Ok(Val::str(dgram.udp_dgram_bytes()))
+    }
+);
+
 impl Class for UdpFlow {
     fn symbols(&self) -> phf::Map<&'static str, Symbol> {
         phf_map! {
             "client_dgram" => Symbol::Func(&CL_DGRAM),
             "server_dgram" => Symbol::Func(&SV_DGRAM),
+            "client_raw_dgram" => Symbol::Func(&CL_RAW_DGRAM),
+            "server_raw_dgram" => Symbol::Func(&SV_RAW_DGRAM),
         }
     }
 

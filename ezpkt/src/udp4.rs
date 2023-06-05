@@ -158,6 +158,11 @@ impl UdpDgram {
 
         self
     }
+
+    pub fn udp_dgram_bytes(&self) -> &[u8] {
+        self.pkt.bytes_from(self.udp,
+                            self.pkt.len_from(self.udp))
+    }
 }
 
 impl Default for UdpDgram {
