@@ -4,8 +4,10 @@ use crate::val::{ValType, Val, ValDef};
 use crate::str::Buf;
 use crate::libapi::{FuncDef, ArgDecl, Class};
 use crate::sym::Symbol;
-use ezpkt::TcpFlow;
 use crate::func_def;
+
+use ezpkt::TcpFlow;
+use pkt::Packet;
 
 const TCP_OPEN: FuncDef = func_def!(
     "ipv4::tcp::flow.open";
@@ -85,6 +87,114 @@ const TCP_SV_MSG: FuncDef = func_def!(
     }
 );
 
+const TCP_CL_SEG: FuncDef = func_def!(
+    "ipv4::tcp::flow.client_segment";
+    ValType::Pkt;
+
+    =>
+    "seq" => ValDef::Type(ValType::U32),
+    "ack" => ValDef::Type(ValType::U32),
+    =>
+    ValType::Str;
+
+    |mut args| {
+        let obj = args.take_this();
+        let mut r = obj.borrow_mut();
+        let this: &mut TcpFlow = r.as_mut_any().downcast_mut().unwrap();
+        let seq: Option<u32> = args.next().into();
+        let ack: Option<u32> = args.next().into();
+
+        let bytes: Buf = args.join_extra(b"").into();
+
+        let saved = this.push_state(seq, ack);
+        let pkt: Packet = this.client_data_segment(bytes.as_ref()).into();
+        this.pop_state(saved);
+
+        Ok(pkt.into())
+    }
+);
+
+const TCP_SV_SEG: FuncDef = func_def!(
+    "ipv4::tcp::flow.server_segment";
+    ValType::Pkt;
+
+    =>
+    "seq" => ValDef::Type(ValType::U32),
+    "ack" => ValDef::Type(ValType::U32),
+    =>
+    ValType::Str;
+
+    |mut args| {
+        let obj = args.take_this();
+        let mut r = obj.borrow_mut();
+        let this: &mut TcpFlow = r.as_mut_any().downcast_mut().unwrap();
+        let seq: Option<u32> = args.next().into();
+        let ack: Option<u32> = args.next().into();
+
+        let bytes: Buf = args.join_extra(b"").into();
+
+        let saved = this.push_state(seq, ack);
+        let pkt: Packet = this.server_data_segment(bytes.as_ref()).into();
+        this.pop_state(saved);
+
+        Ok(pkt.into())
+    }
+);
+
+const TCP_CL_RAW_SEG: FuncDef = func_def!(
+    "ipv4::tcp::flow.client_raw_segment";
+    ValType::Str;
+
+    =>
+    "seq" => ValDef::Type(ValType::U32),
+    "ack" => ValDef::Type(ValType::U32),
+    =>
+    ValType::Str;
+
+    |mut args| {
+        let obj = args.take_this();
+        let mut r = obj.borrow_mut();
+        let this: &mut TcpFlow = r.as_mut_any().downcast_mut().unwrap();
+        let seq: Option<u32> = args.next().into();
+        let ack: Option<u32> = args.next().into();
+
+        let bytes: Buf = args.join_extra(b"").into();
+
+        let saved = this.push_state(seq, ack);
+        let pkt = this.client_data_segment(bytes.as_ref());
+        this.pop_state(saved);
+
+        Ok(Val::str(pkt.tcp_segment_bytes()))
+    }
+);
+
+const TCP_SV_RAW_SEG: FuncDef = func_def!(
+    "ipv4::tcp::flow.server_raw_segment";
+    ValType::Str;
+
+    =>
+    "seq" => ValDef::Type(ValType::U32),
+    "ack" => ValDef::Type(ValType::U32),
+    =>
+    ValType::Str;
+
+    |mut args| {
+        let obj = args.take_this();
+        let mut r = obj.borrow_mut();
+        let this: &mut TcpFlow = r.as_mut_any().downcast_mut().unwrap();
+        let seq: Option<u32> = args.next().into();
+        let ack: Option<u32> = args.next().into();
+
+        let bytes: Buf = args.join_extra(b"").into();
+
+        let saved = this.push_state(seq, ack);
+        let pkt = this.server_data_segment(bytes.as_ref());
+        this.pop_state(saved);
+
+        Ok(Val::str(pkt.tcp_segment_bytes()))
+    }
+);
+
 const TCP_CL_HDR: FuncDef = func_def!(
     "ipv4::tcp::flow.client_hdr";
     ValType::Str;
@@ -141,7 +251,7 @@ const TCP_CL_ACK: FuncDef = func_def!(
         let ack: Option<u32> = args.next().into();
 
         let saved = this.push_state(seq, ack);
-        let pkt = this.client_ack();
+        let pkt: Packet = this.client_ack().into();
         this.pop_state(saved);
 
         Ok(pkt.into())
@@ -166,7 +276,7 @@ const TCP_SV_ACK: FuncDef = func_def!(
         let ack: Option<u32> = args.next().into();
 
         let saved = this.push_state(seq, ack);
-        let pkt = this.server_ack();
+        let pkt: Packet = this.server_ack().into();
         this.pop_state(saved);
 
         Ok(pkt.into())
@@ -251,6 +361,10 @@ impl Class for TcpFlow {
             "open" => Symbol::Func(&TCP_OPEN),
             "client_message" => Symbol::Func(&TCP_CL_MSG),
             "server_message" => Symbol::Func(&TCP_SV_MSG),
+            "client_segment" => Symbol::Func(&TCP_CL_SEG),
+            "server_segment" => Symbol::Func(&TCP_SV_SEG),
+            "client_raw_segment" => Symbol::Func(&TCP_CL_RAW_SEG),
+            "server_raw_segment" => Symbol::Func(&TCP_SV_RAW_SEG),
             "client_hdr" => Symbol::Func(&TCP_CL_HDR),
             "server_hdr" => Symbol::Func(&TCP_SV_HDR),
             "client_ack" => Symbol::Func(&TCP_CL_ACK),
