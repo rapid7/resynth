@@ -547,7 +547,7 @@ impl Val {
 
 impl From<Packet> for Buf {
     fn from(pkt: Packet) -> Self {
-        Self::from(pkt.as_ref())
+        Self::from(&pkt.as_slice().get(&pkt))
     }
 }
 

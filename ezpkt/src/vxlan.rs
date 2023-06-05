@@ -61,8 +61,8 @@ impl VxlanFlow {
         VxlanDgram::new(self.cl, self.sv, self.vni, self.raw)
     }
 
-    pub fn encap(&mut self, bytes: &[u8]) -> Packet {
+    pub fn encap<T: AsRef<[u8]>>(&mut self, bytes: T) -> Packet {
         //println!("trace: vxlan:encap({} bytes)", bytes.len());
-        self.dgram().push(bytes).into()
+        self.dgram().push(bytes.as_ref()).into()
     }
 }
