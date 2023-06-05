@@ -105,6 +105,7 @@ const CL_DGRAM: FuncDef = func_def!(
 
     =>
     "frag_off" => ValDef::U16(0),
+    "csum" => ValDef::Bool(true),
     =>
     ValType::Str;
 
@@ -113,8 +114,17 @@ const CL_DGRAM: FuncDef = func_def!(
         let mut r = obj.borrow_mut();
         let this: &mut UdpFlow = r.as_mut_any().downcast_mut().unwrap();
         let frag_off: u16 = args.next().into();
+        let csum: bool = args.next().into();
+
         let bytes: Buf = args.join_extra(b"").into();
-        Ok(this.client_dgram_with_frag_off(bytes.as_ref(), frag_off).into())
+
+        let mut dgram = this.client_dgram(bytes.as_ref()).frag_off(frag_off);
+
+        if csum {
+            dgram = dgram.csum();
+        }
+
+        Ok(Val::Pkt(dgram.into()))
     }
 );
 
@@ -124,6 +134,7 @@ const SV_DGRAM: FuncDef = func_def!(
 
     =>
     "frag_off" => ValDef::U16(0),
+    "csum" => ValDef::Bool(true),
     =>
     ValType::Str;
 
@@ -132,8 +143,17 @@ const SV_DGRAM: FuncDef = func_def!(
         let mut r = obj.borrow_mut();
         let this: &mut UdpFlow = r.as_mut_any().downcast_mut().unwrap();
         let frag_off: u16 = args.next().into();
+        let csum: bool = args.next().into();
+
         let bytes: Buf = args.join_extra(b"").into();
-        Ok(this.server_dgram_with_frag_off(bytes.as_ref(), frag_off).into())
+
+        let mut dgram = this.server_dgram(bytes.as_ref()).frag_off(frag_off);
+
+        if csum {
+            dgram = dgram.csum();
+        }
+
+        Ok(Val::Pkt(dgram.into()))
     }
 );
 
