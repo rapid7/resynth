@@ -1,0 +1,35 @@
+import ipv4;
+import text;
+
+let client = 192.168.9.10;
+let server = 10.10.10.10;
+
+let tcp = ipv4::tcp::flow(
+  client/22301,
+  server/80,
+);
+
+tcp.open();
+
+let frag = ipv4::frag(
+  client,
+  server,
+  id: 0x2345,
+  proto: ipv4::proto::TCP,
+  tcp.client_raw_segment(
+    text::crlflines(
+      "POST /r1.php HTTP/1.1",
+      "User-Agent: Internet Exploder",
+      "Content-Length: 20",
+      "Host: www.google.com",
+      "",
+      "this is HTTP/1.1",
+      "",
+      "POST /r2.",
+    )
+  )
+);
+
+frag.fragment(0, 4);
+frag.fragment(4, 8);
+frag.tail(12);
