@@ -30,7 +30,7 @@ const ENCAP: FuncDef = func_def!(
         let mut ret: Vec<Packet> = Vec::with_capacity(gen.len());
 
         for pkt in gen.iter() {
-            ret.push(this.encap(pkt.as_ref(), port_index));
+            ret.push(this.encap(&pkt.as_slice().get(pkt), port_index));
         }
 
         Ok(ret.into())

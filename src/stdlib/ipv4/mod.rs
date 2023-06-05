@@ -1,8 +1,8 @@
 use phf::{phf_map, phf_ordered_map};
 use std::net::Ipv4Addr;
 
-use pkt::{Packet, Hdr};
-use pkt::eth::eth_hdr;
+use pkt::Packet;
+use pkt::eth::{eth_hdr, ethertype};
 use pkt::ipv4::{ip_hdr, proto};
 
 use ezpkt::IpFrag;
@@ -66,29 +66,28 @@ const DGRAM: FuncDef = func_def!(
         let payload_size: u16 = data.len() as u16;
         let tot_len: u16 = std::mem::size_of::<ip_hdr>() as u16 + payload_size;
 
-        let mut pkt = Packet::with_capacity(IPV4_DGRAM_OVERHEAD + payload_size as usize);
+        let eth = eth_hdr::new(
+            src.into(),
+            dst.into(),
+            ethertype::IPV4,
+        );
 
-        let eth: Hdr<eth_hdr> = pkt.push_hdr();
-        pkt.get_mut_hdr(eth)
-            .src_from_ip(src)
-            .dst_from_ip(dst)
-            .proto(0x0800);
-
-        let ip: Hdr<ip_hdr> = pkt.push_hdr();
-        pkt.get_mut_hdr(ip)
-            .init()
-            .tot_len(tot_len)
-            .id(id)
-            .evil(evil)
-            .df(df)
-            .mf(mf)
-            .frag_off(frag_off)
-            .ttl(ttl)
-            .protocol(proto)
-            .saddr(src)
-            .daddr(dst)
+        let mut iph = ip_hdr::default();
+        iph.set_tot_len(tot_len)
+            .set_id(id)
+            .set_evil(evil)
+            .set_df(df)
+            .set_mf(mf)
+            .set_frag_off(frag_off)
+            .set_ttl(ttl)
+            .set_protocol(proto)
+            .set_saddr(src)
+            .set_daddr(dst)
             .calc_csum();
 
+        let pkt = Packet::with_capacity(IPV4_DGRAM_OVERHEAD + payload_size as usize);
+        pkt.push(eth);
+        pkt.push(iph);
         pkt.push_bytes(data);
 
         Ok(Val::from(pkt))
@@ -197,13 +196,13 @@ const FRAG: FuncDef = func_def!(
 
         let mut iph: ip_hdr = Default::default();
         iph
-            .id(id)
-            .evil(evil)
-            .df(df)
-            .ttl(ttl)
-            .protocol(proto)
-            .saddr(src)
-            .daddr(dst);
+            .set_id(id)
+            .set_evil(evil)
+            .set_df(df)
+            .set_ttl(ttl)
+            .set_protocol(proto)
+            .set_saddr(src)
+            .set_daddr(dst);
 
         Ok(Val::from(IpFrag::new(iph, payload.cow_buffer())))
     }

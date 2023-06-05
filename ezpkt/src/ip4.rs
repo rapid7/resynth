@@ -1,6 +1,6 @@
 use std::cmp::min;
 
-use pkt::eth::eth_hdr;
+use pkt::eth::{eth_hdr, ethertype};
 use pkt::ipv4::ip_hdr;
 use pkt::{Packet, Hdr};
 
@@ -15,18 +15,19 @@ pub struct IpDgram{
 
 impl IpDgram {
     #[must_use]
-    pub fn new(iph: ip_hdr, payload: &[u8]) -> Self {
-        let mut pkt = Packet::with_capacity(IP_DGRAM_OVERHEAD + payload.len());
+    pub fn new(mut iph: ip_hdr, payload: &[u8]) -> Self {
+        let pkt = Packet::with_capacity(IP_DGRAM_OVERHEAD + payload.len());
 
-        let eth: Hdr<eth_hdr> = pkt.push_hdr();
-        pkt.get_mut_hdr(eth)
-            .src_from_ip(iph.get_saddr().into())
-            .dst_from_ip(iph.get_saddr().into())
-            .proto(0x0800);
+        pkt.push(eth_hdr::new(
+            iph.get_saddr().into(),
+            iph.get_saddr().into(),
+            ethertype::IPV4,
+        ));
 
-        let ip: Hdr<ip_hdr> = pkt.push_hdr_from(&iph);
+        iph.set_tot_len(payload.len() as u16 + IPH_LEN as u16);
 
-        pkt.get_mut_hdr(ip).tot_len(payload.len() as u16 + IPH_LEN as u16);
+        let ip = pkt.push(iph);
+
         pkt.push_bytes(payload);
 
         Self {
@@ -36,11 +37,15 @@ impl IpDgram {
     }
 
     #[must_use]
-    pub fn frag(mut self, frag_off: u16, mf: bool) -> Self {
-        self.pkt.get_mut_hdr(self.ip)
-            .frag_off(frag_off)
-            .mf(mf)
-            .calc_csum();
+    pub fn frag(self, frag_off: u16, mf: bool) -> Self {
+        {
+            let mut iph = self.ip.get_mut(&self.pkt);
+
+            iph.set_frag_off(frag_off)
+                .set_mf(mf)
+                .calc_csum();
+        }
+
         self
     }
 }
