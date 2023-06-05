@@ -164,7 +164,7 @@ const TCP_CL_RAW_SEG: FuncDef = func_def!(
         let pkt = this.client_data_segment(bytes.as_ref());
         this.pop_state(saved);
 
-        Ok(Val::str(pkt.tcp_segment_bytes()))
+        Ok(Val::str(pkt.into_tcpseg()))
     }
 );
 
@@ -191,7 +191,7 @@ const TCP_SV_RAW_SEG: FuncDef = func_def!(
         let pkt = this.server_data_segment(bytes.as_ref());
         this.pop_state(saved);
 
-        Ok(Val::str(pkt.tcp_segment_bytes()))
+        Ok(Val::str(pkt.into_tcpseg()))
     }
 );
 

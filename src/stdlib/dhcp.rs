@@ -127,7 +127,7 @@ const HDR: FuncDef = func_def!(
             hdr = hdr.file(f);
         }
 
-        Ok(Val::str(&hdr))
+        Ok(Val::str(hdr.into_vec()))
     }
 );
 

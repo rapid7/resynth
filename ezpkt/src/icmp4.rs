@@ -1,6 +1,6 @@
 use std::net::Ipv4Addr;
 
-use pkt::eth::eth_hdr;
+use pkt::eth::{eth_hdr, ethertype};
 use pkt::ipv4::{ip_hdr, icmp_hdr, icmp_echo_hdr, ip_csum, proto, ICMP_ECHOREPLY, ICMP_ECHO};
 use pkt::{Packet, Hdr};
 
@@ -33,31 +33,30 @@ impl IcmpDgram {
         + Self::RAW_OVERHEAD;
 
     fn new(src: Ipv4Addr, dst: Ipv4Addr, raw: bool) -> Self {
-        let mut pkt = if raw {
+        let pkt = if raw {
             Packet::with_capacity(Self::RAW_OVERHEAD)
         } else {
-            let mut pkt = Packet::with_capacity(Self::OVERHEAD);
+            let pkt = Packet::with_capacity(Self::OVERHEAD);
 
-            let eth: Hdr<eth_hdr> = pkt.push_hdr();
-            pkt.get_mut_hdr(eth)
-                .dst_from_ip(dst)
-                .src_from_ip(src)
-                .proto(0x0800);
+            pkt.push(eth_hdr::new(
+                src.into(),
+                dst.into(),
+                ethertype::IPV4,
+            ));
 
             pkt
         };
 
-        let ip: Hdr<ip_hdr> = pkt.push_hdr();
-        pkt.get_mut_hdr(ip)
-            .init()
-            .protocol(proto::ICMP)
-            .tot_len(Self::RAW_OVERHEAD as u16)
-            .saddr(src)
-            .daddr(dst)
+        let mut iph: ip_hdr = Default::default();
+        iph.set_protocol(proto::ICMP)
+            .set_tot_len(Self::RAW_OVERHEAD as u16)
+            .set_saddr(src)
+            .set_daddr(dst)
             .calc_csum();
 
-        let icmp: Hdr<icmp_hdr> = pkt.push_hdr();
+        let ip = pkt.push(iph);
 
+        let icmp: Hdr<icmp_hdr> = pkt.push_hdr();
         let echo: Hdr<icmp_echo_hdr> = pkt.push_hdr();
 
         Self {
@@ -68,44 +67,46 @@ impl IcmpDgram {
         }
     }
 
-    fn push(mut self, bytes: &[u8]) -> Self {
+    fn push(self, bytes: &[u8]) -> Self {
         self.pkt.push_bytes(bytes);
         self.update_tot_len(bytes.len() as u16)
     }
 
-    fn update_tot_len(mut self, more: u16) -> Self {
-        self.pkt.get_mut_hdr(self.ip)
-            .add_tot_len(more)
-            .calc_csum();
+    fn update_tot_len(self, more: u16) -> Self {
+        self.ip.get_mut(&self.pkt)
+            .add_tot_len(more);
         self
     }
 
     fn ping(mut self, id: u16, seq: u16, bytes: &[u8]) -> Self {
         self = self.push(bytes);
-        self.pkt.get_mut_hdr(self.icmp)
-            .typ(ICMP_ECHO);
-        self.pkt.get_mut_hdr(self.echo)
-            .id(id)
-            .seq(seq);
+        self.icmp.get_mut(&self.pkt)
+            .set_typ(ICMP_ECHO);
+        self.echo.get_mut(&self.pkt)
+            .set_id(id)
+            .set_seq(seq);
 
-        let bytes = self.pkt.bytes_from(self.icmp, self.pkt.len_from(self.icmp));
-        let csum = ip_csum(bytes);
-        self.pkt.get_mut_hdr(self.icmp).csum(csum);
+        let csum = ip_csum(
+            &self.icmp.packet_bytes(&self.pkt, self.icmp.len_from(&self.pkt))
+        );
+
+        self.icmp.get_mut(&self.pkt).set_csum(csum);
 
         self
     }
 
     fn pong(mut self, id: u16, seq: u16, bytes: &[u8]) -> Self {
         self = self.push(bytes);
-        self.pkt.get_mut_hdr(self.icmp)
-            .typ(ICMP_ECHOREPLY);
-        self.pkt.get_mut_hdr(self.echo)
-            .id(id)
-            .seq(seq);
+        self.icmp.get_mut(&self.pkt)
+            .set_typ(ICMP_ECHOREPLY);
+        self.echo.get_mut(&self.pkt)
+            .set_id(id)
+            .set_seq(seq);
 
-        let bytes = self.pkt.bytes_from(self.icmp, self.pkt.len_from(self.icmp));
-        let csum = ip_csum(bytes);
-        self.pkt.get_mut_hdr(self.icmp).csum(csum);
+        let csum = ip_csum(
+            &self.icmp.packet_bytes(&self.pkt, self.icmp.len_from(&self.pkt))
+        );
+        self.icmp.get_mut(&self.pkt).set_csum(csum);
 
         self
     }

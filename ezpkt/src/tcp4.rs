@@ -1,6 +1,6 @@
 use std::net::SocketAddrV4;
 
-use pkt::eth::eth_hdr;
+use pkt::eth::{eth_hdr, ethertype};
 use pkt::ipv4::{ip_hdr, ip_csum_fold, ip_csum_partial, ip_pseudo_hdr, proto, tcp_hdr};
 use pkt::{Packet, Hdr};
 
@@ -35,35 +35,35 @@ impl TcpSeg {
            raw: bool,
            ) -> Self {
 
-        let mut pkt = if raw {
+        let saddr = *src.ip();
+        let daddr = *dst.ip();
+
+        let pkt = if raw {
             Packet::with_capacity(Self::RAW_OVERHEAD)
         } else {
-            let mut pkt = Packet::with_capacity(Self::OVERHEAD);
+            let pkt = Packet::with_capacity(Self::OVERHEAD);
 
-            let eth: Hdr<eth_hdr> = pkt.push_hdr();
-            pkt.get_mut_hdr(eth)
-                .dst_from_ip(*dst.ip())
-                .src_from_ip(*src.ip())
-                .proto(0x0800);
+            pkt.push(eth_hdr::new(
+                saddr.into(),
+                daddr.into(),
+                ethertype::IPV4,
+            ));
 
             pkt
         };
 
-        let ip: Hdr<ip_hdr> = pkt.push_hdr();
-        pkt.get_mut_hdr(ip)
-            .init()
-            .protocol(proto::TCP)
-            .tot_len(Self::RAW_OVERHEAD as u16)
-            .saddr(*src.ip())
-            .daddr(*dst.ip())
+        let mut iph: ip_hdr = Default::default();
+        iph.set_protocol(proto::TCP)
+            .set_tot_len(Self::RAW_OVERHEAD as u16)
+            .set_saddr(saddr)
+            .set_daddr(daddr)
             .calc_csum();
 
-        let tcp: Hdr<tcp_hdr> = pkt.push_hdr();
-        pkt.get_mut_hdr(tcp)
-            .init()
-            .seq(st.snd_nxt)
-            .sport(src.port())
-            .dport(dst.port());
+        let mut tcph: tcp_hdr = tcp_hdr::new(src.port(), dst.port());
+        tcph.set_seq(st.snd_nxt);
+
+        let ip = pkt.push(iph);
+        let tcp = pkt.push(tcph);
 
         Self {
             pkt,
@@ -76,29 +76,44 @@ impl TcpSeg {
     }
 
     fn syn(mut self) -> Self {
-        self.pkt.get_mut_hdr(self.tcp)
-            .syn();
+        {
+            let mut tcph = self.tcp.get_mut(&self.pkt);
+
+            tcph.set_syn();
+        }
         self.extra_seq += 1;
+
         self
     }
 
     fn syn_ack(mut self) -> Self {
-        self.pkt.get_mut_hdr(self.tcp)
-            .syn()
-            .ack(self.st.rcv_nxt);
+        {
+            let mut tcph = self.tcp.get_mut(&self.pkt);
+
+            tcph.set_syn().set_ack(self.st.rcv_nxt);
+        }
         self.extra_seq += 1;
+
         self
     }
 
-    fn ack(mut self) -> Self {
-        self.pkt.get_mut_hdr(self.tcp)
-            .ack(self.st.rcv_nxt);
+    fn ack(self) -> Self {
+        {
+            let mut tcph = self.tcp.get_mut(&self.pkt);
+
+            tcph.set_ack(self.st.rcv_nxt);
+        }
+
         self
     }
 
-    fn push(mut self) -> Self {
-        self.pkt.get_mut_hdr(self.tcp)
-            .push();
+    fn push(self) -> Self {
+        {
+            let mut tcph = self.tcp.get_mut(&self.pkt);
+
+            tcph.set_push();
+        }
+
         self.ack()
     }
 
@@ -113,9 +128,13 @@ impl TcpSeg {
     }
 
     fn fin(mut self) -> Self {
-        self.pkt.get_mut_hdr(self.tcp)
-            .fin();
+        {
+            let mut tcph = self.tcp.get_mut(&self.pkt);
+
+            tcph.set_fin();
+        }
         self.extra_seq += 1;
+
         self
     }
 
@@ -125,34 +144,49 @@ impl TcpSeg {
         self
     }
 
-    fn frag_off(mut self, frag_off: u16) -> Self {
-        self.pkt.get_mut_hdr(self.ip).frag_off(frag_off).calc_csum();
+    fn frag_off(self, frag_off: u16) -> Self {
+        {
+            let mut iph = self.ip.get_mut(&self.pkt);
+
+            iph.set_frag_off(frag_off);
+            iph.calc_csum();
+        }
+
         self
     }
 
-    fn update_tot_len(mut self, more: u16) -> Self {
-        self.pkt.get_mut_hdr(self.ip)
-            .add_tot_len(more)
-            .calc_csum();
+    fn update_tot_len(self, more: u16) -> Self {
+        {
+            let mut iph = self.ip.get_mut(&self.pkt);
+
+            iph.add_tot_len(more);
+            iph.calc_csum();
+        }
+
         self
     }
 
     fn ip_pseudo_hdr(&self, len: u16) -> ip_pseudo_hdr {
-        self.pkt.get_hdr(self.ip).get_pseudo_hdr(len)
+        let iph = self.ip.get(&self.pkt);
+
+        iph.get_pseudo_hdr(len)
     }
 
     /// Checksum is the TCP header length plus the data length
     fn csum_len(&self) -> u16 {
-        (self.data_len as usize + self.tcp.len()) as u16
+        (self.data_len as usize + Hdr::<tcp_hdr>::len()) as u16
     }
 
-    fn tcp_csum(mut self) -> Self {
+    fn tcp_csum(self) -> Self {
         let ip_phdr = self.ip_pseudo_hdr(self.csum_len()).csum_partial();
-        let tcp_hdr = ip_csum_partial(self.pkt.get_hdr_bytes(self.tcp));
-        let payload = ip_csum_partial(self.pkt.bytes_after(self.tcp, self.data_len as usize));
+        let tcp_hdr = ip_csum_partial(&self.tcp.as_bytes(&self.pkt));
+        let payload = ip_csum_partial(&self.tcp.bytes_after(&self.pkt, self.data_len as usize));
 
-        self.pkt.get_mut_hdr(self.tcp)
-            .csum(ip_csum_fold(ip_phdr + tcp_hdr + payload));
+        {
+            let mut tcph = self.tcp.get_mut(&self.pkt);
+
+            tcph.set_csum(ip_csum_fold(ip_phdr + tcp_hdr + payload));
+        }
 
         self
     }
@@ -161,13 +195,24 @@ impl TcpSeg {
         self.data_len + self.extra_seq
     }
 
-    pub fn tcp_hdr_bytes(&self) -> &[u8] {
-        self.pkt.get_hdr_bytes(self.tcp)
+    pub fn tcp_hdr_bytes(&self) -> pkt::SliceRef<'_> {
+        self.tcp.as_bytes(&self.pkt)
     }
 
-    pub fn tcp_segment_bytes(&self) -> &[u8] {
-        self.pkt.bytes_from(self.tcp,
-                            self.pkt.len_from(self.tcp))
+    pub fn tcp_segment(&self) -> pkt::PktSlice {
+        self.tcp.packet(self.tcp.len_from(&self.pkt))
+    }
+
+    pub fn tcp_segment_bytes(&self) -> pkt::SliceRef<'_> {
+        self.tcp_segment().get(&self.pkt)
+    }
+
+    pub fn into_tcpseg(self) -> Vec<u8> {
+        let pktslice = self.tcp_segment();
+        let pkt: Packet = self.into();
+
+        // XXX: This is more efficient if there is no headroom
+        pkt.into_vec_from(pktslice)
     }
 }
 
@@ -233,12 +278,12 @@ impl TcpFlow {
     fn sv_update(&mut self, bytes: u32) {
         self.sv_seq += bytes;
     }
-    
+
     fn cl_tx(&mut self, seg: TcpSeg) {
         self.cl_update(seg.seq_consumed());
         self.pkts.push(seg.tcp_csum().into());
     }
-    
+
     fn sv_tx(&mut self, seg: TcpSeg) {
         self.sv_update(seg.seq_consumed());
         self.pkts.push(seg.tcp_csum().into());
@@ -325,7 +370,7 @@ impl TcpFlow {
 
         self.cl_update(seg.seq_consumed() + dlen);
 
-        Vec::from(hdr)
+        hdr.to_vec()
     }
 
     pub fn server_hdr(&mut self,
@@ -336,7 +381,7 @@ impl TcpFlow {
 
         self.sv_update(seg.seq_consumed() + dlen);
 
-        Vec::from(hdr)
+        hdr.to_vec()
     }
 
     // cl_tx/sv_tx using packet generators

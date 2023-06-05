@@ -3,8 +3,10 @@ use std::fs::File;
 use std::io;
 use std::io::Write;
 
-use super::{Hdr, Packet};
-use super::{Serialize, AsBytes};
+use super::Packet;
+use super::Serialize;
+
+use crate::util::AsBytes;
 
 pub enum LinkType {
     Null = 0,
@@ -23,8 +25,7 @@ struct pcap_hdr {
     linktype: u32,
 }
 
-impl Serialize for pcap_hdr {
-}
+impl Serialize for pcap_hdr {}
 
 #[derive(Debug, Copy, Clone)]
 #[repr(C)]
@@ -35,8 +36,7 @@ struct pcap_pkt {
     len: u32,
 }
 
-impl Serialize for pcap_pkt {
-}
+impl Serialize for pcap_pkt {}
 
 impl pcap_hdr {
     pub fn new() -> Self {
@@ -93,16 +93,22 @@ impl PcapWriter {
             println!("pcap: writing {:#?}", pkt);
         }
 
-        let hdr: Hdr<pcap_pkt> = pkt.lower_headroom();
-        let pcap_hdr = pkt.get_mut_hdr(hdr);
+        let pkt_hdr = pcap_pkt {
+            sec: self.cnt as u32,
+            nsec: 0,
+            len,
+            caplen: len,
+        };
+        let hdr = pkt.lower_headroom_for(pkt_hdr);
 
-        pcap_hdr.sec = self.cnt as u32;
-        pcap_hdr.len = len;
-        pcap_hdr.caplen = len;
+        {
+            let pktbuf = pkt.as_slice().get(pkt);
+
+            self.wr.write_all(&pktbuf)?;
+        }
 
         self.cnt += 1;
 
-        self.wr.write_all(pkt.as_bytes())?;
         pkt.return_headroom(hdr);
 
         Ok(())
