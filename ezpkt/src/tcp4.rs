@@ -161,8 +161,13 @@ impl TcpSeg {
         self.data_len + self.extra_seq
     }
 
-    fn tcp_hdr_bytes(&self) -> &[u8] {
+    pub fn tcp_hdr_bytes(&self) -> &[u8] {
         self.pkt.get_hdr_bytes(self.tcp)
+    }
+
+    pub fn tcp_segment_bytes(&self) -> &[u8] {
+        self.pkt.bytes_from(self.tcp,
+                            self.pkt.len_from(self.tcp))
     }
 }
 
@@ -256,30 +261,6 @@ impl TcpFlow {
         self.sv_seq = sv_seq.unwrap_or(self.sv_seq);
     }
 
-    pub fn open(&mut self) -> Vec<Packet> {
-        self.cl_tx(self.cl().syn());
-        self.sv_tx(self.sv().syn_ack());
-        self.cl_tx(self.cl().ack());
-
-        std::mem::take(&mut self.pkts)
-    }
-
-    pub fn client_close(&mut self) -> Vec<Packet> {
-        self.cl_tx(self.cl().fin_ack());
-        self.sv_tx(self.sv().fin_ack());
-        self.cl_tx(self.cl().ack());
-
-        std::mem::take(&mut self.pkts)
-    }
-
-    pub fn server_close(&mut self) -> Vec<Packet> {
-        self.sv_tx(self.sv().fin_ack());
-        self.cl_tx(self.cl().fin_ack());
-        self.sv_tx(self.sv().ack());
-
-        std::mem::take(&mut self.pkts)
-    }
-
     fn cl_seg(&self,
               bytes: &[u8],
               frag_off: u16,
@@ -302,28 +283,86 @@ impl TcpFlow {
         self.sv().ack()
     }
 
+    // Advance client seq by `bytes` bytes in order to simulate a hole
+    pub fn client_hole(&mut self, bytes: u32) {
+        self.cl_update(bytes);
+    }
+
+    // Advance server seq by `bytes` bytes in order to simulate a hole
+    pub fn server_hole(&mut self, bytes: u32) {
+        self.sv_update(bytes);
+    }
+
     pub fn client_data_segment(&mut self,
                                bytes: &[u8],
-                               ) -> Packet {
+                               ) -> TcpSeg {
         let ret = self.cl_seg(bytes, 0);
         self.cl_update(ret.seq_consumed());
-        ret.tcp_csum().into()
+        ret.tcp_csum()
     }
 
     pub fn server_data_segment(&mut self,
                                bytes: &[u8],
-                               ) -> Packet {
+                               ) -> TcpSeg {
         let ret = self.sv_seg(bytes, 0);
         self.sv_update(ret.seq_consumed());
-        ret.tcp_csum().into()
+        ret.tcp_csum()
     }
 
-    pub fn client_ack(&self) -> Packet {
-        self.cl_ack().tcp_csum().into()
+    pub fn client_ack(&self) -> TcpSeg {
+        self.cl_ack().tcp_csum()
     }
 
-    pub fn server_ack(&self) -> Packet {
-        self.sv_ack().tcp_csum().into()
+    pub fn server_ack(&self) -> TcpSeg {
+        self.sv_ack().tcp_csum()
+    }
+
+    pub fn client_hdr(&mut self,
+                      dlen: u32,
+                      ) -> Vec<u8> {
+        let seg = self.cl().push();
+        let hdr = seg.tcp_hdr_bytes();
+
+        self.cl_update(seg.seq_consumed() + dlen);
+
+        Vec::from(hdr)
+    }
+
+    pub fn server_hdr(&mut self,
+                      dlen: u32,
+                      ) -> Vec<u8> {
+        let seg = self.sv().push();
+        let hdr = seg.tcp_hdr_bytes();
+
+        self.sv_update(seg.seq_consumed() + dlen);
+
+        Vec::from(hdr)
+    }
+
+    // cl_tx/sv_tx using packet generators
+
+    pub fn open(&mut self) -> Vec<Packet> {
+        self.cl_tx(self.cl().syn());
+        self.sv_tx(self.sv().syn_ack());
+        self.cl_tx(self.cl().ack());
+
+        std::mem::take(&mut self.pkts)
+    }
+
+    pub fn client_close(&mut self) -> Vec<Packet> {
+        self.cl_tx(self.cl().fin_ack());
+        self.sv_tx(self.sv().fin_ack());
+        self.cl_tx(self.cl().ack());
+
+        std::mem::take(&mut self.pkts)
+    }
+
+    pub fn server_close(&mut self) -> Vec<Packet> {
+        self.sv_tx(self.sv().fin_ack());
+        self.cl_tx(self.cl().fin_ack());
+        self.sv_tx(self.sv().ack());
+
+        std::mem::take(&mut self.pkts)
     }
 
     pub fn client_message(&mut self,
@@ -350,37 +389,5 @@ impl TcpFlow {
         }
 
         std::mem::take(&mut self.pkts)
-    }
-
-    pub fn client_hdr(&mut self,
-                      dlen: u32,
-                      ) -> Vec<u8> {
-        let seg = self.cl().push();
-        let hdr = seg.tcp_hdr_bytes();
-
-        self.cl_update(seg.seq_consumed() + dlen);
-
-        Vec::from(hdr)
-    }
-
-    pub fn server_hdr(&mut self,
-                      dlen: u32,
-                      ) -> Vec<u8> {
-        let seg = self.sv().push();
-        let hdr = seg.tcp_hdr_bytes();
-
-        self.sv_update(seg.seq_consumed() + dlen);
-
-        Vec::from(hdr)
-    }
-
-    // Advance client seq by `bytes` bytes in order to simulate a hole
-    pub fn client_hole(&mut self, bytes: u32) {
-        self.cl_update(bytes);
-    }
-
-    // Advance server seq by `bytes` bytes in order to simulate a hole
-    pub fn server_hole(&mut self, bytes: u32) {
-        self.sv_update(bytes);
     }
 }
