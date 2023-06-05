@@ -116,10 +116,12 @@ pub struct gre_hdr {
 }
 
 impl gre_hdr {
-    pub fn new(proto: u16) -> Self {
+    pub fn new(flags: GreFlags, proto: u16) -> Self {
+        let f: u16 = flags.into();
+
         Self {
-            flags: GreFlags::default().into(),
-            proto,
+            flags: f.to_be(),
+            proto: proto.to_be(),
         }
     }
 

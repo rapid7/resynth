@@ -103,3 +103,35 @@ pub struct dhcp_hdr {
     pub magic: u32,
 }
 impl Serialize for dhcp_hdr {}
+
+impl dhcp_hdr {
+    /// Set client hardware address, silently truncates
+    pub fn set_chaddr<T: AsRef<[u8]>>(&mut self, chaddr: T) -> &mut Self {
+        let buf = chaddr.as_ref();
+        let cplen = std::cmp::min(buf.len(), self.chaddr.len());
+
+        self.chaddr[..cplen].copy_from_slice(&buf[..cplen]);
+
+        self
+    }
+
+    /// Set TFTP server name, silently truncates
+    pub fn set_sname<T: AsRef<[u8]>>(&mut self, sname: T) -> &mut Self {
+        let buf = sname.as_ref();
+        let cplen = std::cmp::min(buf.len(), self.sname.len());
+
+        self.sname[..cplen].copy_from_slice(&buf[..cplen]);
+
+        self
+    }
+
+    /// Set TFTP file name, silently truncates
+    pub fn set_file<T: AsRef<[u8]>>(&mut self, file: T) -> &mut Self {
+        let buf = file.as_ref();
+        let cplen = std::cmp::min(buf.len(), self.file.len());
+
+        self.file[..cplen].copy_from_slice(&buf[..cplen]);
+
+        self
+    }
+}

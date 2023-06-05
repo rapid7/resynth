@@ -28,7 +28,7 @@ const ENCAP: FuncDef = func_def!(
         let mut ret: Vec<Packet> = Vec::with_capacity(gen.len());
 
         for pkt in gen.iter() {
-            ret.push(this.encap(pkt.as_ref()));
+            ret.push(this.encap(&pkt.as_slice().get(pkt)));
         }
 
         Ok(ret.into())
@@ -49,7 +49,8 @@ const DGRAM: FuncDef = func_def!(
         let mut r = obj.borrow_mut();
         let this: &mut VxlanFlow = r.as_mut_any().downcast_mut().unwrap();
         let pkt: Rc<Packet> = args.next().into();
-        Ok(this.encap(pkt.as_bytes()).into())
+        let ret = Ok(this.encap(&pkt.as_slice().get(&pkt)).into());
+        ret
     }
 );
 

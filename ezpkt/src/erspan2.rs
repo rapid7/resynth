@@ -3,7 +3,7 @@ use std::net::Ipv4Addr;
 use pkt::eth::ethertype;
 use pkt::gre::GreFlags;
 use pkt::erspan2::{Erspan2, erspan2_hdr};
-use pkt::{Hdr, Packet};
+use pkt::Packet;
 
 use crate::GreFrame;
 
@@ -57,7 +57,7 @@ impl Erspan2Frame {
     pub fn encap<T: AsRef<[u8]>>(self, payload: T) -> Packet {
         let p = payload.as_ref();
 
-        let mut gre = GreFrame::new(
+        let gre = GreFrame::new(
             self.src,
             self.dst,
             GreFlags::default().seq(true),
@@ -66,10 +66,7 @@ impl Erspan2Frame {
             Erspan2Frame::OVERHEAD + p.len(),
         );
 
-        let erspan: Hdr<erspan2_hdr> = gre.push_hdr();
-        gre.pkt.set_hdr(erspan, self.erspan.into());
-
-        gre.seq(self.seq).push(p).into()
+        gre.seq(self.seq).set_hdr(self.erspan.build()).push(payload).into()
     }
 }
 

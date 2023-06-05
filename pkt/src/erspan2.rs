@@ -108,8 +108,6 @@ pub struct Erspan2 {
     index: u32,
 }
 
-impl Serialize for Erspan2 {}
-
 impl Default for Erspan2 {
     fn default() -> Self {
         Self {
