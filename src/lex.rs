@@ -262,7 +262,7 @@ impl Lexer {
             );
             */
 
-            if !tok_type.ignore() || !string_literals.is_empty() && !matches!(tok_type, TokType::Whitespace) {
+            if !tok_type.ignore() {
                 if matches!(tok_type, TokType::StringLiteral) {
                     string_literals.push(&tok_val[1..m.end()-1]);
                 } else {
