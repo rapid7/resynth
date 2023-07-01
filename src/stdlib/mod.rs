@@ -17,20 +17,28 @@ mod text;
 mod io;
 mod ipv4;
 mod dns;
+mod netbios;
 mod dhcp;
 mod arp;
 mod tls;
 mod vxlan;
+mod gre;
+mod eth;
+mod erspan2;
 
 const STDLIB: phf::Map<&'static str, Symbol> = phf_map! {
     "text" => Symbol::Module(&text::MODULE),
     "io" => Symbol::Module(&io::MODULE),
     "ipv4" => Symbol::Module(&ipv4::IPV4),
     "dns" => Symbol::Module(&dns::DNS),
+    "netbios" => Symbol::Module(&netbios::NETBIOS),
     "dhcp" => Symbol::Module(&dhcp::MODULE),
     "arp" => Symbol::Module(&arp::MODULE),
     "tls" => Symbol::Module(&tls::TLS),
     "vxlan" => Symbol::Module(&vxlan::MODULE),
+    "gre" => Symbol::Module(&gre::MODULE),
+    "eth" => Symbol::Module(&eth::MODULE),
+    "erspan2" => Symbol::Module(&erspan2::MODULE),
 };
 
 pub fn toplevel_module(name: &str) -> Option<&'static Module> {
@@ -43,3 +51,6 @@ pub fn toplevel_module(name: &str) -> Option<&'static Module> {
         },
     }
 }
+
+#[cfg(test)]
+mod test;

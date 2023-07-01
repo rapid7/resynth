@@ -12,6 +12,10 @@ impl Buf {
     pub fn len(&self) -> usize {
         self.inner.len()
     }
+
+    pub fn cow_buffer(self) -> Vec<u8> {
+        Rc::try_unwrap(self.inner).unwrap_or_else(|rc| (*rc).clone())
+    }
 }
 
 impl AsRef<[u8]> for Buf {
@@ -40,6 +44,7 @@ impl From<Vec<u8>> for Buf {
     }
 }
 
+// Must take reference here because otherwise trait can be implented for self
 impl<T> From<&T> for Buf where T: AsRef<[u8]> + ?Sized {
     #[inline]
     fn from(s: &T) -> Self {

@@ -2,67 +2,50 @@ use std::rc::Rc;
 
 use phf::{phf_map, phf_ordered_map};
 
-use pkt::{Packet, vxlan};
+use pkt::Packet;
 
 use crate::val::{Val, ValDef, ValType};
 use crate::libapi::{FuncDef, ArgDecl, Class};
 use crate::sym::Symbol;
-use ezpkt::VxlanFlow;
+use ezpkt::Erspan2Flow;
 use crate::func_def;
 
 const ENCAP: FuncDef = func_def!(
-    "vxlan::flow.encap";
+    "erspan2::session.encap";
     ValType::PktGen;
 
     "gen" => ValType::PktGen
     =>
+    "port_index" => ValDef::U32(0),
     =>
     ValType::Void;
 
     |mut args| {
         let obj = args.take_this();
         let mut r = obj.borrow_mut();
-        let this: &mut VxlanFlow = r.as_mut_any().downcast_mut().unwrap();
+        let this: &mut Erspan2Flow = r.as_mut_any().downcast_mut().unwrap();
         let gen: Rc<Vec<Packet>> = args.next().into();
+        let port_index: u32 = args.next().into();
 
         let mut ret: Vec<Packet> = Vec::with_capacity(gen.len());
 
         for pkt in gen.iter() {
-            ret.push(this.encap(pkt.as_ref()));
+            ret.push(this.encap(pkt.as_ref(), port_index));
         }
 
         Ok(ret.into())
     }
 );
 
-const DGRAM: FuncDef = func_def!(
-    "vxlan::flow.dgram";
-    ValType::Pkt;
-
-    "pkt" => ValType::Pkt
-    =>
-    =>
-    ValType::Void;
-
-    |mut args| {
-        let obj = args.take_this();
-        let mut r = obj.borrow_mut();
-        let this: &mut VxlanFlow = r.as_mut_any().downcast_mut().unwrap();
-        let pkt: Rc<Packet> = args.next().into();
-        Ok(this.encap(pkt.as_bytes()).into())
-    }
-);
-
-impl Class for VxlanFlow {
+impl Class for Erspan2Flow {
     fn symbols(&self) -> phf::Map<&'static str, Symbol> {
         phf_map! {
-            "dgram" => Symbol::Func(&DGRAM),
             "encap" => Symbol::Func(&ENCAP),
         }
     }
 
     fn class_name(&self) -> &'static str {
-        "vxlan.flow"
+        "erspan2.session"
     }
 }
 
@@ -70,10 +53,9 @@ const SESSION: FuncDef = func_def!(
     "session";
     ValType::Obj;
 
-    "cl" => ValType::Sock4,
-    "sv" => ValType::Sock4,
+    "cl" => ValType::Ip4,
+    "sv" => ValType::Ip4,
     =>
-    "sessionid" => ValDef::U32(0), // TODO: Make it optional
     "raw" => ValDef::Bool(false),
     =>
     ValType::Void;
@@ -81,14 +63,11 @@ const SESSION: FuncDef = func_def!(
     |mut args| {
         let cl = args.next();
         let sv = args.next();
-        let vni: u32 = args.next().into();
         let raw: bool = args.next().into();
-        Ok(Val::from(VxlanFlow::new(cl.into(), sv.into(), vni, raw)))
+        Ok(Val::from(Erspan2Flow::new(cl.into(), sv.into(), raw)))
     }
 );
 
 pub const MODULE: phf::Map<&'static str, Symbol> = phf_map! {
     "session" => Symbol::Func(&SESSION),
-    "DEFAULT_PORT" => Symbol::u16(vxlan::DEFAULT_PORT),
 };
-

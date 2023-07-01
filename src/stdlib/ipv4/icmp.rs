@@ -1,6 +1,6 @@
 use phf::{phf_map, phf_ordered_map};
 
-use crate::val::{ValType, Val};
+use crate::val::{Val, ValDef, ValType};
 use crate::str::Buf;
 use crate::libapi::{FuncDef, ArgDecl, Class};
 use crate::sym::Symbol;
@@ -63,13 +63,15 @@ const ICMP_FLOW: FuncDef = func_def!(
     "cl" => ValType::Ip4,
     "sv" => ValType::Ip4,
     =>
+    "raw" => ValDef::Bool(false),
     =>
     ValType::Void;
 
     |mut args| {
         let cl = args.next();
         let sv = args.next();
-        Ok(Val::from(IcmpFlow::new(cl.into(), sv.into())))
+        let raw = args.next();
+        Ok(Val::from(IcmpFlow::new(cl.into(), sv.into(), raw.into())))
     }
 );
 

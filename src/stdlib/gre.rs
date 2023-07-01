@@ -2,16 +2,16 @@ use std::rc::Rc;
 
 use phf::{phf_map, phf_ordered_map};
 
-use pkt::{Packet, vxlan};
+use pkt::Packet;
 
 use crate::val::{Val, ValDef, ValType};
 use crate::libapi::{FuncDef, ArgDecl, Class};
 use crate::sym::Symbol;
-use ezpkt::VxlanFlow;
+use ezpkt::GreFlow;
 use crate::func_def;
 
 const ENCAP: FuncDef = func_def!(
-    "vxlan::flow.encap";
+    "gre::session.encap";
     ValType::PktGen;
 
     "gen" => ValType::PktGen
@@ -22,7 +22,7 @@ const ENCAP: FuncDef = func_def!(
     |mut args| {
         let obj = args.take_this();
         let mut r = obj.borrow_mut();
-        let this: &mut VxlanFlow = r.as_mut_any().downcast_mut().unwrap();
+        let this: &mut GreFlow = r.as_mut_any().downcast_mut().unwrap();
         let gen: Rc<Vec<Packet>> = args.next().into();
 
         let mut ret: Vec<Packet> = Vec::with_capacity(gen.len());
@@ -35,34 +35,15 @@ const ENCAP: FuncDef = func_def!(
     }
 );
 
-const DGRAM: FuncDef = func_def!(
-    "vxlan::flow.dgram";
-    ValType::Pkt;
-
-    "pkt" => ValType::Pkt
-    =>
-    =>
-    ValType::Void;
-
-    |mut args| {
-        let obj = args.take_this();
-        let mut r = obj.borrow_mut();
-        let this: &mut VxlanFlow = r.as_mut_any().downcast_mut().unwrap();
-        let pkt: Rc<Packet> = args.next().into();
-        Ok(this.encap(pkt.as_bytes()).into())
-    }
-);
-
-impl Class for VxlanFlow {
+impl Class for GreFlow {
     fn symbols(&self) -> phf::Map<&'static str, Symbol> {
         phf_map! {
-            "dgram" => Symbol::Func(&DGRAM),
             "encap" => Symbol::Func(&ENCAP),
         }
     }
 
     fn class_name(&self) -> &'static str {
-        "vxlan.flow"
+        "gre.session"
     }
 }
 
@@ -70,10 +51,10 @@ const SESSION: FuncDef = func_def!(
     "session";
     ValType::Obj;
 
-    "cl" => ValType::Sock4,
-    "sv" => ValType::Sock4,
+    "cl" => ValType::Ip4,
+    "sv" => ValType::Ip4,
+    "ethertype" => ValType::U16,
     =>
-    "sessionid" => ValDef::U32(0), // TODO: Make it optional
     "raw" => ValDef::Bool(false),
     =>
     ValType::Void;
@@ -81,14 +62,13 @@ const SESSION: FuncDef = func_def!(
     |mut args| {
         let cl = args.next();
         let sv = args.next();
-        let vni: u32 = args.next().into();
+        let ethertype: u16= args.next().into();
         let raw: bool = args.next().into();
-        Ok(Val::from(VxlanFlow::new(cl.into(), sv.into(), vni, raw)))
+        Ok(Val::from(GreFlow::new(cl.into(), sv.into(), ethertype, raw)))
     }
 );
 
 pub const MODULE: phf::Map<&'static str, Symbol> = phf_map! {
     "session" => Symbol::Func(&SESSION),
-    "DEFAULT_PORT" => Symbol::u16(vxlan::DEFAULT_PORT),
 };
 

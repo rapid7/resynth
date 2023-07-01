@@ -66,11 +66,11 @@ impl dhcp_opt {
         }
     }
 
-    pub fn from_buf<T: AsRef<[u8]>>(opt: u8, data: &T) -> Self {
+    pub fn from_buf<T: AsRef<[u8]>>(opt: u8, data: T) -> Self {
         Self::new(opt, data.as_ref().len() as u8)
     }
 
-    pub fn create<T: AsRef<[u8]>>(opt: u8, data: &T) -> Vec<u8> {
+    pub fn create<T: AsRef<[u8]>>(opt: u8, data: T) -> Vec<u8> {
         let buf = data.as_ref();
 
         let hdr = Self::new(opt, buf.len() as u8);

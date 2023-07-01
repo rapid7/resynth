@@ -28,7 +28,7 @@ const PLAIN: FuncDef = func_def! {
 fn argvec_simple() {
     let args = vec!(
         ArgSpec::from(1),
-        ArgSpec::from(b"hello"),
+        ArgSpec::from(b"pos"),
     );
 
     assert_eq!(
@@ -36,9 +36,9 @@ fn argvec_simple() {
             None,
             vec!(
                 Val::U64(1),
-                Val::Str(Buf::from(Buf::from(b"hello"))),
+                Val::str(b"pos"),
                 Val::U64(123),
-                Val::Str(Buf::from(b"hello")),
+                Val::str(b"hello"),
                 Val::Nil,
             ),
             vec!(),
@@ -52,7 +52,7 @@ fn argvec_simple() {
 fn argvec_nullable() {
     let args = vec!(
         ArgSpec::from(1),
-        ArgSpec::from(b"hello"),
+        ArgSpec::from(b"pos"),
         ArgSpec::from(("e", true)),
     );
 
@@ -61,9 +61,9 @@ fn argvec_nullable() {
             None,
             vec!(
                 Val::U64(1),
-                Val::Str(Buf::from(Buf::from(b"hello"))),
+                Val::str(Buf::from(b"pos")),
                 Val::U64(123),
-                Val::Str(Buf::from(b"hello")),
+                Val::str(b"hello"),
                 Val::Bool(true),
             ),
             vec!(),
@@ -126,25 +126,31 @@ fn argvec_named_positionals() {
     assert_eq!(
         Ok(ArgVec::new(None, vec!(
             Val::U64(0),
-            Val::Str(Buf::from(b"goodbye")),
+            Val::str(b"goodbye"),
             Val::U64(123),
-            Val::Str(Buf::from(b"hello")),
+            Val::str(b"hello"),
             Val::Nil,
         ), vec!())),
         PLAIN.argvec(None, args),
     )
 }
 
-/// Supply too many arguments
+/// Supply too many positionals: ie. positionally supply a named argument
 #[test]
 fn argvec_too_many_positionals() {
     let args = vec!(
         ArgSpec::from(1),
-        ArgSpec::from(b"hello"),
+        ArgSpec::from(b"pos"),
         ArgSpec::from(2),
     );
     assert_eq!(
-        Err(Error::TypeError),
+        Ok(ArgVec::new(None, vec!(
+            Val::U64(1),
+            Val::str(b"pos"),
+            Val::U64(2),
+            Val::str(b"hello"),
+            Val::Nil,
+        ), vec!())),
         PLAIN.argvec(None, args),
     )
 }
@@ -161,25 +167,46 @@ fn argvec_not_enough_args() {
     )
 }
 
-/// Supply many named args, check that the last named arg is the one which is applied
+/// Specify a positional argument positionally, and also by name
 #[test]
-fn argvec_many_named_args() {
+fn argvec_multiple_positional() {
     let args = vec!(
         ArgSpec::from(1),
         ArgSpec::from(b"hello"),
         ArgSpec::from(("a", ValDef::U64(2))),
-        ArgSpec::from(("a", ValDef::U64(3))),
-        ArgSpec::from(("a", ValDef::U64(4))),
-        ArgSpec::from(("a", ValDef::U64(5))),
     );
     assert_eq!(
-        Ok(ArgVec::new(None, vec!(
-            Val::U64(5),
-            Val::Str(Buf::from(b"hello")),
-            Val::U64(123),
-            Val::Str(Buf::from(b"hello")),
-            Val::Nil,
-        ), vec!())),
+        Err(Error::TypeError),
+        PLAIN.argvec(None, args),
+    )
+}
+
+/// Specify an optional argument positionally, and also by name
+#[test]
+fn argvec_multiple_optional() {
+    let args = vec!(
+        ArgSpec::from(1),
+        ArgSpec::from(b"hello"),
+        ArgSpec::from(111),
+        ArgSpec::from(("c", ValDef::U64(222))),
+    );
+    assert_eq!(
+        Err(Error::TypeError),
+        PLAIN.argvec(None, args),
+    )
+}
+
+/// Specify an optional argument by name, twice
+#[test]
+fn argvec_multiple_named_optional() {
+    let args = vec!(
+        ArgSpec::from(1),
+        ArgSpec::from(b"hello"),
+        ArgSpec::from(("c", ValDef::U64(111))),
+        ArgSpec::from(("c", ValDef::U64(222))),
+    );
+    assert_eq!(
+        Err(Error::TypeError),
         PLAIN.argvec(None, args),
     )
 }
@@ -236,8 +263,8 @@ fn collect_with_named() {
                 Val::U64(234),
             ),
             vec!(
-                Val::Str(Buf::from(b"hello")),
-                Val::Str(Buf::from(b"world")),
+                Val::str(b"hello"),
+                Val::str(b"world"),
             ),
         )),
         COLLECT.argvec(None, args),
@@ -260,8 +287,8 @@ fn collect_with_defaults() {
                 Val::U64(123),
             ),
             vec!(
-                Val::Str(Buf::from(b"hello")),
-                Val::Str(Buf::from(b"world")),
+                Val::str(b"hello"),
+                Val::str(b"world"),
             ),
         )),
         COLLECT.argvec(None, args),
@@ -328,11 +355,122 @@ fn argvec_empty_extra() {
             vec!(
             ),
             vec!(
-                Val::Str(Buf::from(b"hello")),
-                Val::Str(Buf::from(b"world")),
+                Val::str(b"hello"),
+                Val::str(b"world"),
             ),
         )),
         EMPTY.argvec(None, args)
     )
 }
 
+const NAMED: FuncDef = func_def! {
+        "NAMED";
+        ValType::Void;
+
+        =>
+        "a" => ValDef::U64(123),
+        "b" => ValDef::Str(b"hello"),
+        "c" => ValDef::Bool(true),
+        =>
+        ValType::Void;
+
+        |_args| {
+            Ok(Val::Nil)
+        }
+};
+
+/// Supply named arguments in a positional manner
+#[test]
+fn argvec_optional_anonymous() {
+    let args = vec!(
+        ArgSpec::from(1u64),
+        ArgSpec::from(b"supplied"),
+    );
+
+    assert_eq!(
+        Ok(ArgVec::new(
+            None,
+            vec!(
+                Val::U64(1),
+                Val::str(b"supplied"),
+                Val::Bool(true),
+            ),
+            vec!(),
+        )),
+        NAMED.argvec(None, args)
+    )
+}
+
+const OPTIONAL_COLLECT_STR: FuncDef = func_def! {
+        "OPTIONAL_COLLECT_STR";
+        ValType::Void;
+
+        =>
+        "a" => ValDef::Bool(true),
+        "b" => ValDef::U64(123),
+        "c" => ValDef::Str(b"hello"),
+        =>
+        ValType::Str;
+
+        |_args| {
+            Ok(Val::Nil)
+        }
+};
+
+/// This time, we have optional arguments and string collect-args. Now optional arguments MUST be
+/// named, so the unnamed arguments are interpreted as strings for collect.
+#[test]
+fn argvec_optional_collect_str() {
+    let args = vec!(
+        ArgSpec::from(1u64),
+        ArgSpec::from(b"supplied"),
+    );
+
+    assert_eq!(
+        Ok(ArgVec::new(
+            None,
+            vec!(
+                Val::Bool(true),
+                Val::U64(123),
+                Val::str(b"hello"),
+            ),
+            vec!(
+                Val::U64(1),
+                Val::str(b"supplied"),
+            ),
+        )),
+        OPTIONAL_COLLECT_STR.argvec(None, args)
+    )
+}
+
+const OPTIONAL_COLLECT_U64: FuncDef = func_def! {
+        "OPTIONAL_COLLECT_U64";
+        ValType::Void;
+
+        =>
+        "a" => ValDef::U64(123),
+        "b" => ValDef::Str(b"hello"),
+        "c" => ValDef::Bool(true),
+        =>
+        ValType::U64;
+
+        |_args| {
+            Ok(Val::Nil)
+        }
+};
+
+/// This time, we have optional arguments and int collect-args. Now optional arguments MUST be
+/// named, so the unnamed arguments are interpreted as integers for collect. Pass in some arguments
+/// of the wrong type to make sure that they throw an error
+#[test]
+fn argvec_optional_collect_u64() {
+    let args = vec!(
+        ArgSpec::from(1u64),
+        ArgSpec::from(b"supplied"),
+    );
+
+    assert_eq!(
+        Err(Error::TypeError),
+        OPTIONAL_COLLECT_U64.argvec(None, args)
+    )
+}

@@ -1,10 +1,13 @@
 pub mod arp;
 pub mod eth;
 pub mod ipv4;
+pub mod gre;
 pub mod dns;
 pub mod dhcp;
 pub mod tls;
 pub mod vxlan;
+pub mod netbios;
+pub mod erspan2;
 
 mod pcap;
 pub use pcap::{PcapWriter, LinkType};
@@ -15,6 +18,9 @@ pub(self) use util::Serialize;
 
 use std::fmt;
 use std::fmt::Write;
+
+#[cfg(test)]
+mod test;
 
 #[derive(Debug)]
 pub struct Hdr<T> {
@@ -53,7 +59,7 @@ impl<T> Hdr<T> {
     }
 }
 
-#[derive(Eq, PartialEq)]
+#[derive(Clone, Eq, PartialEq)]
 pub struct Packet {
     buf: Vec<u8>,
     headroom: usize,
@@ -136,6 +142,12 @@ impl Packet {
         hdr
     }
 
+    pub fn push_hdr_from<T>(&mut self, init: &T) -> Hdr<T> where T: AsBytes {
+        let hdr = Hdr::new(self.buf.len());
+        self.push_bytes(init.as_bytes());
+        hdr
+    }
+
     /// Apped a bunch of bytes
     pub fn push_bytes<T: AsRef<[u8]>>(&mut self, buf: T) {
         self.buf.extend_from_slice(buf.as_ref());
@@ -163,6 +175,13 @@ impl Packet {
         self.headroom += hdr.len();
     }
 
+    /// Get a byte slice to the part of the buffer corresponding to this header
+    pub fn get_hdr_bytes<T>(&self, hdr: Hdr<T>) -> &[u8] {
+        let sz = std::mem::size_of::<T>();
+        let off = hdr.off as usize;
+        &self.buf[off..off + sz]
+    }
+
     /// Get a reference to the part of the buffer corresponding to this header
     pub fn get_hdr<T>(&self, hdr: Hdr<T>) -> &T {
         let sz = std::mem::size_of::<T>();
@@ -185,6 +204,11 @@ impl Packet {
         }
     }
 
+    /// Assign into a header
+    pub fn set_hdr<T>(&mut self, hdr: Hdr<T>, val: T) {
+        *self.get_mut_hdr(hdr) = val;
+    }
+
     pub fn get_mut_slice(&mut self, off: usize, len: usize) -> Option<&mut [u8]> {
         let end = off + len;
         if off < self.headroom {
@@ -197,20 +221,42 @@ impl Packet {
         Some(bytes)
     }
 
-    pub fn get_buf(&mut self, off: usize, len: usize) -> &mut [u8] {
+    pub fn get_mut(&mut self, off: usize, len: usize) -> &mut [u8] {
         &mut self.buf[off..off + len]
     }
 
-    pub fn bytes_from<T>(&mut self, hdr: Hdr<T>, len: usize) -> &mut [u8] {
+    pub fn mut_bytes_from<T>(&mut self, hdr: Hdr<T>, len: usize) -> &mut [u8] {
         let off = hdr.off();
         &mut self.buf[off..off + len]
     }
 
-    pub fn bytes_after<T>(&mut self, hdr: Hdr<T>, len: usize) -> &mut [u8] {
+    pub fn mut_bytes_after<T>(&mut self, hdr: Hdr<T>, len: usize) -> &mut [u8] {
         let off = hdr.off();
         let start = off + hdr.len();
-        let end = off + len;
-        &mut self.buf[start..end]
+        &mut self.buf[start..start + len]
+    }
+
+    pub fn get_buf(&self, off: usize, len: usize) -> &[u8] {
+        &self.buf[off..off + len]
+    }
+
+    pub fn bytes_from<T>(&self, hdr: Hdr<T>, len: usize) -> &[u8] {
+        let off = hdr.off();
+        &self.buf[off..off + len]
+    }
+
+    pub fn bytes_after<T>(&self, hdr: Hdr<T>, len: usize) -> &[u8] {
+        let off = hdr.off();
+        let start = off + hdr.len();
+        &self.buf[start..start + len]
+    }
+
+    pub fn len_from<T>(&self, hdr: Hdr<T>) -> usize {
+        self.buf.len() - hdr.off()
+    }
+
+    pub fn len_after<T>(&self, hdr: Hdr<T>) -> usize {
+        self.buf.len() - (hdr.off() + hdr.len())
     }
 
     pub fn hex_dump_line(&self, pos: usize, width: usize) -> String {
