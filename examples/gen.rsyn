@@ -9,11 +9,13 @@ let conn = ipv4::tcp::flow(
 conn.open();
 
 conn.client_message(
-  "HEAD / HTTP/1.1|0d0a|Host: www.google.com|0d0a0d0a|"
+  "HEAD / HTTP/1.1|0d0a|" # status line
+  "Host: www.google.com|0d0a0d0a|"
 );
 
 conn.server_message(
-  "HTTP/1.1 200 OK|0d0a|Server: Server|0d0a0d0a|",
+  "HTTP/1.1 200 OK|0d0a|"
+  "Server: Server|0d0a0d0a|",
 );
 
 conn.server_close();
