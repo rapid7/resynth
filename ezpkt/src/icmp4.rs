@@ -14,30 +14,29 @@ pub struct IcmpFlow {
     pong_seq: u16,
 }
 
-const ICMP_RAW_DGRAM_OVERHEAD: usize =
-    std::mem::size_of::<ip_hdr>()
-    + std::mem::size_of::<icmp_echo_hdr>()
-    + std::mem::size_of::<icmp_hdr>();
-
-const ICMP_DGRAM_OVERHEAD: usize =
-    std::mem::size_of::<eth_hdr>()
-    + ICMP_RAW_DGRAM_OVERHEAD;
-
 /// Helper for creating ICMP datagrams
 pub struct IcmpDgram {
     pkt: Packet,
     ip: Hdr<ip_hdr>,
     icmp: Hdr<icmp_hdr>,
     echo: Hdr<icmp_echo_hdr>,
-    tot_len: usize,
 }
 
 impl IcmpDgram {
+    const RAW_OVERHEAD: usize =
+        std::mem::size_of::<ip_hdr>()
+        + std::mem::size_of::<icmp_echo_hdr>()
+        + std::mem::size_of::<icmp_hdr>();
+
+    const OVERHEAD: usize =
+        std::mem::size_of::<eth_hdr>()
+        + Self::RAW_OVERHEAD;
+
     fn new(src: Ipv4Addr, dst: Ipv4Addr, raw: bool) -> Self {
         let mut pkt = if raw {
-            Packet::with_capacity(ICMP_RAW_DGRAM_OVERHEAD)
+            Packet::with_capacity(Self::RAW_OVERHEAD)
         } else {
-            let mut pkt = Packet::with_capacity(ICMP_DGRAM_OVERHEAD);
+            let mut pkt = Packet::with_capacity(Self::OVERHEAD);
 
             let eth: Hdr<eth_hdr> = pkt.push_hdr();
             pkt.get_mut_hdr(eth)
@@ -52,35 +51,32 @@ impl IcmpDgram {
         pkt.get_mut_hdr(ip)
             .init()
             .protocol(proto::ICMP)
+            .tot_len(Self::RAW_OVERHEAD as u16)
             .saddr(src)
-            .daddr(dst);
+            .daddr(dst)
+            .calc_csum();
 
         let icmp: Hdr<icmp_hdr> = pkt.push_hdr();
 
         let echo: Hdr<icmp_echo_hdr> = pkt.push_hdr();
 
-        let tot_len = ip.len() + icmp.len() + echo.len();
-
-        let ret = Self {
+        Self {
             pkt,
             ip,
             icmp,
             echo,
-            tot_len,
-        };
-
-        ret.update_tot_len()
+        }
     }
 
     fn push(mut self, bytes: &[u8]) -> Self {
         self.pkt.push_bytes(bytes);
-        self.tot_len += bytes.len();
-        self.update_tot_len()
+        self.update_tot_len(bytes.len() as u16)
     }
 
-    fn update_tot_len(mut self) -> Self {
+    fn update_tot_len(mut self, more: u16) -> Self {
         self.pkt.get_mut_hdr(self.ip)
-            .tot_len(self.tot_len as u16);
+            .add_tot_len(more)
+            .calc_csum();
         self
     }
 
@@ -92,7 +88,7 @@ impl IcmpDgram {
             .id(id)
             .seq(seq);
 
-        let bytes = self.pkt.bytes_after(self.ip, self.tot_len);
+        let bytes = self.pkt.bytes_from(self.icmp, self.pkt.len_from(self.icmp));
         let csum = ip_csum(bytes);
         self.pkt.get_mut_hdr(self.icmp).csum(csum);
 
@@ -107,7 +103,7 @@ impl IcmpDgram {
             .id(id)
             .seq(seq);
 
-        let bytes = self.pkt.bytes_after(self.ip, self.tot_len);
+        let bytes = self.pkt.bytes_from(self.icmp, self.pkt.len_from(self.icmp));
         let csum = ip_csum(bytes);
         self.pkt.get_mut_hdr(self.icmp).csum(csum);
 
