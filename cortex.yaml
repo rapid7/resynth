@@ -1,0 +1,14 @@
+---
+info:
+  title: Resynth
+  description: A network packet synthesis language
+  x-cortex-git:
+    github:
+      alias: r7org
+      repository: rapid7/resynth
+  x-cortex-tag: resynth
+  x-cortex-type: service
+  x-cortex-owners: []
+openapi: 3.0.1
+servers:
+- url: "/"
