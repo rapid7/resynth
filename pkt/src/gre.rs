@@ -34,7 +34,7 @@ pub mod flags {
     pub const V:  u16 = 0x0007;
 }
 
-#[derive(Default, Debug, Copy, Clone)]
+#[derive(Default, Debug, Copy, Clone, Eq, PartialEq)]
 pub struct GreFlags {
     c: bool,
     r: bool,
