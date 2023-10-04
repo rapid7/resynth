@@ -1,6 +1,7 @@
 use std::net::Ipv4Addr;
 
 use pkt::eth::ethertype;
+use pkt::gre::GreFlags;
 use pkt::erspan2::{Erspan2, erspan2_hdr};
 use pkt::{Hdr, Packet};
 
@@ -59,6 +60,7 @@ impl Erspan2Frame {
         let mut gre = GreFrame::new(
             self.src,
             self.dst,
+            GreFlags::default().seq(true),
             ethertype::ERSPAN_1_2,
             self.raw,
             Erspan2Frame::OVERHEAD + p.len(),
