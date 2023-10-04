@@ -23,6 +23,7 @@ impl GreFrame {
 
     pub fn new(src: Ipv4Addr,
                dst: Ipv4Addr,
+               flags: GreFlags,
                proto: u16,
                raw: bool,
                extra: usize,
@@ -49,7 +50,7 @@ impl GreFrame {
         let gre: Hdr<gre_hdr> = pkt.push_hdr();
         pkt.get_mut_hdr(gre)
             .init()
-            .flags(GreFlags::default().seq(true))
+            .flags(flags)
             .proto(proto);
 
         let seq = if pkt.get_hdr(gre).get_seq() {
@@ -116,6 +117,7 @@ impl From<GreFrame> for Packet {
 pub struct GreFlow {
     cl: Ipv4Addr,
     sv: Ipv4Addr,
+    flags: GreFlags,
     ethertype: u16,
     raw: bool,
     seq: u32,
@@ -124,6 +126,7 @@ pub struct GreFlow {
 impl GreFlow {
     pub fn new(cl: Ipv4Addr,
                sv: Ipv4Addr,
+               flags: GreFlags,
                ethertype: u16,
                raw: bool,
                ) -> Self {
@@ -131,6 +134,7 @@ impl GreFlow {
         Self {
             cl,
             sv,
+            flags,
             ethertype,
             raw,
             seq: 0,
@@ -146,7 +150,12 @@ impl GreFlow {
     }
 
     fn dgram(&mut self, extra: usize) -> GreFrame {
-        GreFrame::new(self.cl, self.sv, self.ethertype, self.raw, extra)
+        GreFrame::new(self.cl,
+                      self.sv,
+                      self.flags,
+                      self.ethertype,
+                      self.raw,
+                      extra)
             .seq(self.next_seq())
     }
 
