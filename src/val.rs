@@ -196,9 +196,11 @@ impl<T> From<&'static T> for ValDef where T: AsRef<[u8]> + ? Sized {
 }
 
 /// Represents a live value in the interpreter, for example the result of evaluating an expression.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Default)]
 pub enum Val {
+    #[default]
     Nil,
+
     Bool(bool),
     U8(u8),
     U16(u16),
@@ -212,12 +214,6 @@ pub enum Val {
     Method(ObjRef, &'static FuncDef),
     Pkt(Rc<Packet>),
     PktGen(Rc<Vec<Packet>>),
-}
-
-impl Default for Val {
-    fn default() -> Self {
-        Val::Nil
-    }
 }
 
 impl From<ValDef> for Val {
