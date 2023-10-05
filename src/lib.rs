@@ -13,7 +13,7 @@
 //! concepts such as flows
 //! - [crate] The language compiler and interpreter itself is the root of the crate. In future we
 //! will probably move in to its own module at some point in future.
-//! - [stdlib](crate::stdlib) Contains the resynth standard library which is mostly glue to allow
+//! - [stdlib] Contains the resynth standard library which is mostly glue to allow
 //! resynth programs to use the functionality in [pkt] and [ezpkt]
 //!
 //! ## Compiler Phases
