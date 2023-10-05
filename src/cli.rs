@@ -230,7 +230,7 @@ fn resynth() -> Result<(), ()> {
 }
 
 fn main() {
-    if matches!(resynth(), Err(_)) {
+    if resynth().is_err() {
         std::process::exit(1);
     }
 }

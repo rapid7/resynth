@@ -20,21 +20,17 @@ pub struct Call {
     pub args: Vec<ArgExpr>
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub enum Expr {
+    #[default]
     Nil,
+
     Literal(Loc, Val),
     ObjectRef(ObjectRef), // ObjectRef contains loc
     Call(Call), // Call contains obj which contains loc
 
     /* Binary operators */
     Slash(Box<Expr>, Box<Expr>),
-}
-
-impl Default for Expr {
-    fn default() -> Self {
-        Expr::Nil
-    }
 }
 
 #[derive(Debug)]
@@ -59,8 +55,9 @@ pub enum Stmt {
     Expr(Expr),
 }
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, Default)]
 enum State {
+    #[default]
     Initial,
 
     Import,
@@ -113,12 +110,6 @@ enum State {
     ReduceStmt,
 
     Accept,
-}
-
-impl Default for State {
-    fn default() -> Self {
-        State::Initial
-    }
 }
 
 #[derive(Debug)]
