@@ -94,7 +94,7 @@ impl PcapWriter {
         }
 
         let hdr: Hdr<pcap_pkt> = pkt.lower_headroom();
-        let mut pcap_hdr = pkt.get_mut_hdr(hdr);
+        let pcap_hdr = pkt.get_mut_hdr(hdr);
 
         pcap_hdr.sec = self.cnt as u32;
         pcap_hdr.len = len;
