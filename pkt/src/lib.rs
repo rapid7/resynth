@@ -14,7 +14,7 @@ pub use pcap::{PcapWriter, LinkType};
 pub use util::AsBytes;
 
 mod util;
-pub(self) use util::Serialize;
+use util::Serialize;
 
 use std::fmt;
 use std::fmt::Write;
