@@ -9,6 +9,7 @@ use std::path::{Path, PathBuf};
 use std::{fs, io};
 
 use clap::{error::ErrorKind, value_parser, Arg, ArgAction, Command};
+use clap::{crate_name, crate_version, crate_authors, crate_description};
 use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
 
 /// A [source code location](Loc) and an [error code](Error)
@@ -100,10 +101,10 @@ pub fn process_file(
 fn resynth() -> Result<(), ()> {
     let mut ret = Ok(());
 
-    let mut cmd = Command::new("resynth")
-        .version("0.1")
-        .author("Gianni Teesco <gianni@scaramanga.co.uk>")
-        .about("Packet synthesis language")
+    let mut cmd = Command::new(crate_name!())
+        .version(crate_version!())
+        .author(crate_authors!())
+        .about(crate_description!())
         .arg(
             Arg::new("color")
                 .long("color")
