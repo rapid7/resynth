@@ -15,11 +15,7 @@ pub struct Erspan1Frame {
 
 impl Erspan1Frame {
     pub fn new(src: Ipv4Addr, dst: Ipv4Addr, raw: bool) -> Self {
-        Self {
-            src,
-            dst,
-            raw,
-        }
+        Self { src, dst, raw }
     }
 
     pub fn raw(mut self, raw: bool) -> Self {
@@ -47,7 +43,9 @@ impl Erspan1Frame {
             ethertype::ERSPAN_1_2,
             self.raw,
             p.len(),
-        ).push(p).into()
+        )
+        .push(p)
+        .into()
     }
 }
 
@@ -60,10 +58,7 @@ pub struct Erspan1Flow {
 }
 
 impl Erspan1Flow {
-    pub fn new(cl: Ipv4Addr,
-               sv: Ipv4Addr,
-               raw: bool,
-               ) -> Self {
+    pub fn new(cl: Ipv4Addr, sv: Ipv4Addr, raw: bool) -> Self {
         //println!("trace: vxlan:flow({:?}, {:?}, {:#x})", cl, sv, ethertype);
         Self {
             cl,
@@ -77,9 +72,7 @@ impl Erspan1Flow {
         Erspan1Frame::new(self.cl, self.sv, self.raw)
     }
 
-    pub fn encap(&mut self,
-                 bytes: &[u8],
-                 ) -> Packet {
+    pub fn encap(&mut self, bytes: &[u8]) -> Packet {
         //println!("trace: vxlan:encap({} bytes)", bytes.len());
         self.dgram().encap(bytes)
     }

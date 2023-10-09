@@ -1,11 +1,11 @@
 use phf::phf_map;
 
+use crate::args::Args;
 use crate::err::Error;
 use crate::err::Error::RuntimeError;
 use crate::libapi::Module;
 use crate::sym::Symbol;
 use crate::val::Val;
-use crate::args::Args;
 
 pub fn unimplemented(mut args: Args) -> Result<Val, Error> {
     println!("Unimplemented stdlib call");
@@ -13,19 +13,19 @@ pub fn unimplemented(mut args: Args) -> Result<Val, Error> {
     Err(RuntimeError)
 }
 
-mod text;
-mod io;
-mod ipv4;
-mod dns;
-mod netbios;
-mod dhcp;
 mod arp;
-mod tls;
-mod vxlan;
-mod gre;
-mod eth;
+mod dhcp;
+mod dns;
 mod erspan1;
 mod erspan2;
+mod eth;
+mod gre;
+mod io;
+mod ipv4;
+mod netbios;
+mod text;
+mod tls;
+mod vxlan;
 
 const STDLIB: phf::Map<&'static str, Symbol> = phf_map! {
     "text" => Symbol::Module(&text::MODULE),
@@ -50,7 +50,7 @@ pub fn toplevel_module(name: &str) -> Option<&'static Module> {
         Some(Symbol::Func(_)) | Some(Symbol::Val(_)) => {
             /* There shouldn't be any top level function or variable */
             unreachable!();
-        },
+        }
     }
 }
 

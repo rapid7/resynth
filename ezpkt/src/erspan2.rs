@@ -1,8 +1,8 @@
 use std::net::Ipv4Addr;
 
+use pkt::erspan2::{erspan2_hdr, Erspan2};
 use pkt::eth::ethertype;
 use pkt::gre::GreFlags;
-use pkt::erspan2::{Erspan2, erspan2_hdr};
 use pkt::Packet;
 
 use crate::GreFrame;
@@ -82,10 +82,7 @@ pub struct Erspan2Flow {
 }
 
 impl Erspan2Flow {
-    pub fn new(cl: Ipv4Addr,
-               sv: Ipv4Addr,
-               raw: bool,
-               ) -> Self {
+    pub fn new(cl: Ipv4Addr, sv: Ipv4Addr, raw: bool) -> Self {
         //println!("trace: vxlan:flow({:?}, {:?}, {:#x})", cl, sv, ethertype);
         Self {
             cl,
@@ -105,20 +102,15 @@ impl Erspan2Flow {
     }
 
     fn dgram(&mut self) -> Erspan2Frame {
-        Erspan2Frame::new(self.cl, self.sv, self.raw)
-            .seq(self.next_seq())
+        Erspan2Frame::new(self.cl, self.sv, self.raw).seq(self.next_seq())
     }
 
     fn erspan(&self) -> Erspan2 {
-        Erspan2::default()
-            .session_id(self.session_id)
+        Erspan2::default().session_id(self.session_id)
     }
 
-    pub fn encap(&mut self,
-                 bytes: &[u8],
-                 port_index: u32) -> Packet {
-        let flags = self.erspan()
-                        .port_index(port_index);
+    pub fn encap(&mut self, bytes: &[u8], port_index: u32) -> Packet {
+        let flags = self.erspan().port_index(port_index);
 
         //println!("trace: vxlan:encap({} bytes)", bytes.len());
         self.dgram().erspan(flags).encap(bytes)

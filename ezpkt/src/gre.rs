@@ -1,9 +1,9 @@
 use std::net::Ipv4Addr;
 
 use pkt::eth::{eth_hdr, ethertype};
+use pkt::gre::{gre_hdr, gre_hdr_seq, GreFlags};
 use pkt::ipv4::{ip_hdr, proto};
-use pkt::gre::{GreFlags, gre_hdr, gre_hdr_seq};
-use pkt::{Packet, Hdr, Serialize};
+use pkt::{Hdr, Packet, Serialize};
 
 /// Helper for creating GRE frames
 pub struct GreFrame {
@@ -13,32 +13,24 @@ pub struct GreFrame {
 }
 
 impl GreFrame {
-    const RAW_OVERHEAD: usize =
-        std::mem::size_of::<ip_hdr>()
-        + std::mem::size_of::<gre_hdr>();
+    const RAW_OVERHEAD: usize = std::mem::size_of::<ip_hdr>() + std::mem::size_of::<gre_hdr>();
 
-    const OVERHEAD: usize =
-        std::mem::size_of::<eth_hdr>()
-        + Self::RAW_OVERHEAD;
+    const OVERHEAD: usize = std::mem::size_of::<eth_hdr>() + Self::RAW_OVERHEAD;
 
-    pub fn new(src: Ipv4Addr,
-               dst: Ipv4Addr,
-               flags: GreFlags,
-               proto: u16,
-               raw: bool,
-               extra: usize,
-               ) -> Self {
-
+    pub fn new(
+        src: Ipv4Addr,
+        dst: Ipv4Addr,
+        flags: GreFlags,
+        proto: u16,
+        raw: bool,
+        extra: usize,
+    ) -> Self {
         let pkt = if raw {
             Packet::with_capacity(Self::RAW_OVERHEAD + extra)
         } else {
             let pkt = Packet::with_capacity(Self::OVERHEAD + extra);
 
-            pkt.push(eth_hdr::new(
-                src.into(),
-                dst.into(),
-                ethertype::IPV4,
-            ));
+            pkt.push(eth_hdr::new(src.into(), dst.into(), ethertype::IPV4));
 
             pkt
         };
@@ -50,10 +42,7 @@ impl GreFrame {
             .set_daddr(dst)
             .calc_csum();
 
-        let greh = gre_hdr::new(
-            flags,
-            proto,
-        );
+        let greh = gre_hdr::new(flags, proto);
 
         let ip = pkt.push(iph);
         let gre = pkt.push(greh);
@@ -62,25 +51,20 @@ impl GreFrame {
             let seq: Hdr<gre_hdr_seq> = pkt.push_hdr();
             let seq_len = seq.len() as u16;
 
-            ip.mutate(&pkt, |iph| { iph.add_tot_len(seq_len); } );
+            ip.mutate(&pkt, |iph| {
+                iph.add_tot_len(seq_len);
+            });
 
             Some(seq)
         } else {
             None
         };
 
-
-        Self {
-            pkt,
-            ip,
-            seq,
-        }
+        Self { pkt, ip, seq }
     }
 
     fn update_tot_len(&mut self, more: u16) {
-        self.ip.get_mut(&self.pkt)
-            .add_tot_len(more)
-            .calc_csum();
+        self.ip.get_mut(&self.pkt).add_tot_len(more).calc_csum();
     }
 
     pub fn push_hdr<T: Serialize>(&mut self) -> Hdr<T> {
@@ -102,16 +86,14 @@ impl GreFrame {
 
     pub fn seq(self, seq: u32) -> Self {
         if let Some(shdr) = self.seq {
-            shdr.get(&self.pkt)
-                .seq(seq);
+            shdr.get(&self.pkt).seq(seq);
         };
         self
     }
-
 }
 
 impl From<GreFrame> for Packet {
-    fn from(seg: GreFrame) -> Self{
+    fn from(seg: GreFrame) -> Self {
         seg.pkt
     }
 }
@@ -127,12 +109,7 @@ pub struct GreFlow {
 }
 
 impl GreFlow {
-    pub fn new(cl: Ipv4Addr,
-               sv: Ipv4Addr,
-               flags: GreFlags,
-               ethertype: u16,
-               raw: bool,
-               ) -> Self {
+    pub fn new(cl: Ipv4Addr, sv: Ipv4Addr, flags: GreFlags, ethertype: u16, raw: bool) -> Self {
         //println!("trace: vxlan:flow({:?}, {:?}, {:#x})", cl, sv, ethertype);
         Self {
             cl,
@@ -153,13 +130,15 @@ impl GreFlow {
     }
 
     fn dgram(&mut self, extra: usize) -> GreFrame {
-        GreFrame::new(self.cl,
-                      self.sv,
-                      self.flags,
-                      self.ethertype,
-                      self.raw,
-                      extra)
-            .seq(self.next_seq())
+        GreFrame::new(
+            self.cl,
+            self.sv,
+            self.flags,
+            self.ethertype,
+            self.raw,
+            extra,
+        )
+        .seq(self.next_seq())
     }
 
     pub fn encap(&mut self, bytes: &[u8]) -> Packet {

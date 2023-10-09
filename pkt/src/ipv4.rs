@@ -1,7 +1,7 @@
 use std::net::Ipv4Addr;
 
-use crate::Serialize;
 use crate::util::AsBytes;
+use crate::Serialize;
 
 pub mod proto {
     pub const ICMP: u8 = 1;
@@ -346,19 +346,19 @@ impl udp_hdr {
     }
 }
 
-pub const ICMP_ECHOREPLY: u8 = 0;       /* Echo Reply */
-pub const ICMP_DEST_UNREACH: u8 = 3;    /* Destination Unreachable */
-pub const ICMP_SOURCE_QUENCH: u8 = 4;   /* Source Quench */
-pub const ICMP_REDIRECT: u8 = 5;        /* Redirect (change route) */
-pub const ICMP_ECHO: u8 = 8;            /* Echo Request */
-pub const ICMP_TIME_EXCEEDED: u8 = 11;  /* Time Exceeded */
-pub const ICMP_PARAMETERPROB: u8 = 12;  /* Parameter Problem */
-pub const ICMP_TIMESTAMP: u8 = 13;      /* Timestamp Request */
+pub const ICMP_ECHOREPLY: u8 = 0; /* Echo Reply */
+pub const ICMP_DEST_UNREACH: u8 = 3; /* Destination Unreachable */
+pub const ICMP_SOURCE_QUENCH: u8 = 4; /* Source Quench */
+pub const ICMP_REDIRECT: u8 = 5; /* Redirect (change route) */
+pub const ICMP_ECHO: u8 = 8; /* Echo Request */
+pub const ICMP_TIME_EXCEEDED: u8 = 11; /* Time Exceeded */
+pub const ICMP_PARAMETERPROB: u8 = 12; /* Parameter Problem */
+pub const ICMP_TIMESTAMP: u8 = 13; /* Timestamp Request */
 pub const ICMP_TIMESTAMPREPLY: u8 = 14; /* Timestamp Reply */
-pub const ICMP_INFO_REQUEST: u8 = 15;   /* Information Request */
-pub const ICMP_INFO_REPLY: u8 = 16;     /* Information Reply */
-pub const ICMP_ADDRESS: u8 = 17;        /* Address Mask Request */
-pub const ICMP_ADDRESSREPLY: u8 = 18;   /* Address Mask Reply */
+pub const ICMP_INFO_REQUEST: u8 = 15; /* Information Request */
+pub const ICMP_INFO_REPLY: u8 = 16; /* Information Reply */
+pub const ICMP_ADDRESS: u8 = 17; /* Address Mask Request */
+pub const ICMP_ADDRESSREPLY: u8 = 18; /* Address Mask Reply */
 
 /* For ICMP_DEST_UNREACH */
 pub const ICMP_NET_UNREACH: u8 = 0;

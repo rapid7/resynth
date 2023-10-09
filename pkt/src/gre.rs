@@ -31,7 +31,7 @@ pub mod flags {
     pub const FLAGS: u16 = 0x0078;
 
     /// Version (GRE or ENHANCED)
-    pub const V:  u16 = 0x0007;
+    pub const V: u16 = 0x0007;
 }
 
 #[derive(Default, Debug, Copy, Clone, Eq, PartialEq)]
@@ -97,14 +97,14 @@ impl GreFlags {
 impl From<GreFlags> for u16 {
     fn from(s: GreFlags) -> Self {
         ((s.v as u16) & flags::V)
-        | (((s.recur as u16) & 0x7) << 8)
-        | (((s.recur as u16) & 0xf) << 3)
-        | (if s.c { flags::C } else { 0 })
-        | (if s.r { flags::R } else { 0 })
-        | (if s.k { flags::K } else { 0 })
-        | (if s.s { flags::S } else { 0 })
-        | (if s.sr { flags::SR } else { 0 })
-        | (if s.a { flags::A } else { 0 })
+            | (((s.recur as u16) & 0x7) << 8)
+            | (((s.recur as u16) & 0xf) << 3)
+            | (if s.c { flags::C } else { 0 })
+            | (if s.r { flags::R } else { 0 })
+            | (if s.k { flags::K } else { 0 })
+            | (if s.s { flags::S } else { 0 })
+            | (if s.sr { flags::SR } else { 0 })
+            | (if s.a { flags::A } else { 0 })
     }
 }
 
@@ -129,7 +129,9 @@ impl gre_hdr {
     }
 
     pub fn flags<T>(&mut self, flags: T) -> &mut Self
-                    where u16: From<T> {
+    where
+        u16: From<T>,
+    {
         let f: u16 = flags.into();
         self.flags = f.to_be();
         self

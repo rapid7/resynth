@@ -1,7 +1,7 @@
-use std::path::Path;
 use std::fs::File;
 use std::io;
 use std::io::Write;
+use std::path::Path;
 
 use super::Packet;
 use super::Serialize;

@@ -4,11 +4,11 @@ use phf::{phf_map, phf_ordered_map};
 
 use pkt::Packet;
 
-use crate::val::{Val, ValDef, ValType};
-use crate::libapi::{FuncDef, ArgDecl, Class};
-use crate::sym::Symbol;
-use ezpkt::Erspan2Flow;
 use crate::func_def;
+use crate::libapi::{ArgDecl, Class, FuncDef};
+use crate::sym::Symbol;
+use crate::val::{Val, ValDef, ValType};
+use ezpkt::Erspan2Flow;
 
 const ENCAP: FuncDef = func_def!(
     "erspan2::session.encap";

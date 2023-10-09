@@ -1,9 +1,9 @@
-use std::net::{SocketAddrV4, Ipv4Addr};
+use std::net::{Ipv4Addr, SocketAddrV4};
 use std::rc::Rc;
 
 use pkt::eth::{eth_hdr, ethertype};
-use pkt::ipv4::{ip_hdr, ip_csum_fold, ip_csum_partial, ip_pseudo_hdr, udp_hdr, proto};
-use pkt::{Packet, Hdr};
+use pkt::ipv4::{ip_csum_fold, ip_csum_partial, ip_hdr, ip_pseudo_hdr, proto, udp_hdr};
+use pkt::{Hdr, Packet};
 
 #[derive(Debug, PartialEq, Eq)]
 pub struct UdpFlow {
@@ -21,13 +21,9 @@ pub struct UdpDgram {
 }
 
 impl UdpDgram {
-    const RAW_OVERHEAD: usize =
-        std::mem::size_of::<ip_hdr>()
-        + std::mem::size_of::<udp_hdr>();
+    const RAW_OVERHEAD: usize = std::mem::size_of::<ip_hdr>() + std::mem::size_of::<udp_hdr>();
 
-    const OVERHEAD: usize =
-        std::mem::size_of::<eth_hdr>()
-        + Self::RAW_OVERHEAD;
+    const OVERHEAD: usize = std::mem::size_of::<eth_hdr>() + Self::RAW_OVERHEAD;
 
     #[must_use]
     pub fn with_capacity(payload_sz: usize, raw: bool) -> Self {
@@ -48,16 +44,10 @@ impl UdpDgram {
             .set_tot_len(Self::RAW_OVERHEAD as u16)
             .calc_csum();
 
-
         let ip = pkt.push(iph);
         let udp = pkt.push(udp_hdr::default());
 
-        Self {
-            pkt,
-            eth,
-            ip,
-            udp,
-        }
+        Self { pkt, eth, ip, udp }
     }
 
     #[must_use]
@@ -75,16 +65,14 @@ impl UdpDgram {
 
     #[must_use]
     pub fn srcip(self, src: Ipv4Addr) -> Self {
-        self.ip.get_mut(&self.pkt)
-            .set_saddr(src);
+        self.ip.get_mut(&self.pkt).set_saddr(src);
 
         self
     }
 
     #[must_use]
     pub fn frag_off(self, frag_off: u16) -> Self {
-        self.ip.get_mut(&self.pkt)
-            .set_frag_off(frag_off);
+        self.ip.get_mut(&self.pkt).set_frag_off(frag_off);
 
         self
     }
@@ -121,21 +109,19 @@ impl UdpDgram {
     pub fn push<T: AsRef<[u8]>>(self, bytes: T) -> Self {
         let buf = bytes.as_ref();
         self.pkt.push_bytes(buf);
-        self.update_tot_len(buf.len() as u16).update_dgram_len(buf.len() as u16)
+        self.update_tot_len(buf.len() as u16)
+            .update_dgram_len(buf.len() as u16)
     }
 
     #[must_use]
     fn update_tot_len(self, more: u16) -> Self {
-        self.ip.get_mut(&self.pkt)
-            .add_tot_len(more)
-            .calc_csum();
+        self.ip.get_mut(&self.pkt).add_tot_len(more).calc_csum();
         self
     }
 
     #[must_use]
     fn update_dgram_len(self, more: u16) -> Self {
-        self.udp.get_mut(&self.pkt)
-            .add_len(more);
+        self.udp.get_mut(&self.pkt).add_len(more);
         self
     }
 
@@ -151,10 +137,14 @@ impl UdpDgram {
     pub fn csum(self) -> Self {
         let ip_phdr = self.ip_pseudo_hdr(self.csum_len()).csum_partial();
         let udp_hdr = ip_csum_partial(&self.udp.as_bytes(&self.pkt));
-        let payload = ip_csum_partial(&self.udp.bytes_after(&self.pkt,
-                                                           self.udp.len_after(&self.pkt)));
+        let payload = ip_csum_partial(
+            &self
+                .udp
+                .bytes_after(&self.pkt, self.udp.len_after(&self.pkt)),
+        );
 
-        self.udp.get_mut(&self.pkt)
+        self.udp
+            .get_mut(&self.pkt)
             .set_csum(ip_csum_fold(ip_phdr + udp_hdr + payload));
 
         self
@@ -202,11 +192,7 @@ impl From<UdpDgram> for Packet {
 impl UdpFlow {
     pub fn new(cl: SocketAddrV4, sv: SocketAddrV4, raw: bool) -> Self {
         //println!("trace: udp:flow({:?}, {:?})", cl, sv);
-        Self {
-            cl,
-            sv,
-            raw,
-        }
+        Self { cl, sv, raw }
     }
 
     fn clnt(&self) -> UdpDgram {

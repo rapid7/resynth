@@ -1,8 +1,8 @@
 use crate::err::Error::{NameError, TypeError};
-use crate::val::{Val, ValDef};
-use crate::object::ObjRef;
 use crate::libapi::Class;
+use crate::object::ObjRef;
 use crate::sym::Symbol;
+use crate::val::{Val, ValDef};
 
 use phf::phf_map;
 
@@ -27,16 +27,12 @@ impl Class for Tcp {
 
 impl Tcp {
     pub(self) fn new(cl_seq: u32, sv_seq: u32) -> Self {
-        Self {
-            cl_seq,
-            sv_seq,
-        }
+        Self { cl_seq, sv_seq }
     }
 }
 
 #[derive(Debug, PartialEq, Eq)]
-pub(self) struct Udp {
-}
+pub(self) struct Udp {}
 
 impl Class for Udp {
     fn symbols(&self) -> phf::Map<&'static str, Symbol> {
@@ -53,8 +49,7 @@ impl Class for Udp {
 
 impl Udp {
     pub(self) fn new() -> Self {
-        Self {
-        }
+        Self {}
     }
 }
 
@@ -91,7 +86,10 @@ fn obj_neq_type() {
 #[test]
 fn method_lookup() {
     let a = Val::from(Tcp::new(123, 456));
-    assert_eq!(a.lookup_symbol("client_message"), Ok(Symbol::Val(ValDef::from(1))));
+    assert_eq!(
+        a.lookup_symbol("client_message"),
+        Ok(Symbol::Val(ValDef::from(1)))
+    );
 }
 
 #[test]
@@ -112,7 +110,7 @@ fn downcast() {
     let obj_ref = a.borrow();
     let b: &Tcp = obj_ref.as_any().downcast_ref().unwrap();
 
-    assert_eq!( &Tcp::new(123, 456), b);
+    assert_eq!(&Tcp::new(123, 456), b);
 }
 
 #[test]
@@ -124,5 +122,5 @@ fn mut_downcast() {
     b.cl_seq = 111;
     b.sv_seq = 222;
 
-    assert_eq!( Tcp::new(111, 222), *b);
+    assert_eq!(Tcp::new(111, 222), *b);
 }

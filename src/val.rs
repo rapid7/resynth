@@ -1,10 +1,10 @@
-use crate::libapi::FuncDef;
-use crate::sym::Symbol;
-use crate::lex::{TokType, Token};
 use crate::err::Error;
-use crate::err::Error::{NameError, TypeError, ParseError};
-use crate::str::Buf;
+use crate::err::Error::{NameError, ParseError, TypeError};
+use crate::lex::{TokType, Token};
+use crate::libapi::FuncDef;
 use crate::object::{Obj, ObjRef};
+use crate::str::Buf;
+use crate::sym::Symbol;
 use crate::traits::Dispatchable;
 
 use pkt::Packet;
@@ -62,30 +62,21 @@ pub trait Typed {
     }
 
     fn is_integral(&self) -> bool {
-        matches!(self.val_type(),
-            | ValType::Bool
-            | ValType::U8
+        matches!(self.val_type(), |ValType::Bool| ValType::U8
             | ValType::U16
             | ValType::U32
-            | ValType::U64
-        )
+            | ValType::U64)
     }
 
     fn is_string_coercible(&self) -> bool {
-        matches!(self.val_type(),
-            ValType::Str
-            | ValType::U8
-            | ValType::U16
-            | ValType::U32
-            | ValType::U64
-            | ValType::Ip4
+        matches!(
+            self.val_type(),
+            ValType::Str | ValType::U8 | ValType::U16 | ValType::U32 | ValType::U64 | ValType::Ip4
         )
     }
 
     fn is_pktgen_coercible(&self) -> bool {
-        matches!(self.val_type(),
-            ValType::PktGen
-            | ValType::Pkt)
+        matches!(self.val_type(), ValType::PktGen | ValType::Pkt)
     }
 
     fn compatible_with<T: Typed>(&self, other: &T) -> bool {
@@ -189,7 +180,10 @@ impl From<u8> for ValDef {
 }
 */
 
-impl<T> From<&'static T> for ValDef where T: AsRef<[u8]> + ? Sized {
+impl<T> From<&'static T> for ValDef
+where
+    T: AsRef<[u8]> + ?Sized,
+{
     fn from(s: &'static T) -> Self {
         Self::Str(s.as_ref())
     }
@@ -285,7 +279,7 @@ impl From<Val> for bool {
             Val::U16(u) => u != 0,
             Val::U32(u) => u != 0,
             Val::U64(u) => u != 0,
-            _ => unreachable!()
+            _ => unreachable!(),
         }
     }
 }
@@ -297,7 +291,7 @@ impl From<Val> for u64 {
             Val::U16(u) => u as u64,
             Val::U32(u) => u as u64,
             Val::U64(u) => u,
-            _ => unreachable!()
+            _ => unreachable!(),
         }
     }
 }
@@ -309,7 +303,7 @@ impl From<Val> for u32 {
             Val::U16(u) => u as u32,
             Val::U32(u) => u,
             Val::U64(u) => u as u32,
-            _ => unreachable!()
+            _ => unreachable!(),
         }
     }
 }
@@ -321,7 +315,7 @@ impl From<Val> for u16 {
             Val::U16(u) => u,
             Val::U32(u) => u as u16,
             Val::U64(u) => u as u16,
-            _ => unreachable!()
+            _ => unreachable!(),
         }
     }
 }
@@ -333,7 +327,7 @@ impl From<Val> for u8 {
             Val::U16(u) => u as u8,
             Val::U32(u) => u as u8,
             Val::U64(u) => u as u8,
-            _ => unreachable!()
+            _ => unreachable!(),
         }
     }
 }
@@ -342,7 +336,7 @@ impl From<Val> for SocketAddrV4 {
     fn from(v: Val) -> Self {
         match v {
             Val::Sock4(s) => s,
-            _ => unreachable!()
+            _ => unreachable!(),
         }
     }
 }
@@ -351,7 +345,7 @@ impl From<Val> for Ipv4Addr {
     fn from(v: Val) -> Self {
         match v {
             Val::Ip4(a) => a,
-            _ => unreachable!()
+            _ => unreachable!(),
         }
     }
 }
@@ -366,7 +360,7 @@ impl From<Val> for Buf {
             Val::U32(u) => Buf::from(&u.to_be_bytes()),
             Val::U64(u) => Buf::from(&u.to_be_bytes()),
             Val::Ip4(ip) => Buf::from(&u32::from(ip).to_be_bytes()),
-            _ => unreachable!()
+            _ => unreachable!(),
         }
     }
 }
@@ -375,11 +369,12 @@ impl From<Val> for Rc<Vec<Packet>> {
     fn from(v: Val) -> Self {
         match v {
             Val::PktGen(g) => g,
-            Val::Pkt(pkt) => vec!(
+            Val::Pkt(pkt) => vec![
                 // unstable(feature = "arc_unwrap_or_clone")
-                Rc::try_unwrap(pkt).unwrap_or_else(|rc| (*rc).clone())
-            ).into(),
-            _ => unreachable!()
+                Rc::try_unwrap(pkt).unwrap_or_else(|rc| (*rc).clone()),
+            ]
+            .into(),
+            _ => unreachable!(),
         }
     }
 }
@@ -388,7 +383,7 @@ impl From<Val> for Rc<Packet> {
     fn from(v: Val) -> Self {
         match v {
             Val::Pkt(p) => p,
-            _ => unreachable!()
+            _ => unreachable!(),
         }
     }
 }
@@ -398,7 +393,7 @@ impl From<Val> for Option<Ipv4Addr> {
         match v {
             Val::Nil => None,
             Val::Ip4(ip) => Some(ip),
-            _ => unreachable!()
+            _ => unreachable!(),
         }
     }
 }
@@ -444,7 +439,7 @@ impl From<Val> for Option<Buf> {
         match v {
             Val::Nil => None,
             Val::Str(s) => Some(s),
-            _ => unreachable!()
+            _ => unreachable!(),
         }
     }
 }
@@ -459,7 +454,7 @@ impl AsRef<[u8]> for Val {
     fn as_ref(&self) -> &[u8] {
         match self {
             Val::Str(s) => s.as_ref(),
-            _ => unreachable!()
+            _ => unreachable!(),
         }
     }
 }
@@ -488,14 +483,15 @@ impl Typed for Val {
 
 impl Val {
     pub fn str<T>(v: T) -> Self
-        where Buf: From<T>
+    where
+        Buf: From<T>,
     {
         Val::Str(Buf::from(v))
     }
 
     pub fn from_token(tok: &Token) -> Result<Self, Error> {
-        use Val::*;
         use TokType::*;
+        use Val::*;
         let v = tok.val();
         match tok.tok_type() {
             StringLiteral => Ok(Str(v.parse().or(Err(ParseError))?)),
@@ -509,19 +505,19 @@ impl Val {
                 let val: u64 = u64::from_str_radix(hex, 16).or(Err(ParseError))?;
 
                 Ok(U64(val))
-            },
-            _ => unreachable!()
+            }
+            _ => unreachable!(),
         }
     }
 
     pub fn method_lookup(&self, name: &str) -> Result<Self, Error> {
-		let obj = match self {
-			Val::Obj(obj) => obj,
-			_ => {
+        let obj = match self {
+            Val::Obj(obj) => obj,
+            _ => {
                 println!("no methods for non-object: {:?}", self.val_type());
                 return Err(TypeError);
             }
-		};
+        };
 
         let sym = obj.lookup_symbol(name).ok_or(NameError)?;
 
@@ -535,14 +531,14 @@ impl Val {
     }
 
     pub fn lookup_symbol(&self, name: &str) -> Result<Symbol, Error> {
-		match self {
-			Val::Obj(obj) => obj.lookup_symbol(name).ok_or(NameError),
-			_ => {
+        match self {
+            Val::Obj(obj) => obj.lookup_symbol(name).ok_or(NameError),
+            _ => {
                 println!("no symbols for non-object: {:?}", self.val_type());
                 Err(TypeError)
             }
-		}
-	}
+        }
+    }
 }
 
 impl From<Packet> for Buf {

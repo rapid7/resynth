@@ -1,10 +1,10 @@
 use phf::{phf_map, phf_ordered_map};
 
-use crate::val::{ValType, Val, ValDef};
-use crate::str::Buf;
-use crate::libapi::{FuncDef, ArgDecl, Class};
-use crate::sym::Symbol;
 use crate::func_def;
+use crate::libapi::{ArgDecl, Class, FuncDef};
+use crate::str::Buf;
+use crate::sym::Symbol;
+use crate::val::{Val, ValDef, ValType};
 
 use ezpkt::TcpFlow;
 use pkt::Packet;
@@ -403,7 +403,6 @@ const TCP_FLOW: FuncDef = func_def!(
         Ok(Val::from(TcpFlow::new(cl.into(), sv.into(), cl_seq, sv_seq, raw)))
     }
 );
-
 
 pub const TCP4: phf::Map<&'static str, Symbol> = phf_map! {
     "flow" => Symbol::Func(&TCP_FLOW),

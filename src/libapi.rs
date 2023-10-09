@@ -1,12 +1,12 @@
+use crate::args::{ArgSpec, ArgVec, Args};
 use crate::err::Error;
 use crate::err::Error::TypeError;
-use crate::val::{Val, ValType, ValDef, Typed};
 use crate::object::ObjRef;
-use crate::args::{Args, ArgVec, ArgSpec};
 use crate::sym::Symbol;
+use crate::val::{Typed, Val, ValDef, ValType};
 
-use std::fmt::Debug;
 use std::collections::HashMap;
+use std::fmt::Debug;
 
 /// Argument declarator
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -93,16 +93,18 @@ impl FuncDef {
                                 state = State::CollectOnly;
                                 continue;
                             }
-                            println!("ERR: {}: Too many positional args: {} > {}",
-                                     self.name,
-                                     positional.len(),
-                                     self.args.len());
+                            println!(
+                                "ERR: {}: Too many positional args: {} > {}",
+                                self.name,
+                                positional.len(),
+                                self.args.len()
+                            );
                             return Err(TypeError);
                         } else {
                             positional.push(arg.val);
                             break;
                         }
-                    },
+                    }
                     State::Named => {
                         if arg.is_anon() {
                             state = State::CollectOnly;
@@ -133,36 +135,43 @@ impl FuncDef {
                             // supplied twice and the invariant is broken.
                             Some(index) => {
                                 if index < positional.len() {
-                                    println!("ERR: {}: Positional arg \"{}\" multiply specified",
-                                             self.name, &name);
+                                    println!(
+                                        "ERR: {}: Positional arg \"{}\" multiply specified",
+                                        self.name, &name
+                                    );
                                     return Err(TypeError);
                                 }
-                            },
+                            }
                         }
 
                         // Invariant: No argument may be supplied with a value more than once
                         if named.contains_key(&name) {
-                            println!("ERR: {}: Argument \"{}\" multiply specified",
-                                     self.name, &name);
+                            println!(
+                                "ERR: {}: Argument \"{}\" multiply specified",
+                                self.name, &name
+                            );
                             return Err(TypeError);
                         }
 
                         named.insert(name, arg.val);
                         break;
-                    },
+                    }
                     State::CollectOnly => {
                         if !self.is_collect() {
                             println!("ERR: {}: Unexpected collect-arguments", self.name);
                             return Err(TypeError);
                         }
                         if arg.is_named() {
-                            println!("ERR: {}: Unexpected named argument: \"{}\"",
-                                     self.name, arg.name.unwrap());
+                            println!(
+                                "ERR: {}: Unexpected named argument: \"{}\"",
+                                self.name,
+                                arg.name.unwrap()
+                            );
                             return Err(TypeError);
                         }
                         extra.push(arg.val);
                         break;
-                    },
+                    }
                 }
             }
         }
@@ -171,23 +180,29 @@ impl FuncDef {
         named.shrink_to_fit();
         extra.shrink_to_fit();
 
-        Ok(ArgPrep {positional, named, extra})
+        Ok(ArgPrep {
+            positional,
+            named,
+            extra,
+        })
     }
 
     pub fn argvec(&self, this: Option<ObjRef>, args: Vec<ArgSpec>) -> Result<ArgVec, Error> {
-        let ArgPrep {positional, mut named, extra} = self.split_args(args)?;
+        let ArgPrep {
+            positional,
+            mut named,
+            extra,
+        } = self.split_args(args)?;
         let nr_positional = positional.len();
         let nr_named = named.len();
         let nr_specified = nr_positional + nr_named;
 
         // Now do some basic sanity checks to stup us shooting ourselves in the foot later
         if nr_specified < self.min_args {
-            println!("ERR: {}: Not enough specified args: {} ({} + {}) < {}",
-                     self.name,
-                     nr_specified,
-                     nr_positional,
-                     nr_named,
-                     self.min_args);
+            println!(
+                "ERR: {}: Not enough specified args: {} ({} + {}) < {}",
+                self.name, nr_specified, nr_positional, nr_named, self.min_args
+            );
             return Err(TypeError);
         }
 
@@ -212,8 +227,10 @@ impl FuncDef {
                 args.push((*dfl).into());
             } else {
                 // not specified, and we're mandatory, barf
-                println!("ERR: {}: Positional argument \"{}\" not specified",
-                         self.name, name);
+                println!(
+                    "ERR: {}: Positional argument \"{}\" not specified",
+                    self.name, name
+                );
                 return Err(TypeError);
             }
         }
@@ -223,11 +240,13 @@ impl FuncDef {
         // 3. Final type-check of all positional args
         for ((name, spec), arg) in self.args.entries().zip(args.iter()) {
             if !match spec {
-                ArgDecl::Positional(typ) => { typ.compatible_with(arg) }
-                ArgDecl::Named(dfl) => { dfl.arg_compatible(arg) },
+                ArgDecl::Positional(typ) => typ.compatible_with(arg),
+                ArgDecl::Named(dfl) => dfl.arg_compatible(arg),
             } {
-                println!("ERR: {}: Argument type-check failed for {:?}",
-                         self.name, name);
+                println!(
+                    "ERR: {}: Argument type-check failed for {:?}",
+                    self.name, name
+                );
                 return Err(TypeError);
             }
         }
