@@ -1,16 +1,16 @@
-use std::os::unix::ffi::OsStrExt;
 use std::ffi::OsStr;
-use std::path::Path;
 use std::fs::File;
 use std::io::Read;
+use std::os::unix::ffi::OsStrExt;
+use std::path::Path;
 
 use phf::{phf_map, phf_ordered_map};
 
-use crate::val::{ValType, Val};
-use crate::libapi::{FuncDef, ArgDecl, Class};
-use crate::sym::Symbol;
-use crate::str::Buf;
 use crate::func_def;
+use crate::libapi::{ArgDecl, Class, FuncDef};
+use crate::str::Buf;
+use crate::sym::Symbol;
+use crate::val::{Val, ValType};
 
 const IO_FILE: FuncDef = func_def!(
     "file";
@@ -60,7 +60,10 @@ impl BufIo {
     }
 }
 
-impl<T> From<T> for BufIo where T: AsRef<[u8]> {
+impl<T> From<T> for BufIo
+where
+    T: AsRef<[u8]>,
+{
     fn from(s: T) -> Self {
         Self {
             buf: Vec::from(s.as_ref()),
@@ -129,7 +132,6 @@ const BUFIO: FuncDef = func_def!(
         Ok(Val::from(BufIo::from(bytes.as_ref())))
     }
 );
-
 
 pub const MODULE: phf::Map<&'static str, Symbol> = phf_map! {
     "file" => Symbol::Func(&IO_FILE),

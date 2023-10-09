@@ -1,19 +1,19 @@
-use crate::parse::{ObjectRef, Call, Expr, Import, Assign, Stmt};
-use crate::err::Error;
-use crate::err::Error::{ImportError, NameError, TypeError, MultipleAssignError};
-use crate::val::{Val, Typed, ValType};
-use crate::object::ObjRef;
 use crate::args::{ArgExpr, ArgSpec};
+use crate::err::Error;
+use crate::err::Error::{ImportError, MultipleAssignError, NameError, TypeError};
 use crate::libapi::{FuncDef, Module};
-use crate::sym::Symbol;
-use crate::stdlib::toplevel_module;
 use crate::loc::Loc;
+use crate::object::ObjRef;
+use crate::parse::{Assign, Call, Expr, Import, ObjectRef, Stmt};
+use crate::stdlib::toplevel_module;
+use crate::sym::Symbol;
+use crate::val::{Typed, Val, ValType};
 
 use pkt::PcapWriter;
 
-use std::rc::Rc;
 use std::collections::HashMap;
 use std::net::SocketAddrV4;
+use std::rc::Rc;
 
 type WarningCallback<'a> = &'a mut dyn FnMut(Loc, &str);
 
@@ -62,20 +62,14 @@ impl<'a> Program<'a> {
     }
 
     fn import(&mut self, name: &str, module: &'static Module) -> Result<(), Error> {
-        self.imports.insert(
-            name.to_owned(),
-            module,
-        );
+        self.imports.insert(name.to_owned(), module);
         Ok(())
     }
 
     fn store(&mut self, name: &str, val: Val) -> Result<(), Error> {
         //println!("let {} := {:?}", name, val);
         //println!();
-        self.regs.insert(
-            name.to_owned(),
-            val
-        );
+        self.regs.insert(name.to_owned(), val);
         Ok(())
     }
 
@@ -89,7 +83,7 @@ impl<'a> Program<'a> {
             None => {
                 println!("You have not imported {}", toplevel);
                 return Err(NameError);
-            },
+            }
             Some(module) => module,
         };
 
@@ -100,11 +94,11 @@ impl<'a> Program<'a> {
                 None => {
                     println!("Can't find module component: {}", c);
                     return Err(NameError);
-                },
+                }
                 _ => {
                     println!("Component is not module: {}", c);
                     return Err(TypeError);
-                },
+                }
             }
         }
 
@@ -115,11 +109,11 @@ impl<'a> Program<'a> {
             Some(Symbol::Module(_)) => {
                 println!("Component is a module, cannot be a variable: {}", topvar);
                 return Err(TypeError);
-            },
+            }
             None => {
                 println!("Can't find ref component: {}", topvar);
                 return Err(NameError);
-            },
+            }
         };
 
         for c in obj.components.iter().skip(1) {
@@ -134,7 +128,7 @@ impl<'a> Program<'a> {
     pub fn eval_local_ref(&self, obj: ObjectRef) -> Result<Val, Error> {
         if obj.components.len() > 2 {
             println!("too many components in object: {:?}", obj);
-            return Err(NameError)
+            return Err(NameError);
         }
 
         let var_name = &obj.components[0];
@@ -151,7 +145,7 @@ impl<'a> Program<'a> {
     pub fn eval_obj_ref(&self, obj: ObjectRef) -> Result<Val, Error> {
         if obj.modules.len() > 0 {
             self.eval_extern_ref(obj)
-        }else if obj.components.len() > 0 {
+        } else if obj.components.len() > 0 {
             self.eval_local_ref(obj)
         } else {
             unreachable!();
@@ -162,7 +156,7 @@ impl<'a> Program<'a> {
         let mut ret = Vec::new();
 
         for x in argexprs {
-            let ArgExpr {name, expr} = x;
+            let ArgExpr { name, expr } = x;
             let val = self.eval(expr)?;
             ret.push(ArgSpec::new(name, val));
         }
@@ -171,11 +165,12 @@ impl<'a> Program<'a> {
         Ok(ret)
     }
 
-    fn eval_callable(&mut self,
-                     func: &'static FuncDef,
-                     this: Option<ObjRef>,
-                     argexprs: Vec<ArgExpr>,
-                     ) -> Result<Val, Error> {
+    fn eval_callable(
+        &mut self,
+        func: &'static FuncDef,
+        this: Option<ObjRef>,
+        argexprs: Vec<ArgExpr>,
+    ) -> Result<Val, Error> {
         //dbg!(func);
         //dbg!(&argexprs);
 
@@ -213,33 +208,33 @@ impl<'a> Program<'a> {
             Expr::Literal(loc, lit) => {
                 self.loc = loc;
                 lit
-            },
+            }
             Expr::ObjectRef(obj) => {
                 self.loc = obj.loc;
                 self.eval_obj_ref(obj)?
-            },
+            }
             Expr::Call(call) => {
                 self.loc = call.obj.loc;
                 self.eval_call(call)?
-            },
+            }
             Expr::Slash(a, b) => {
                 let a = self.eval(*a)?;
                 if !a.is_type(ValType::Ip4) {
-                    return Err(TypeError)
+                    return Err(TypeError);
                 }
 
                 let a_loc = self.loc;
 
                 let b = self.eval(*b)?;
                 if !b.is_integral() {
-                    return Err(TypeError)
+                    return Err(TypeError);
                 }
 
                 /* TODO: Perhaps use location of the operator? */
                 self.loc = a_loc;
 
                 Val::Sock4(SocketAddrV4::new(a.into(), b.into()))
-            },
+            }
         })
     }
 
@@ -303,7 +298,7 @@ impl<'a> Program<'a> {
     pub fn add_expr(&mut self, expr: Expr) -> Result<(), Error> {
         let val = self.eval(expr)?;
         match val {
-            Val::Nil => {},
+            Val::Nil => {}
             Val::Pkt(mut ptr) => {
                 /* XXX: cloning the packet here is wasteful */
                 if let Some(ref mut wr) = self.wr {

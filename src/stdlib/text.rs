@@ -1,10 +1,10 @@
 use phf::{phf_map, phf_ordered_map};
 
-use crate::val::{Val, ValType, ValDef};
-use crate::str::Buf;
-use crate::libapi::FuncDef;
-use crate::sym::Symbol;
 use crate::func_def;
+use crate::libapi::FuncDef;
+use crate::str::Buf;
+use crate::sym::Symbol;
+use crate::val::{Val, ValDef, ValType};
 
 const CONCAT: FuncDef = func_def!(
     "text::concat";

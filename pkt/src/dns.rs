@@ -6,7 +6,7 @@ pub mod opcode {
     pub const STATUS: u8 = 2;
     pub const NOTIFY: u8 = 4;
     pub const UPDATE: u8 = 5;
-    pub const DSO:    u8 = 6;
+    pub const DSO: u8 = 6;
 }
 
 pub mod rcode {
@@ -335,9 +335,7 @@ pub struct DnsName {
 
 impl DnsName {
     pub fn new() -> Self {
-        DnsName {
-            buf: Vec::new(),
-        }
+        DnsName { buf: Vec::new() }
     }
 
     pub fn ptr(ptr: u16) -> Self {
@@ -347,9 +345,7 @@ impl DnsName {
     }
 
     pub fn label(label: &[u8]) -> Self {
-        let mut this = DnsName {
-            buf: Vec::new(),
-        };
+        let mut this = DnsName { buf: Vec::new() };
         this.push(label);
         this
     }
@@ -369,9 +365,7 @@ impl DnsName {
     }
 
     pub fn root() -> Self {
-        DnsName {
-            buf: vec!(0),
-        }
+        DnsName { buf: vec![0] }
     }
 
     #[inline(always)]

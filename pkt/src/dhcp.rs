@@ -60,10 +60,7 @@ impl Serialize for dhcp_opt {}
 
 impl dhcp_opt {
     pub fn new(opt: u8, len: u8) -> Self {
-        Self {
-            opt,
-            len,
-        }
+        Self { opt, len }
     }
 
     pub fn from_buf<T: AsRef<[u8]>>(opt: u8, data: T) -> Self {
