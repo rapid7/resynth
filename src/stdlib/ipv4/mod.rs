@@ -1,25 +1,25 @@
 use phf::{phf_map, phf_ordered_map};
 use std::net::Ipv4Addr;
 
-use pkt::Packet;
 use pkt::eth::{eth_hdr, ethertype};
 use pkt::ipv4::{ip_hdr, proto};
+use pkt::Packet;
 
 use ezpkt::IpFrag;
 
-use crate::val::{ValType, Val, ValDef};
-use crate::libapi::{FuncDef, ArgDecl, Class};
-use crate::sym::Symbol;
-use crate::str::Buf;
 use crate::func_def;
+use crate::libapi::{ArgDecl, Class, FuncDef};
+use crate::str::Buf;
+use crate::sym::Symbol;
+use crate::val::{Val, ValDef, ValType};
 
+mod icmp;
 mod tcp;
 mod udp;
-mod icmp;
 
+use icmp::ICMP4;
 use tcp::TCP4;
 use udp::UDP4;
-use icmp::ICMP4;
 
 const PROTO: phf::Map<&'static str, Symbol> = phf_map! {
     "ICMP" => Symbol::u8(proto::ICMP),
@@ -28,9 +28,7 @@ const PROTO: phf::Map<&'static str, Symbol> = phf_map! {
     "GRE" => Symbol::u8(proto::GRE),
 };
 
-const IPV4_DGRAM_OVERHEAD: usize =
-    std::mem::size_of::<eth_hdr>()
-    + std::mem::size_of::<ip_hdr>();
+const IPV4_DGRAM_OVERHEAD: usize = std::mem::size_of::<eth_hdr>() + std::mem::size_of::<ip_hdr>();
 
 const DGRAM: FuncDef = func_def!(
     "ipv4::datagram";

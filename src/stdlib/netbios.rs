@@ -1,14 +1,14 @@
 use phf::{phf_map, phf_ordered_map};
 
-use pkt::dns::{DnsFlags, rcode};
-use pkt::netbios::{ns, name};
+use pkt::dns::{rcode, DnsFlags};
+use pkt::netbios::{name, ns};
 
-use crate::val::{ValType, Val, ValDef};
-use crate::libapi::{FuncDef, ArgDecl};
 use crate::err::Error::RuntimeError;
-use crate::sym::Symbol;
-use crate::str::Buf;
 use crate::func_def;
+use crate::libapi::{ArgDecl, FuncDef};
+use crate::str::Buf;
+use crate::sym::Symbol;
+use crate::val::{Val, ValDef, ValType};
 
 const OPCODE: phf::Map<&'static str, Symbol> = phf_map! {
     "QUERY" => Symbol::u8(ns::opcode::QUERY),

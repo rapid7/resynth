@@ -1,16 +1,16 @@
 use phf::{phf_map, phf_ordered_map};
 
-use pkt::dns::{opcode, rcode, rrtype, class, dns_hdr, DnsFlags, DnsName};
+use pkt::dns::{class, dns_hdr, opcode, rcode, rrtype, DnsFlags, DnsName};
 use pkt::AsBytes;
 use pkt::Packet;
 
 use ezpkt::UdpFlow;
 
-use crate::val::{ValType, Val, ValDef};
-use crate::libapi::{FuncDef, ArgDecl};
-use crate::sym::Symbol;
-use crate::str::Buf;
 use crate::func_def;
+use crate::libapi::{ArgDecl, FuncDef};
+use crate::str::Buf;
+use crate::sym::Symbol;
+use crate::val::{Val, ValDef, ValType};
 
 use std::net::{Ipv4Addr, SocketAddrV4};
 
@@ -388,7 +388,6 @@ const DNS_HOST: FuncDef = func_def!(
         Ok(pkts.into())
     }
 );
-
 
 pub const DNS: phf::Map<&'static str, Symbol> = phf_map! {
     "opcode" => Symbol::Module(&OPCODE),

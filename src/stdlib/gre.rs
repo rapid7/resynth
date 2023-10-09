@@ -2,14 +2,14 @@ use std::rc::Rc;
 
 use phf::{phf_map, phf_ordered_map};
 
-use pkt::Packet;
 use pkt::gre::GreFlags;
+use pkt::Packet;
 
-use crate::val::{Val, ValDef, ValType};
-use crate::libapi::{FuncDef, ArgDecl, Class};
-use crate::sym::Symbol;
-use ezpkt::GreFlow;
 use crate::func_def;
+use crate::libapi::{ArgDecl, Class, FuncDef};
+use crate::sym::Symbol;
+use crate::val::{Val, ValDef, ValType};
+use ezpkt::GreFlow;
 
 const ENCAP: FuncDef = func_def!(
     "gre::session.encap";

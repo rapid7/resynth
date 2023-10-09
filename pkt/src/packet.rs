@@ -1,5 +1,5 @@
-use std::fmt;
 use std::cell::RefCell;
+use std::fmt;
 use std::ops::{Deref, DerefMut};
 
 use crate::AsBytes;
@@ -30,9 +30,7 @@ impl<T> DerefMut for RefMut<'_, T> {
         let off = self.off;
         let bytes = &self.buf[off..off + Self::size_of()];
 
-        unsafe {
-            &mut *(bytes.as_ptr() as *mut T)
-        }
+        unsafe { &mut *(bytes.as_ptr() as *mut T) }
     }
 }
 
@@ -44,9 +42,7 @@ impl<T> Deref for RefMut<'_, T> {
         let off = self.off;
         let bytes = &self.buf[off..off + Self::size_of()];
 
-        unsafe {
-            &*(bytes.as_ptr() as *const T)
-        }
+        unsafe { &*(bytes.as_ptr() as *const T) }
     }
 }
 
@@ -79,9 +75,7 @@ impl<T> Deref for Ref<'_, T> {
         let len = Self::size_of();
         let bytes = &self.buf[off..off + len];
 
-        unsafe {
-            &*(bytes.as_ptr() as *const T)
-        }
+        unsafe { &*(bytes.as_ptr() as *const T) }
     }
 }
 
@@ -163,7 +157,7 @@ impl<T: AsBytes> Hdr<T> {
         Ref {
             buf: pkt.buf.borrow(),
             off: self.off,
-            phantom: self.phantom
+            phantom: self.phantom,
         }
     }
 
@@ -171,13 +165,13 @@ impl<T: AsBytes> Hdr<T> {
         RefMut {
             buf: pkt.buf.borrow_mut(),
             off: self.off,
-            phantom: self.phantom
+            phantom: self.phantom,
         }
     }
 
     pub fn mutate<F>(&self, pkt: &Packet, f: F)
     where
-        F: FnOnce(&mut T)
+        F: FnOnce(&mut T),
     {
         let mut buf = pkt.buf.borrow_mut();
         let off = self.off;
@@ -188,7 +182,7 @@ impl<T: AsBytes> Hdr<T> {
 
     pub fn mutate_as_bytes<F>(&self, pkt: &Packet, f: F)
     where
-        F: FnOnce(&mut [u8])
+        F: FnOnce(&mut [u8]),
     {
         let mut buf = pkt.buf.borrow_mut();
         let off = self.off;
@@ -209,20 +203,14 @@ impl<T: AsBytes> Hdr<T> {
     pub fn payload(&self, n: usize) -> PktSlice {
         let begin = self.off() + Self::size_of();
 
-        PktSlice {
-            off: begin,
-            len: n,
-        }
+        PktSlice { off: begin, len: n }
     }
 
     /// Get bytes in this header, and then n bytes after
     pub fn packet(&self, n: usize) -> PktSlice {
         let begin = self.off();
 
-        PktSlice {
-            off: begin,
-            len: n,
-        }
+        PktSlice { off: begin, len: n }
     }
 
     /// Immutable reference to the bytes of this header
@@ -272,10 +260,7 @@ pub struct PktSlice {
 
 impl PktSlice {
     fn new(off: usize, len: usize) -> Self {
-        Self {
-            off,
-            len,
-        }
+        Self { off, len }
     }
 
     pub fn off(&self) -> usize {
@@ -308,7 +293,7 @@ impl PktSlice {
 
     pub fn mutate<F>(&self, pkt: &Packet, f: F)
     where
-        F: FnOnce(&mut [u8])
+        F: FnOnce(&mut [u8]),
     {
         let mut buf = pkt.buf.borrow_mut();
         let off = self.off;
@@ -337,10 +322,7 @@ impl fmt::Debug for Packet {
 
 impl Default for Packet {
     fn default() -> Self {
-        Packet::new(
-            Self::DEFAULT_HEADROOM,
-            Self::DEFAULT_CAPACITY,
-        )
+        Packet::new(Self::DEFAULT_HEADROOM, Self::DEFAULT_CAPACITY)
     }
 }
 

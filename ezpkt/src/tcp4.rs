@@ -1,8 +1,8 @@
 use std::net::SocketAddrV4;
 
 use pkt::eth::{eth_hdr, ethertype};
-use pkt::ipv4::{ip_hdr, ip_csum_fold, ip_csum_partial, ip_pseudo_hdr, proto, tcp_hdr};
-use pkt::{Packet, Hdr};
+use pkt::ipv4::{ip_csum_fold, ip_csum_partial, ip_hdr, ip_pseudo_hdr, proto, tcp_hdr};
+use pkt::{Hdr, Packet};
 
 #[derive(Debug, PartialEq, Eq)]
 struct TcpState {
@@ -21,20 +21,11 @@ pub struct TcpSeg {
 }
 
 impl TcpSeg {
-    const RAW_OVERHEAD: usize =
-        std::mem::size_of::<ip_hdr>()
-        + std::mem::size_of::<tcp_hdr>();
+    const RAW_OVERHEAD: usize = std::mem::size_of::<ip_hdr>() + std::mem::size_of::<tcp_hdr>();
 
-    const OVERHEAD: usize =
-        std::mem::size_of::<eth_hdr>()
-        + Self::RAW_OVERHEAD;
+    const OVERHEAD: usize = std::mem::size_of::<eth_hdr>() + Self::RAW_OVERHEAD;
 
-    fn new(src: SocketAddrV4,
-           dst: SocketAddrV4,
-           st: TcpState,
-           raw: bool,
-           ) -> Self {
-
+    fn new(src: SocketAddrV4, dst: SocketAddrV4, st: TcpState, raw: bool) -> Self {
         let saddr = *src.ip();
         let daddr = *dst.ip();
 
@@ -43,11 +34,7 @@ impl TcpSeg {
         } else {
             let pkt = Packet::with_capacity(Self::OVERHEAD);
 
-            pkt.push(eth_hdr::new(
-                saddr.into(),
-                daddr.into(),
-                ethertype::IPV4,
-            ));
+            pkt.push(eth_hdr::new(saddr.into(), daddr.into(), ethertype::IPV4));
 
             pkt
         };
@@ -217,7 +204,7 @@ impl TcpSeg {
 }
 
 impl From<TcpSeg> for Packet {
-    fn from(seg: TcpSeg) -> Self{
+    fn from(seg: TcpSeg) -> Self {
         seg.pkt
     }
 }
@@ -233,12 +220,7 @@ pub struct TcpFlow {
 }
 
 impl TcpFlow {
-    pub fn new(cl: SocketAddrV4,
-               sv: SocketAddrV4,
-               cl_seq: u32,
-               sv_seq: u32,
-               raw: bool,
-               ) -> Self {
+    pub fn new(cl: SocketAddrV4, sv: SocketAddrV4, cl_seq: u32, sv_seq: u32, raw: bool) -> Self {
         Self {
             cl,
             sv,
@@ -289,10 +271,11 @@ impl TcpFlow {
         self.pkts.push(seg.tcp_csum().into());
     }
 
-    pub fn push_state(&mut self,
-                      cl_seq: Option<u32>,
-                      sv_seq: Option<u32>,
-                      ) -> (Option<u32>, Option<u32>) {
+    pub fn push_state(
+        &mut self,
+        cl_seq: Option<u32>,
+        sv_seq: Option<u32>,
+    ) -> (Option<u32>, Option<u32>) {
         let ret = (cl_seq.and(Some(self.cl_seq)), sv_seq.and(Some(self.sv_seq)));
         self.cl_seq = cl_seq.unwrap_or(self.cl_seq);
         self.sv_seq = sv_seq.unwrap_or(self.sv_seq);
@@ -306,17 +289,11 @@ impl TcpFlow {
         self.sv_seq = sv_seq.unwrap_or(self.sv_seq);
     }
 
-    fn cl_seg(&self,
-              bytes: &[u8],
-              frag_off: u16,
-              ) -> TcpSeg {
+    fn cl_seg(&self, bytes: &[u8], frag_off: u16) -> TcpSeg {
         self.cl().frag_off(frag_off).push_bytes(bytes)
     }
 
-    fn sv_seg(&self,
-              bytes: &[u8],
-              frag_off: u16,
-              ) -> TcpSeg {
+    fn sv_seg(&self, bytes: &[u8], frag_off: u16) -> TcpSeg {
         self.sv().frag_off(frag_off).push_bytes(bytes)
     }
 
@@ -338,17 +315,13 @@ impl TcpFlow {
         self.sv_update(bytes);
     }
 
-    pub fn client_data_segment(&mut self,
-                               bytes: &[u8],
-                               ) -> TcpSeg {
+    pub fn client_data_segment(&mut self, bytes: &[u8]) -> TcpSeg {
         let ret = self.cl_seg(bytes, 0);
         self.cl_update(ret.seq_consumed());
         ret.tcp_csum()
     }
 
-    pub fn server_data_segment(&mut self,
-                               bytes: &[u8],
-                               ) -> TcpSeg {
+    pub fn server_data_segment(&mut self, bytes: &[u8]) -> TcpSeg {
         let ret = self.sv_seg(bytes, 0);
         self.sv_update(ret.seq_consumed());
         ret.tcp_csum()
@@ -362,9 +335,7 @@ impl TcpFlow {
         self.sv_ack().tcp_csum()
     }
 
-    pub fn client_hdr(&mut self,
-                      dlen: u32,
-                      ) -> Vec<u8> {
+    pub fn client_hdr(&mut self, dlen: u32) -> Vec<u8> {
         let seg = self.cl().push();
         let hdr = seg.tcp_hdr_bytes();
 
@@ -373,9 +344,7 @@ impl TcpFlow {
         hdr.to_vec()
     }
 
-    pub fn server_hdr(&mut self,
-                      dlen: u32,
-                      ) -> Vec<u8> {
+    pub fn server_hdr(&mut self, dlen: u32) -> Vec<u8> {
         let seg = self.sv().push();
         let hdr = seg.tcp_hdr_bytes();
 
@@ -410,11 +379,7 @@ impl TcpFlow {
         std::mem::take(&mut self.pkts)
     }
 
-    pub fn client_message(&mut self,
-                          bytes: &[u8],
-                          send_ack: bool,
-                          frag_off: u16,
-                          ) -> Vec<Packet> {
+    pub fn client_message(&mut self, bytes: &[u8], send_ack: bool, frag_off: u16) -> Vec<Packet> {
         self.cl_tx(self.cl_seg(bytes, frag_off));
         if send_ack {
             self.sv_tx(self.sv_ack());
@@ -423,11 +388,7 @@ impl TcpFlow {
         std::mem::take(&mut self.pkts)
     }
 
-    pub fn server_message(&mut self,
-                          bytes: &[u8],
-                          send_ack: bool,
-                          frag_off: u16,
-                          ) -> Vec<Packet> {
+    pub fn server_message(&mut self, bytes: &[u8], send_ack: bool, frag_off: u16) -> Vec<Packet> {
         self.sv_tx(self.sv_seg(bytes, frag_off));
         if send_ack {
             self.cl_tx(self.cl_ack());
