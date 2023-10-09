@@ -1,6 +1,6 @@
 use std::net::SocketAddrV4;
 
-use pkt::{Packet, AsBytes, vxlan::vxlan_hdr};
+use pkt::{vxlan::vxlan_hdr, AsBytes, Packet};
 
 use super::UdpDgram;
 
@@ -17,11 +17,7 @@ pub struct VxlanDgram {
 }
 
 impl VxlanDgram {
-    fn new(src: SocketAddrV4,
-           dst: SocketAddrV4,
-           vni: u32,
-           raw: bool,
-           ) -> Self {
+    fn new(src: SocketAddrV4, dst: SocketAddrV4, vni: u32, raw: bool) -> Self {
         Self {
             outer: UdpDgram::with_capacity(std::mem::size_of::<vxlan_hdr>(), raw)
                 .src(src)
@@ -43,18 +39,9 @@ impl From<VxlanDgram> for Packet {
 }
 
 impl VxlanFlow {
-    pub fn new(cl: SocketAddrV4,
-               sv: SocketAddrV4,
-               vni: u32,
-               raw: bool,
-               ) -> Self {
+    pub fn new(cl: SocketAddrV4, sv: SocketAddrV4, vni: u32, raw: bool) -> Self {
         //println!("trace: vxlan:flow({:?}, {:?}, {:#x})", cl, sv, vni);
-        Self {
-            cl,
-            sv,
-            vni,
-            raw,
-        }
+        Self { cl, sv, vni, raw }
     }
 
     fn dgram(&self) -> VxlanDgram {

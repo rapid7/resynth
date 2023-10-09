@@ -2,13 +2,13 @@ use std::cmp::min;
 
 use pkt::eth::{eth_hdr, ethertype};
 use pkt::ipv4::ip_hdr;
-use pkt::{Packet, Hdr};
+use pkt::{Hdr, Packet};
 
 const IPH_LEN: usize = std::mem::size_of::<ip_hdr>();
 const IP_DGRAM_OVERHEAD: usize = std::mem::size_of::<eth_hdr>() + IPH_LEN;
 
 /// Helper for creating IP datagrams
-pub struct IpDgram{
+pub struct IpDgram {
     pkt: Packet,
     ip: Hdr<ip_hdr>,
 }
@@ -30,10 +30,7 @@ impl IpDgram {
 
         pkt.push_bytes(payload);
 
-        Self {
-            pkt,
-            ip,
-        }
+        Self { pkt, ip }
     }
 
     #[must_use]
@@ -41,9 +38,7 @@ impl IpDgram {
         {
             let mut iph = self.ip.get_mut(&self.pkt);
 
-            iph.set_frag_off(frag_off)
-                .set_mf(mf)
-                .calc_csum();
+            iph.set_frag_off(frag_off).set_mf(mf).calc_csum();
         }
 
         self
@@ -65,10 +60,7 @@ pub struct IpFrag {
 impl IpFrag {
     pub fn new(hdr: ip_hdr, payload: Vec<u8>) -> Self {
         //println!("trace: udp:flow({:?}, {:?})", cl, sv);
-        Self {
-            hdr,
-            payload,
-        }
+        Self { hdr, payload }
     }
 
     /// Offset is in 8-byte blocks, len is in bytes
@@ -79,7 +71,9 @@ impl IpFrag {
         let end = min(byte_end, self.payload.len());
         let content = &self.payload[byte_off..end];
 
-        IpDgram::new(self.hdr, content).frag(off, end != self.payload.len()).into()
+        IpDgram::new(self.hdr, content)
+            .frag(off, end != self.payload.len())
+            .into()
     }
 
     /// Offset is in 8-byte blocks, include all bytes until the end
@@ -88,7 +82,9 @@ impl IpFrag {
     }
 
     /// The whole payload in one unfragmented datagram
-    pub fn datagram(&self) -> Packet { 
-        IpDgram::new(self.hdr, &self.payload[..]).frag(0, false).into()
+    pub fn datagram(&self) -> Packet {
+        IpDgram::new(self.hdr, &self.payload[..])
+            .frag(0, false)
+            .into()
     }
 }

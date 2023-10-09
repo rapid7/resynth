@@ -2,13 +2,13 @@ use std::rc::Rc;
 
 use phf::{phf_map, phf_ordered_map};
 
-use pkt::{Packet, vxlan};
+use pkt::{vxlan, Packet};
 
-use crate::val::{Val, ValDef, ValType};
-use crate::libapi::{FuncDef, ArgDecl, Class};
-use crate::sym::Symbol;
-use ezpkt::VxlanFlow;
 use crate::func_def;
+use crate::libapi::{ArgDecl, Class, FuncDef};
+use crate::sym::Symbol;
+use crate::val::{Val, ValDef, ValType};
+use ezpkt::VxlanFlow;
 
 const ENCAP: FuncDef = func_def!(
     "vxlan::flow.encap";
@@ -92,4 +92,3 @@ pub const MODULE: phf::Map<&'static str, Symbol> = phf_map! {
     "session" => Symbol::Func(&SESSION),
     "DEFAULT_PORT" => Symbol::u16(vxlan::DEFAULT_PORT),
 };
-

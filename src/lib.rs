@@ -28,18 +28,18 @@
 
 #[macro_use]
 mod macros;
+mod args;
 mod err;
 mod lex;
+mod libapi;
+mod loc;
+mod object;
 mod parse;
 mod program;
-mod val;
-mod libapi;
 mod str;
-mod object;
-mod args;
 mod sym;
 mod traits;
-mod loc;
+mod val;
 
 pub mod stdlib;
 
@@ -47,7 +47,7 @@ pub mod stdlib;
 mod test;
 
 pub use err::Error;
+pub use lex::{Lexer, Token, EOF};
 pub use loc::Loc;
-pub use lex::{Lexer, EOF, Token};
 pub use parse::{Parser, Stmt};
 pub use program::Program;

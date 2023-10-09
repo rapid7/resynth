@@ -1,16 +1,16 @@
 use phf::{phf_map, phf_ordered_map};
 
-use crate::val::{Val, ValDef, ValType};
-use crate::str::Buf;
-use crate::libapi::{FuncDef, ArgDecl, Class};
-use crate::sym::Symbol;
-use ezpkt::IcmpFlow;
 use crate::func_def;
+use crate::libapi::{ArgDecl, Class, FuncDef};
+use crate::str::Buf;
+use crate::sym::Symbol;
+use crate::val::{Val, ValDef, ValType};
+use ezpkt::IcmpFlow;
 
 const ICMP_ECHO: FuncDef = func_def!(
     "ipv4::icmp::flow.echo";
     ValType::Pkt;
-    
+
     "payload" => ValType::Str,
     =>
     =>

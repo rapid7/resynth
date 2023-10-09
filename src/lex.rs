@@ -4,11 +4,12 @@ use std::slice::Iter;
 use lazy_regex::*;
 use regex::CaptureLocations;
 
-use crate::loc::Loc;
 use crate::err::Error;
 use crate::err::Error::LexError;
+use crate::loc::Loc;
 
-static LEX_RE: Lazy<Regex> = lazy_regex!("^\
+static LEX_RE: Lazy<Regex> = lazy_regex!(
+    "^\
     (?:\
     (?P<whitespace>[^\\S\n][^\\S\n]*)\
     |\
@@ -55,7 +56,8 @@ static LEX_RE: Lazy<Regex> = lazy_regex!("^\
     |\
     (?P<integer_literal>[-]?[0-9][0-9]*)\
     )\
-");
+"
+);
 
 #[derive(Debug, Copy, Clone)]
 pub enum TokType {
@@ -92,12 +94,10 @@ impl TokType {
     pub fn iterator() -> Iter<'static, TokType> {
         const TYPES: [TokType; TokType::Max as usize] = [
             TokType::Eof,
-
             TokType::Whitespace,
             TokType::HashComment,
             TokType::CppComment,
             TokType::NewLine,
-
             TokType::LParen,
             TokType::RParen,
             TokType::Dot,
@@ -107,7 +107,6 @@ impl TokType {
             TokType::Equals,
             TokType::Comma,
             TokType::Slash,
-
             TokType::ImportKeyword,
             TokType::LetKeyword,
             TokType::BooleanLiteral,
@@ -120,8 +119,7 @@ impl TokType {
         TYPES.iter()
     }
 
-    pub fn from_caps(caps: &CaptureLocations,
-                     ) -> Option<(TokType, usize)> {
+    pub fn from_caps(caps: &CaptureLocations) -> Option<(TokType, usize)> {
         for x in TokType::iterator().skip(1) {
             let match_end = match caps.get(*x as usize) {
                 Some((_, to)) => to,
@@ -138,11 +136,9 @@ impl TokType {
     }
 
     pub fn ignore(self) -> bool {
-        matches!(self,
-            TokType::Whitespace
-            | TokType::HashComment
-            | TokType::CppComment
-            | TokType::NewLine
+        matches!(
+            self,
+            TokType::Whitespace | TokType::HashComment | TokType::CppComment | TokType::NewLine
         )
     }
 
@@ -152,9 +148,9 @@ impl TokType {
             TokType::HexIntegerLiteral => Some(val),
             TokType::IntegerLiteral => Some(val),
             TokType::BooleanLiteral => Some(val),
-            TokType::StringLiteral => Some(&val[1..val.len()-1]),
+            TokType::StringLiteral => Some(&val[1..val.len() - 1]),
             TokType::IPv4Literal => Some(val),
-        _ => None,
+            _ => None,
         }
     }
 }
@@ -264,7 +260,7 @@ impl Lexer {
 
             if !tok_type.ignore() {
                 if matches!(tok_type, TokType::StringLiteral) {
-                    string_literals.push(&tok_val[1..m.end()-1]);
+                    string_literals.push(&tok_val[1..m.end() - 1]);
                 } else {
                     if !string_literals.is_empty() {
                         ret.push(Token {

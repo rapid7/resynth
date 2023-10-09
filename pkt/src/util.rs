@@ -4,18 +4,15 @@ pub trait AsBytes {
     fn as_bytes(&self) -> &[u8];
 }
 
-pub trait Serialize {
-}
+pub trait Serialize {}
 
-impl<T> AsBytes for T where T: Serialize {
+impl<T> AsBytes for T
+where
+    T: Serialize,
+{
     #[inline(always)]
     fn as_bytes(&self) -> &[u8] {
         let size = std::mem::size_of::<T>();
-        return unsafe {
-            std::slice::from_raw_parts(
-                &*(self as *const T as *const u8),
-                size,
-            )
-        };
+        return unsafe { std::slice::from_raw_parts(&*(self as *const T as *const u8), size) };
     }
 }

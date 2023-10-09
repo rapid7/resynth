@@ -1,7 +1,7 @@
-use crate::val::{Val, ValDef};
-use crate::parse::Expr;
 use crate::object::ObjRef;
+use crate::parse::Expr;
 use crate::str::Buf;
+use crate::val::{Val, ValDef};
 
 use std::ops::Drop;
 use std::vec;
@@ -15,11 +15,7 @@ pub struct ArgVec {
 
 impl ArgVec {
     pub fn new(this: Option<ObjRef>, args: Vec<Val>, extra: Vec<Val>) -> Self {
-        Self {
-            this,
-            args,
-            extra,
-        }
+        Self { this, args, extra }
     }
 }
 
@@ -53,7 +49,7 @@ impl Args {
     pub fn next(&mut self) -> Val {
         self.it.next().unwrap()
     }
-    
+
     pub fn extra_len(&self) -> usize {
         self.extra_args.len()
     }
@@ -66,10 +62,13 @@ impl Args {
     }
 
     /// Collect all extra args into a vec of the given type
-    pub fn collect_extra_args<T>(&mut self) -> Vec<T> where T: From<Val> {
+    pub fn collect_extra_args<T>(&mut self) -> Vec<T>
+    where
+        T: From<Val>,
+    {
         let source_vec = std::mem::take(&mut self.extra_args);
 
-        source_vec.into_iter().map(|x| -> T { x.into() } ).collect()
+        source_vec.into_iter().map(|x| -> T { x.into() }).collect()
     }
 
     /// Assume extra args are strings and join them up
@@ -103,7 +102,7 @@ impl Args {
                 break;
             }
         }
-        self.extra_args = vec!();
+        self.extra_args = vec![];
     }
 }
 
@@ -111,7 +110,10 @@ impl Drop for Args {
     fn drop(&mut self) {
         assert!(self.this.is_none(), "Method didn't take ownership of this");
         assert!(self.it.next().is_none(), "Function didn't consume all args");
-        assert!(self.extra_args.is_empty(), "Function didn't consume extra args");
+        assert!(
+            self.extra_args.is_empty(),
+            "Function didn't consume extra args"
+        );
     }
 }
 
@@ -123,10 +125,7 @@ pub struct ArgExpr {
 
 impl ArgExpr {
     pub fn new(name: Option<String>, expr: Expr) -> Self {
-        Self {
-            name,
-            expr,
-        }
+        Self { name, expr }
     }
 }
 
@@ -138,10 +137,7 @@ pub struct ArgSpec {
 
 impl ArgSpec {
     pub fn new(name: Option<String>, val: Val) -> Self {
-        Self {
-            name,
-            val,
-        }
+        Self { name, val }
     }
 
     pub fn is_anon(&self) -> bool {
@@ -182,7 +178,10 @@ impl From<u64> for ArgSpec {
 
 // Must take ref because otherwise AsRef<[u8]> can be implemented by stdlib from any other type we
 // convert from in the future and then this would be ambiguous
-impl<T> From<&T> for ArgSpec where T: AsRef<[u8]> + ?Sized {
+impl<T> From<&T> for ArgSpec
+where
+    T: AsRef<[u8]> + ?Sized,
+{
     fn from(s: &T) -> Self {
         Self {
             name: None,

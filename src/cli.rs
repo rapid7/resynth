@@ -1,15 +1,15 @@
 use pkt::PcapWriter;
 
-use resynth::{Error, Loc, Lexer, EOF, Parser, Program};
-use resynth::{warn, error, ok};
+use resynth::{error, ok, warn};
+use resynth::{Error, Lexer, Loc, Parser, Program, EOF};
 
 use std::borrow::Cow;
-use std::path::{Path, PathBuf};
 use std::io::BufRead;
+use std::path::{Path, PathBuf};
 use std::{fs, io};
 
-use clap::{Arg, ArgAction, Command, error::ErrorKind, value_parser};
-use termcolor::{ColorChoice, StandardStream, Color, ColorSpec, WriteColor};
+use clap::{error::ErrorKind, value_parser, Arg, ArgAction, Command};
+use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
 
 /// A [source code location](Loc) and an [error code](Error)
 #[derive(Debug)]
@@ -20,10 +20,7 @@ pub struct ErrorLoc {
 
 impl ErrorLoc {
     pub fn new(loc: Loc, err: Error) -> Self {
-        Self {
-            loc,
-            err,
-        }
+        Self { loc, err }
     }
 }
 
@@ -39,11 +36,12 @@ impl From<io::Error> for ErrorLoc {
     }
 }
 
-pub fn process_file(stdout: &mut StandardStream,
-                    inp: &Path,
-                    out: &Path,
-                    verbose: bool,
-                    ) -> Result<(), ErrorLoc> {
+pub fn process_file(
+    stdout: &mut StandardStream,
+    inp: &Path,
+    out: &Path,
+    verbose: bool,
+) -> Result<(), ErrorLoc> {
     let file = fs::File::open(inp)?;
     let rd = io::BufReader::new(file);
     let wr = {
@@ -59,7 +57,6 @@ pub fn process_file(stdout: &mut StandardStream,
     let mut lex = Lexer::default();
 
     let mut warning = |loc: Loc, warn: &str| {
-
         if loc.is_nil() {
             print!("{}: ", inp.display());
         } else {
@@ -107,42 +104,54 @@ fn resynth() -> Result<(), ()> {
         .version("0.1")
         .author("Gianni Teesco <gianni@scaramanga.co.uk>")
         .about("Packet synthesis language")
-        .arg(Arg::new("color")
-            .long("color")
-            .value_parser(["always", "ansi", "auto", "never"])
-            .default_value("auto")
-            .help("always|ansi|auto|never"))
-        .arg(Arg::new("verbose")
-            .short('v')
-            .long("verbose")
-            .action(ArgAction::SetTrue)
-            .help("Print packets"))
-        .arg(Arg::new("keep")
-            .short('k')
-            .long("keep")
-            .action(ArgAction::SetTrue)
-            .help("Keep pcap files on error"))
-        .arg(Arg::new("out")
-            .short('o')
-            .long("output")
-            .value_name("FILE")
-            .required(false)
-            .value_parser(value_parser!(PathBuf))
-            .action(ArgAction::Append)
-            .help("Filenames for pcap output"))
-        .arg(Arg::new("outdir")
-            .long("out-dir")
-            .value_name("DIR")
-            .default_value(".")
-            .conflicts_with("out")
-            .value_parser(value_parser!(PathBuf))
-            .help("Directory to write pcap files to"))
-        .arg(Arg::new("in")
-            .help("Sets the input file to use")
-            .value_name("FILE")
-            .required(true)
-            .action(ArgAction::Append)
-            .index(1));
+        .arg(
+            Arg::new("color")
+                .long("color")
+                .value_parser(["always", "ansi", "auto", "never"])
+                .default_value("auto")
+                .help("always|ansi|auto|never"),
+        )
+        .arg(
+            Arg::new("verbose")
+                .short('v')
+                .long("verbose")
+                .action(ArgAction::SetTrue)
+                .help("Print packets"),
+        )
+        .arg(
+            Arg::new("keep")
+                .short('k')
+                .long("keep")
+                .action(ArgAction::SetTrue)
+                .help("Keep pcap files on error"),
+        )
+        .arg(
+            Arg::new("out")
+                .short('o')
+                .long("output")
+                .value_name("FILE")
+                .required(false)
+                .value_parser(value_parser!(PathBuf))
+                .action(ArgAction::Append)
+                .help("Filenames for pcap output"),
+        )
+        .arg(
+            Arg::new("outdir")
+                .long("out-dir")
+                .value_name("DIR")
+                .default_value(".")
+                .conflicts_with("out")
+                .value_parser(value_parser!(PathBuf))
+                .help("Directory to write pcap files to"),
+        )
+        .arg(
+            Arg::new("in")
+                .help("Sets the input file to use")
+                .value_name("FILE")
+                .required(true)
+                .action(ArgAction::Append)
+                .index(1),
+        );
 
     let argv = cmd.clone().get_matches();
 
@@ -168,7 +177,10 @@ fn resynth() -> Result<(), ()> {
 
     let in_args = argv.get_many::<String>("in").unwrap();
 
-    let out_args = argv.get_many::<PathBuf>("out").unwrap_or_default().collect::<Vec<_>>();
+    let out_args = argv
+        .get_many::<PathBuf>("out")
+        .unwrap_or_default()
+        .collect::<Vec<_>>();
     let out_dir = argv.get_one::<PathBuf>("outdir");
 
     if use_filenames && out_args.len() != in_args.len() {

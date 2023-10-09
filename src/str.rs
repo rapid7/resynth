@@ -29,7 +29,7 @@ impl Default for Buf {
     #[inline]
     fn default() -> Self {
         Self {
-            inner: Rc::new(vec!()),
+            inner: Rc::new(vec![]),
         }
     }
 }
@@ -38,14 +38,15 @@ impl From<Vec<u8>> for Buf {
     #[inline]
     fn from(mut s: Vec<u8>) -> Self {
         s.shrink_to_fit();
-        Self {
-            inner: Rc::new(s),
-        }
+        Self { inner: Rc::new(s) }
     }
 }
 
 // Must take reference here because otherwise trait can be implented for self
-impl<T> From<&T> for Buf where T: AsRef<[u8]> + ?Sized {
+impl<T> From<&T> for Buf
+where
+    T: AsRef<[u8]> + ?Sized,
+{
     #[inline]
     fn from(s: &T) -> Self {
         Self {
@@ -64,8 +65,7 @@ impl fmt::Debug for Buf {
     }
 }
 
-pub struct StringLiteralParseError {
-}
+pub struct StringLiteralParseError {}
 
 fn hex_decode(chr: char) -> u8 {
     debug_assert!(chr.is_ascii_hexdigit());
@@ -74,7 +74,7 @@ fn hex_decode(chr: char) -> u8 {
         b'0'..=b'9' => c - b'0',
         b'a'..=b'f' => c - b'a' + 10,
         b'A'..=b'F' => c - b'A' + 10,
-        _ => unreachable!()
+        _ => unreachable!(),
     }
 }
 

@@ -2,14 +2,14 @@ use phf::{phf_map, phf_ordered_map};
 
 use std::net::Ipv4Addr;
 
-use pkt::{AsBytes, Packet, ipv4::udp_hdr};
 use ezpkt::{UdpDgram, UdpFlow};
+use pkt::{ipv4::udp_hdr, AsBytes, Packet};
 
-use crate::val::{ValType, Val, ValDef};
-use crate::str::Buf;
-use crate::libapi::{FuncDef, ArgDecl, Class};
-use crate::sym::Symbol;
 use crate::func_def;
+use crate::libapi::{ArgDecl, Class, FuncDef};
+use crate::str::Buf;
+use crate::sym::Symbol;
+use crate::val::{Val, ValDef, ValType};
 
 const BROADCAST: FuncDef = func_def!(
     "ipv4::udp::broadcast";
@@ -251,4 +251,3 @@ pub const UDP4: phf::Map<&'static str, Symbol> = phf_map! {
     "unicast" => Symbol::Func(&UNICAST),
     "hdr" => Symbol::Func(&HDR),
 };
-
