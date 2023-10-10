@@ -8,7 +8,8 @@ info:
       repository: rapid7/resynth
   x-cortex-tag: resynth
   x-cortex-type: service
-  x-cortex-owners: []
+  x-cortex-domain-parents:
+  - tag: insightidr
 openapi: 3.0.1
 servers:
 - url: "/"
