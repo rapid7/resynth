@@ -9,7 +9,7 @@ info:
   x-cortex-tag: resynth
   x-cortex-type: service
   x-cortex-domain-parents:
-  - tag: insightidr
+  - tag: network-sensor
 openapi: 3.0.1
 servers:
 - url: "/"
