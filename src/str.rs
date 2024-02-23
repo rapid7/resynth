@@ -65,6 +65,7 @@ impl fmt::Debug for Buf {
     }
 }
 
+#[derive(Debug)]
 pub struct StringLiteralParseError {}
 
 fn hex_decode(chr: char) -> u8 {
