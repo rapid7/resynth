@@ -50,7 +50,7 @@ static LEX_RE: Lazy<Regex> = lazy_regex!(
         (?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\
     )\
     |\
-    (?P<string_literal>\"(?:\\\\.|[^\"\\\\])*\")\
+    (?P<string_literal>\"(?:[^\"])*\")\
     |\
     (?P<hex_integer_literal>0x[0-9a-fA-F][0-9a-fA-F]*)\
     |\
@@ -59,7 +59,7 @@ static LEX_RE: Lazy<Regex> = lazy_regex!(
 "
 );
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum TokType {
     Eof,
 
@@ -160,11 +160,11 @@ impl TokType {
 /// ## Lifetime
 /// For things like identifiers and string literals, a reference is included to the original
 /// string. So the [Token] must outlive that buffer.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Token<'a> {
-    loc: Loc,
-    typ: TokType,
-    val: Option<Cow<'a, str>>,
+    pub(crate) loc: Loc,
+    pub(crate) typ: TokType,
+    pub(crate) val: Option<Cow<'a, str>>,
 }
 
 impl<'a> Token<'a> {
