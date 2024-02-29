@@ -60,17 +60,14 @@ impl Serialize for dhcp_opt {}
 
 impl dhcp_opt {
     pub fn new(opt: u8, len: u8) -> Self {
-        Self {
-            opt,
-            len,
-        }
+        Self { opt, len }
     }
 
-    pub fn from_buf<T: AsRef<[u8]>>(opt: u8, data: &T) -> Self {
+    pub fn from_buf<T: AsRef<[u8]>>(opt: u8, data: T) -> Self {
         Self::new(opt, data.as_ref().len() as u8)
     }
 
-    pub fn create<T: AsRef<[u8]>>(opt: u8, data: &T) -> Vec<u8> {
+    pub fn create<T: AsRef<[u8]>>(opt: u8, data: T) -> Vec<u8> {
         let buf = data.as_ref();
 
         let hdr = Self::new(opt, buf.len() as u8);
@@ -103,3 +100,35 @@ pub struct dhcp_hdr {
     pub magic: u32,
 }
 impl Serialize for dhcp_hdr {}
+
+impl dhcp_hdr {
+    /// Set client hardware address, silently truncates
+    pub fn set_chaddr<T: AsRef<[u8]>>(&mut self, chaddr: T) -> &mut Self {
+        let buf = chaddr.as_ref();
+        let cplen = std::cmp::min(buf.len(), self.chaddr.len());
+
+        self.chaddr[..cplen].copy_from_slice(&buf[..cplen]);
+
+        self
+    }
+
+    /// Set TFTP server name, silently truncates
+    pub fn set_sname<T: AsRef<[u8]>>(&mut self, sname: T) -> &mut Self {
+        let buf = sname.as_ref();
+        let cplen = std::cmp::min(buf.len(), self.sname.len());
+
+        self.sname[..cplen].copy_from_slice(&buf[..cplen]);
+
+        self
+    }
+
+    /// Set TFTP file name, silently truncates
+    pub fn set_file<T: AsRef<[u8]>>(&mut self, file: T) -> &mut Self {
+        let buf = file.as_ref();
+        let cplen = std::cmp::min(buf.len(), self.file.len());
+
+        self.file[..cplen].copy_from_slice(&buf[..cplen]);
+
+        self
+    }
+}

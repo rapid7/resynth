@@ -1,11 +1,11 @@
-use std::rc::Rc;
-use std::cell::{RefCell, Ref, RefMut};
-use std::ops::Deref;
-use std::fmt::Debug;
 use std::any::Any;
+use std::cell::{Ref, RefCell, RefMut};
+use std::fmt::Debug;
+use std::ops::Deref;
+use std::rc::Rc;
 
-use crate::sym::Symbol;
 use crate::libapi::Class;
+use crate::sym::Symbol;
 use crate::traits::Dispatchable;
 
 pub trait Obj: Class + Debug + Dispatchable {
@@ -24,7 +24,10 @@ impl<T: 'static + PartialEq + Eq + Class + Debug> Obj for T {
     }
 
     fn equals_obj(&self, other: &dyn Obj) -> bool {
-        other.as_any().downcast_ref::<T>().map_or(false, |a| self == a)
+        other
+            .as_any()
+            .downcast_ref::<T>()
+            .map_or(false, |a| self == a)
     }
 }
 
@@ -48,7 +51,7 @@ impl From<Rc<RefCell<dyn Obj>>> for ObjRef {
 impl<T: 'static + Obj> From<T> for ObjRef {
     fn from(obj: T) -> Self {
         Self {
-            inner: Rc::new(RefCell::new(obj))
+            inner: Rc::new(RefCell::new(obj)),
         }
     }
 }
@@ -56,14 +59,14 @@ impl<T: 'static + Obj> From<T> for ObjRef {
 impl Eq for ObjRef {}
 impl PartialEq for ObjRef {
     fn eq(&self, other: &ObjRef) -> bool {
-		self.inner.borrow().equals_obj(other.inner.borrow().deref())
-	}
+        self.inner.borrow().equals_obj(other.inner.borrow().deref())
+    }
 }
 
 impl Dispatchable for ObjRef {
     fn lookup_symbol(&self, name: &str) -> Option<Symbol> {
-		self.inner.borrow().lookup_symbol(name)
-	}
+        self.inner.borrow().lookup_symbol(name)
+    }
 }
 
 impl ObjRef {

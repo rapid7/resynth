@@ -1,7 +1,7 @@
-use crate::val::{Val, ValDef};
-use crate::parse::Expr;
 use crate::object::ObjRef;
+use crate::parse::Expr;
 use crate::str::Buf;
+use crate::val::{Val, ValDef};
 
 use std::ops::Drop;
 use std::vec;
@@ -15,11 +15,7 @@ pub struct ArgVec {
 
 impl ArgVec {
     pub fn new(this: Option<ObjRef>, args: Vec<Val>, extra: Vec<Val>) -> Self {
-        Self {
-            this,
-            args,
-            extra,
-        }
+        Self { this, args, extra }
     }
 }
 
@@ -54,19 +50,28 @@ impl Args {
         self.it.next().unwrap()
     }
 
-    pub fn extra_args(&mut self) -> Vec<Val> {
-        std::mem::take(&mut self.extra_args)
-    }
-    
     pub fn extra_len(&self) -> usize {
         self.extra_args.len()
     }
 
-    // Collect all extra args into a vec of the given type
-    pub fn collect_extra_args<T>(&mut self) -> Vec<T> where T: From<Val> {
-        self.extra_args().into_iter().map(|x| -> T { x.into() } ).collect()
+    /// Extra args can be of any type which is coercible into the specified type so it may be
+    /// dangerous to use this function because you're going to have to remember to coerce
+    /// everything into the right type yourself.
+    pub fn raw_extra_args(&mut self) -> Vec<Val> {
+        std::mem::take(&mut self.extra_args)
     }
 
+    /// Collect all extra args into a vec of the given type
+    pub fn collect_extra_args<T>(&mut self) -> Vec<T>
+    where
+        T: From<Val>,
+    {
+        let source_vec = std::mem::take(&mut self.extra_args);
+
+        source_vec.into_iter().map(|x| -> T { x.into() }).collect()
+    }
+
+    /// Assume extra args are strings and join them up
     pub fn join_extra(&mut self, j: &[u8]) -> Val {
         // We have to collect all the extra_args in to a vec so they can stay owning the bytes that
         // they reference
@@ -79,7 +84,7 @@ impl Args {
         // not owning the strings so that we can have a vec of unowned references for Vec::join to
         // use.
         //
-        // Itertools crate has a better "join" implementation from this use-case. And intersperse
+        // Itertools crate has a better "join" implementation for this use-case. And intersperse
         // in nightly also solves this reasonably well.
         let strs: Vec<&[u8]> = cargs.iter().map(|x| x.as_ref()).collect();
 
@@ -87,7 +92,7 @@ impl Args {
         let ret = strs.join(j);
 
         // Which we can then convert into a buf
-        Val::Str(Buf::from(ret))
+        Val::str(ret)
     }
 
     /// Dumps all remaining, untaken args
@@ -97,7 +102,7 @@ impl Args {
                 break;
             }
         }
-        self.extra_args = vec!();
+        self.extra_args = vec![];
     }
 }
 
@@ -105,7 +110,10 @@ impl Drop for Args {
     fn drop(&mut self) {
         assert!(self.this.is_none(), "Method didn't take ownership of this");
         assert!(self.it.next().is_none(), "Function didn't consume all args");
-        assert!(self.extra_args.is_empty(), "Function didn't consume extra args");
+        assert!(
+            self.extra_args.is_empty(),
+            "Function didn't consume extra args"
+        );
     }
 }
 
@@ -117,10 +125,7 @@ pub struct ArgExpr {
 
 impl ArgExpr {
     pub fn new(name: Option<String>, expr: Expr) -> Self {
-        Self {
-            name,
-            expr,
-        }
+        Self { name, expr }
     }
 }
 
@@ -132,14 +137,15 @@ pub struct ArgSpec {
 
 impl ArgSpec {
     pub fn new(name: Option<String>, val: Val) -> Self {
-        Self {
-            name,
-            val,
-        }
+        Self { name, val }
     }
 
     pub fn is_anon(&self) -> bool {
         self.name.is_none()
+    }
+
+    pub fn is_named(&self) -> bool {
+        self.name.is_some()
     }
 }
 
@@ -170,11 +176,16 @@ impl From<u64> for ArgSpec {
     }
 }
 
-impl<T> From<&T> for ArgSpec where T: AsRef<[u8]> + ? Sized {
+// Must take ref because otherwise AsRef<[u8]> can be implemented by stdlib from any other type we
+// convert from in the future and then this would be ambiguous
+impl<T> From<&T> for ArgSpec
+where
+    T: AsRef<[u8]> + ?Sized,
+{
     fn from(s: &T) -> Self {
         Self {
             name: None,
-            val: Val::Str(Buf::from(s)),
+            val: Val::str(s),
         }
     }
 }

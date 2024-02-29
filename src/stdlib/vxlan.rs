@@ -2,13 +2,13 @@ use std::rc::Rc;
 
 use phf::{phf_map, phf_ordered_map};
 
-use pkt::Packet;
+use pkt::{vxlan, Packet};
 
-use crate::val::{ValType, Val};
-use crate::libapi::{FuncDef, ArgDecl, Class};
-use crate::sym::Symbol;
-use ezpkt::VxlanFlow;
 use crate::func_def;
+use crate::libapi::{ArgDecl, Class, FuncDef};
+use crate::sym::Symbol;
+use crate::val::{Val, ValDef, ValType};
+use ezpkt::VxlanFlow;
 
 const ENCAP: FuncDef = func_def!(
     "vxlan::flow.encap";
@@ -28,7 +28,7 @@ const ENCAP: FuncDef = func_def!(
         let mut ret: Vec<Packet> = Vec::with_capacity(gen.len());
 
         for pkt in gen.iter() {
-            ret.push(this.encap(pkt.as_ref()));
+            ret.push(this.encap(&pkt.as_slice().get(pkt)));
         }
 
         Ok(ret.into())
@@ -49,7 +49,8 @@ const DGRAM: FuncDef = func_def!(
         let mut r = obj.borrow_mut();
         let this: &mut VxlanFlow = r.as_mut_any().downcast_mut().unwrap();
         let pkt: Rc<Packet> = args.next().into();
-        Ok(this.encap(pkt.as_bytes()).into())
+        let ret = Ok(this.encap(&pkt.as_slice().get(&pkt)).into());
+        ret
     }
 );
 
@@ -72,8 +73,9 @@ const SESSION: FuncDef = func_def!(
 
     "cl" => ValType::Sock4,
     "sv" => ValType::Sock4,
-    "sessionid" => ValType::U32,
     =>
+    "sessionid" => ValDef::U32(0), // TODO: Make it optional
+    "raw" => ValDef::Bool(false),
     =>
     ValType::Void;
 
@@ -81,11 +83,12 @@ const SESSION: FuncDef = func_def!(
         let cl = args.next();
         let sv = args.next();
         let vni: u32 = args.next().into();
-        Ok(Val::from(VxlanFlow::new(cl.into(), sv.into(), vni)))
+        let raw: bool = args.next().into();
+        Ok(Val::from(VxlanFlow::new(cl.into(), sv.into(), vni, raw)))
     }
 );
 
 pub const MODULE: phf::Map<&'static str, Symbol> = phf_map! {
     "session" => Symbol::Func(&SESSION),
+    "DEFAULT_PORT" => Symbol::u16(vxlan::DEFAULT_PORT),
 };
-

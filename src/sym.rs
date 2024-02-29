@@ -1,4 +1,4 @@
-use crate::libapi::{Module, FuncDef};
+use crate::libapi::{FuncDef, Module};
 use crate::val::ValDef;
 
 /// A symbol can either point to a [const value](ValDef), [another module](Module), or a [function
@@ -44,21 +44,21 @@ impl PartialEq for Symbol {
                 } else {
                     false
                 }
-            },
+            }
             Symbol::Func(a) => {
                 if let Symbol::Func(b) = other {
                     std::ptr::eq((*a) as *const FuncDef, (*b) as *const FuncDef)
                 } else {
                     false
                 }
-            },
+            }
             Symbol::Val(a) => {
                 if let Symbol::Val(b) = other {
                     a == b
                 } else {
                     false
                 }
-            },
+            }
         }
     }
 }

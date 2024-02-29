@@ -1,14 +1,14 @@
 use phf::{phf_map, phf_ordered_map};
 
-use pkt::dhcp::{opcode, message, opt, CLIENT_PORT, SERVER_PORT, MAGIC, dhcp_opt};
-use pkt::arp::hrd;
 use ezpkt::Dhcp;
+use pkt::arp::hrd;
+use pkt::dhcp::{dhcp_opt, message, opcode, opt, CLIENT_PORT, MAGIC, SERVER_PORT};
 
-use crate::val::{ValType, Val, ValDef};
-use crate::libapi::{FuncDef, ArgDecl};
-use crate::sym::Symbol;
-use crate::str::Buf;
 use crate::func_def;
+use crate::libapi::{ArgDecl, FuncDef};
+use crate::str::Buf;
+use crate::sym::Symbol;
+use crate::val::{Val, ValDef, ValType};
 
 use std::net::Ipv4Addr;
 
@@ -127,7 +127,7 @@ const HDR: FuncDef = func_def!(
             hdr = hdr.file(f);
         }
 
-        Ok(Val::Str(Buf::from(&hdr)))
+        Ok(Val::str(hdr.into_vec()))
     }
 );
 
@@ -144,7 +144,7 @@ const OPTION: FuncDef = func_def!(
         let opt: u8 = args.next().into();
         let data = args.join_extra(b"");
         let optbuf = dhcp_opt::create(opt, &data);
-        Ok(Val::Str(Buf::from(optbuf)))
+        Ok(Val::str(optbuf))
     }
 );
 

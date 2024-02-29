@@ -1,0 +1,76 @@
+import ipv4;
+import dns;
+import vxlan;
+import erspan1;
+import eth;
+
+let client = 192.168.238.112;
+let server = 142.250.207.36;
+let google = 8.8.8.8;
+
+let er = erspan1::session(
+  172.16.0.1,
+  172.16.0.2,
+);
+
+let vx = vxlan::session(
+  10.0.0.1:12345,
+  10.0.0.2/vxlan::DEFAULT_PORT,
+);
+
+er.encap(vx.encap(
+  dns::host(
+    client,
+    "www.google.com",
+    ns: google,
+    server,
+  )
+));
+
+let dns = ipv4::udp::flow(
+  client/13749,
+  google/53,
+);
+
+let req = dns.client_dgram(
+  dns::hdr(
+    id: 0x1234,
+    flags: dns::flags(
+      opcode: dns::opcode::QUERY,
+      rd: 1,
+    ),
+    qdcount: 1,
+  ),
+  dns::question(
+    qname: dns::name("www", "google", "com"),
+    qtype: dns::type::A,
+    qclass: dns::class::IN,
+  )
+);
+
+let resp = dns.server_dgram(
+  dns::hdr(
+    id: 0x1234,
+    flags: dns::flags(
+      response: 1,
+      opcode: dns::opcode::QUERY,
+      ra: 1,
+    ),
+    qdcount: 1,
+    ancount: 1,
+  ),
+  dns::question(
+    qname: dns::name("www", "google", "com"),
+    qtype: dns::type::A,
+    qclass: dns::class::IN,
+  ),
+  dns::answer(
+    aname: dns::name("www", "google", "com"),
+    atype: dns::type::A,
+    aclass: dns::class::IN,
+    server,
+  ),
+);
+
+er.encap(vx.encap(req));
+er.encap(vx.encap(resp));

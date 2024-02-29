@@ -1,5 +1,5 @@
-use std::io;
 use std::fmt;
+use std::io;
 
 /// Error code for resynth program. Think of it as base exception type for the resynth language.
 #[allow(clippy::enum_variant_names)]
@@ -44,7 +44,7 @@ impl PartialEq for Error {
                 } else {
                     false
                 }
-            },
+            }
             NameError => matches!(other, NameError),
             TypeError => matches!(other, TypeError),
             RuntimeError => matches!(other, RuntimeError),
@@ -54,7 +54,7 @@ impl PartialEq for Error {
                 } else {
                     false
                 }
-            },
+            }
         }
     }
 }

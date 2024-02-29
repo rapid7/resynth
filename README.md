@@ -58,11 +58,13 @@ file called `http.pcap` will be created.
 
 
 ## Currently Supported Protocols
-Not only can you write arbitrary TCP, UDP and ICMP packets but there are also
-library modules to help with crafting packets for the following protocols:
-- VXLAN
+Not only can you write arbitrary TCP, UDP, ICMP packets, raw IP packets, and IP
+fragments, but there are also library modules to help with crafting packets for
+the following protocols:
+- VXLAN, ERSPAN Types I & II
 - DHCP
-- DNS (fairly mature, but could do with adding support for more record types)
+- DNS
+- Netbios name service (NBNS)
 - TLS (early stages, still need support for SSL2 and common extensions,
   although you can craft arbitrary TLS frames)
 - I/O: packets can be crafted which include the contents of external files
@@ -98,7 +100,6 @@ The language is pretty bare-bones right now but I plan to add:
 
 I plan to add support for the following protocols to the standard library:
 - Support for PMTU and segmentization of TCP messages
-- Decent support for generating IP fragments
 - More direct support for HTTP
 - SMB2
 - ARP

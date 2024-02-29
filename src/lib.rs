@@ -13,7 +13,7 @@
 //! concepts such as flows
 //! - [crate] The language compiler and interpreter itself is the root of the crate. In future we
 //! will probably move in to its own module at some point in future.
-//! - [stdlib](crate::stdlib) Contains the resynth standard library which is mostly glue to allow
+//! - [stdlib] Contains the resynth standard library which is mostly glue to allow
 //! resynth programs to use the functionality in [pkt] and [ezpkt]
 //!
 //! ## Compiler Phases
@@ -28,18 +28,18 @@
 
 #[macro_use]
 mod macros;
+mod args;
 mod err;
 mod lex;
+mod libapi;
+mod loc;
+mod object;
 mod parse;
 mod program;
-mod val;
-mod libapi;
 mod str;
-mod object;
-mod args;
 mod sym;
 mod traits;
-mod loc;
+mod val;
 
 pub mod stdlib;
 
@@ -47,7 +47,7 @@ pub mod stdlib;
 mod test;
 
 pub use err::Error;
+pub use lex::{Lexer, Token, EOF};
 pub use loc::Loc;
-pub use lex::{Lexer, EOF, Token};
 pub use parse::{Parser, Stmt};
 pub use program::Program;

@@ -1,0 +1,58 @@
+import ipv4;
+import text;
+
+let client = 192.168.9.10;
+let server = 10.10.10.10;
+
+let tcp = ipv4::tcp::flow(
+  client/22301,
+  server/80,
+);
+
+tcp.open();
+
+let a = tcp.client_message(
+  send_ack: false,
+  text::crlflines(
+    "POST /r1.php HTTP/1.1",
+    "User-Agent: Internet Exploder",
+    "Content-Length: 20",
+    "Host: www.google.com",
+    text::CRLF,
+  ),
+);
+
+let b = tcp.client_message(
+  send_ack: false,
+  text::crlflines(
+    "is this HTTP/1.1",
+    text::CRLF,
+  ),
+);
+
+let c = tcp.client_message(
+  send_ack: false,
+  text::crlflines(
+    "POST /r2.php HTTP/1.1",
+    "User-Agent: Internet Exploder",
+    "Content-Length: 20",
+    "Host: www.google.com",
+    text::CRLF,
+  ),
+);
+
+let d = tcp.client_message(
+  send_ack: false,
+  text::crlflines(
+    "this is HTTP/1.1",
+    text::CRLF,
+  ),
+);
+
+d;
+c;
+b;
+a;
+
+tcp.server_ack();
+tcp.server_close();
