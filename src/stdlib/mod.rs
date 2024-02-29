@@ -23,11 +23,13 @@ mod gre;
 mod io;
 mod ipv4;
 mod netbios;
+mod std;
 mod text;
 mod tls;
 mod vxlan;
 
 const STDLIB: phf::Map<&'static str, Symbol> = phf_map! {
+    "std" => Symbol::Module(&std::MODULE),
     "text" => Symbol::Module(&text::MODULE),
     "io" => Symbol::Module(&io::MODULE),
     "ipv4" => Symbol::Module(&ipv4::IPV4),
