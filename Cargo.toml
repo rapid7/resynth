@@ -52,7 +52,7 @@ phf = { version = "0.11", features = ["macros"] }
 # For cli
 atty = { version = "0.2.14", optional = true}
 termcolor = {version = "1.2", optional = true}
-clap = {version = "4.1", optional = true, features = ["cargo"]}
+clap = {version = "4.5.3", optional = true, features = ["cargo"]}
 
 [[bin]]
 name = "resynth"
