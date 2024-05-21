@@ -116,9 +116,11 @@ impl<'a> Program<'a> {
             }
         };
 
-        for c in obj.components.iter().skip(1) {
-            /* We only support functions and string variables in stdlib right now */
-            println!(" > comp: lookup {}", c);
+        /* We only support functions and string variables in stdlib right now */
+        if obj.components.len() > 1 {
+            for c in obj.components.iter().skip(1) {
+                println!(" > comp: lookup {}", c);
+            }
             unreachable!();
         }
 

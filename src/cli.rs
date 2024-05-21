@@ -8,8 +8,8 @@ use std::io::BufRead;
 use std::path::{Path, PathBuf};
 use std::{fs, io};
 
+use clap::{crate_authors, crate_description, crate_name, crate_version};
 use clap::{error::ErrorKind, value_parser, Arg, ArgAction, Command};
-use clap::{crate_name, crate_version, crate_authors, crate_description};
 use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
 
 /// A [source code location](Loc) and an [error code](Error)
