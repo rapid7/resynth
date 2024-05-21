@@ -66,7 +66,10 @@ impl Erspan2Frame {
             Erspan2Frame::OVERHEAD + p.len(),
         );
 
-        gre.seq(self.seq).set_hdr(self.erspan.build()).push(payload).into()
+        gre.seq(self.seq)
+            .set_hdr(self.erspan.build())
+            .push(payload)
+            .into()
     }
 }
 
