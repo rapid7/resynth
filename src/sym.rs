@@ -10,8 +10,6 @@ pub enum Symbol {
     Val(ValDef),
 }
 
-trait UnsignedIntegral {}
-
 impl Symbol {
     /// This const initializer is a convenience helpers for describing modules in static/const
     /// structures where the From trait isn't allowed. Without this, the descriptions become very
