@@ -264,7 +264,7 @@ impl<'a> Program<'a> {
 
         self.loc = import.loc;
 
-        if self.imports.get(name).is_some() {
+        if self.imports.contains_key(name) {
             println!("Multiple imports of {:?}", name);
             return Ok(());
         }
@@ -286,7 +286,7 @@ impl<'a> Program<'a> {
 
         self.loc = assign.loc;
 
-        if self.regs.get(name).is_some() {
+        if self.regs.contains_key(name) {
             return Err(MultipleAssignError(name.to_owned()));
         }
 
