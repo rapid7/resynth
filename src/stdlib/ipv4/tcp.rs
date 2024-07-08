@@ -355,6 +355,38 @@ const TCP_SV_CLOSE: FuncDef = func_def!(
     }
 );
 
+const TCP_CL_RESET: FuncDef = func_def!(
+    "ipv4::tcp::flow.client_reset";
+    ValType::Pkt;
+
+    =>
+    =>
+    ValType::Void;
+
+    |mut args| {
+        let obj = args.take_this();
+        let mut r = obj.borrow_mut();
+        let this: &mut TcpFlow = r.as_mut_any().downcast_mut().unwrap();
+        Ok(this.client_reset().into())
+    }
+);
+
+const TCP_SV_RESET: FuncDef = func_def!(
+    "ipv4::tcp::flow.server_reset";
+    ValType::Pkt;
+
+    =>
+    =>
+    ValType::Void;
+
+    |mut args| {
+        let obj = args.take_this();
+        let mut r = obj.borrow_mut();
+        let this: &mut TcpFlow = r.as_mut_any().downcast_mut().unwrap();
+        Ok(this.server_reset().into())
+    }
+);
+
 impl Class for TcpFlow {
     fn symbols(&self) -> phf::Map<&'static str, Symbol> {
         phf_map! {
@@ -373,6 +405,8 @@ impl Class for TcpFlow {
             "server_hole" => Symbol::Func(&TCP_SV_HOLE),
             "client_close" => Symbol::Func(&TCP_CL_CLOSE),
             "server_close" => Symbol::Func(&TCP_SV_CLOSE),
+            "client_reset" => Symbol::Func(&TCP_CL_RESET),
+            "server_reset" => Symbol::Func(&TCP_SV_RESET),
         }
     }
 
