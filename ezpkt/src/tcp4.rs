@@ -73,6 +73,16 @@ impl TcpSeg {
         self
     }
 
+    fn rst(self) -> Self {
+        {
+            let mut tcph = self.tcp.get_mut(&self.pkt);
+
+            tcph.set_rst();
+        }
+
+        self
+    }
+
     fn syn_ack(mut self) -> Self {
         {
             let mut tcph = self.tcp.get_mut(&self.pkt);
@@ -377,6 +387,14 @@ impl TcpFlow {
         self.sv_tx(self.sv().ack());
 
         std::mem::take(&mut self.pkts)
+    }
+
+    pub fn client_reset(&self) -> Packet {
+        self.cl().rst().into()
+    }
+
+    pub fn server_reset(&self) -> Packet {
+        self.sv().rst().into()
     }
 
     pub fn client_message(&mut self, bytes: &[u8], send_ack: bool, frag_off: u16) -> Vec<Packet> {
