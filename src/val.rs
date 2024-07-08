@@ -31,6 +31,8 @@ pub enum ValType {
     Method,
     Pkt,
     PktGen,
+
+    TimeJump,
 }
 
 /// Both [Val] and [ValDef] have types which corrsepond to each other. In fact [Val] is a subset of
@@ -208,6 +210,7 @@ pub enum Val {
     Method(ObjRef, &'static FuncDef),
     Pkt(Rc<Packet>),
     PktGen(Rc<Vec<Packet>>),
+    TimeJump(u64),
 }
 
 impl From<ValDef> for Val {
@@ -477,6 +480,7 @@ impl Typed for Val {
             Val::Method(..) => Method,
             Val::Pkt(..) => Pkt,
             Val::PktGen(..) => PktGen,
+            Val::TimeJump(..) => TimeJump,
         }
     }
 }

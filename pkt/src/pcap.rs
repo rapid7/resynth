@@ -56,7 +56,6 @@ impl pcap_hdr {
 #[derive(Debug)]
 pub struct PcapWriter {
     wr: io::BufWriter<File>,
-    cnt: usize,
     dbg: bool,
 }
 
@@ -65,13 +64,22 @@ impl PcapWriter {
         let f = File::create(p)?;
         let mut ret = Self {
             wr: io::BufWriter::new(f),
-            cnt: 0,
             dbg: false,
         };
 
         ret.write_header()?;
 
         Ok(ret)
+    }
+
+    #[inline(always)]
+    fn ts_to_secs(time: u64) -> u32 {
+        (time / 1_000_000_000) as u32
+    }
+
+    #[inline(always)]
+    fn ts_to_nsecs(time: u64) -> u32 {
+        (time % 1_000_000_000) as u32
     }
 
     #[must_use]
@@ -86,7 +94,7 @@ impl PcapWriter {
     }
 
     #[inline(always)]
-    pub fn write_packet(&mut self, pkt: &mut Packet) -> Result<(), io::Error> {
+    pub fn write_packet(&mut self, time: u64, pkt: &mut Packet) -> Result<(), io::Error> {
         let len = pkt.len() as u32;
 
         if self.dbg {
@@ -94,8 +102,8 @@ impl PcapWriter {
         }
 
         let pkt_hdr = pcap_pkt {
-            sec: self.cnt as u32,
-            nsec: 0,
+            sec: Self::ts_to_secs(time),
+            nsec: Self::ts_to_nsecs(time),
             len,
             caplen: len,
         };
@@ -106,8 +114,6 @@ impl PcapWriter {
 
             self.wr.write_all(&pktbuf)?;
         }
-
-        self.cnt += 1;
 
         pkt.return_headroom(hdr);
 

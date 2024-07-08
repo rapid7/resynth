@@ -19,6 +19,7 @@ type WarningCallback<'a> = &'a mut dyn FnMut(Loc, &str);
 
 /// The interpreter and program-state
 pub struct Program<'a> {
+    now: u64,
     regs: HashMap<String, Val>,
     imports: HashMap<String, &'static Module>,
     wr: Option<PcapWriter>,
@@ -29,6 +30,7 @@ pub struct Program<'a> {
 impl<'a> Program<'a> {
     pub fn dummy() -> Result<Self, Error> {
         Ok(Program {
+            now: 0,
             regs: HashMap::new(),
             imports: HashMap::new(),
             wr: None,
@@ -39,6 +41,7 @@ impl<'a> Program<'a> {
 
     pub fn with_pcap_writer(wr: PcapWriter) -> Result<Self, Error> {
         Ok(Program {
+            now: 0,
             regs: HashMap::new(),
             imports: HashMap::new(),
             wr: Some(wr),
@@ -297,26 +300,47 @@ impl<'a> Program<'a> {
         Ok(())
     }
 
+    pub fn update_time(&mut self, ns: u64) {
+        // println!("time advance: {} ns", ns);
+
+        self.now += ns;
+    }
+
     pub fn add_expr(&mut self, expr: Expr) -> Result<(), Error> {
         let val = self.eval(expr)?;
         match val {
             Val::Nil => {}
             Val::Pkt(mut ptr) => {
+                self.update_time(ptr.bit_time());
+
                 /* XXX: cloning the packet here is wasteful */
                 if let Some(ref mut wr) = self.wr {
                     let pkt = Rc::make_mut(&mut ptr);
-                    wr.write_packet(pkt).expect("failed to write packet");
+
+                    wr.write_packet(
+                        self.now,
+                        pkt,
+                    ).expect("failed to write packet");
                 };
             }
             Val::PktGen(mut gen) => {
+                for pkt in (&gen).iter() {
+                    self.update_time(pkt.bit_time());
+                }
+
                 /* XXX: cloning the packets here is wasteful */
                 if let Some(ref mut wr) = self.wr {
                     let inner = Rc::make_mut(&mut gen);
+
                     for pkt in inner {
-                        wr.write_packet(pkt).expect("failed to write packet");
+                        wr.write_packet(
+                            self.now,
+                            pkt,
+                        ).expect("failed to write packet");
                     }
                 };
             }
+            Val::TimeJump(ns) => self.update_time(ns),
             _ => {
                 if let Some(ref mut func) = self.warning {
                     (func)(self.loc, &format!("discarded value {:?}", val));
