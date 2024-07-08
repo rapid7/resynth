@@ -542,6 +542,29 @@ impl Packet {
         f.write_fmt(format_args!("{} byte packet:\n", self.len()))?;
         self.fmt_hex_dump(f, width)
     }
+
+    #[inline(always)]
+    fn ethernet_overhead(&self) -> u64 {
+        /* preamble, framce check byte, CRC, inter packet gap */
+        24
+    }
+
+    #[inline(always)]
+    fn timing_overhead(&self) -> u64 {
+        self.ethernet_overhead()
+    }
+
+    #[inline(always)]
+    pub fn bit_time(&self) -> u64 {
+        let len: u64 = self.len() as u64;
+        let bytes = len + self.timing_overhead();
+        let bits = bytes * 8;
+
+        /* timestamp is ns, so assuming 1Gbps, 1ns = 1bit, for 10gbps we're goin to need to switch
+         * to picoseconds.
+         */
+        bits
+    }
 }
 
 impl From<Packet> for Vec<u8> {

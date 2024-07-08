@@ -25,6 +25,7 @@ mod ipv4;
 mod netbios;
 mod std;
 mod text;
+mod time;
 mod tls;
 mod vxlan;
 
@@ -43,6 +44,7 @@ const STDLIB: phf::Map<&'static str, Symbol> = phf_map! {
     "eth" => Symbol::Module(&eth::MODULE),
     "erspan1" => Symbol::Module(&erspan1::MODULE),
     "erspan2" => Symbol::Module(&erspan2::MODULE),
+    "time" => Symbol::Module(&time::MODULE),
 };
 
 pub fn toplevel_module(name: &str) -> Option<&'static Module> {
