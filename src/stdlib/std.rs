@@ -95,6 +95,21 @@ const LE64: FuncDef = func_def!(
     }
 );
 
+const U8: FuncDef = func_def!(
+    "std::u8";
+    ValType::Str;
+
+    "val" => ValType::U8,
+    =>
+    =>
+    ValType::Void;
+
+    |mut args| {
+        let val: u8 = args.next().into();
+        Ok(Val::str(&val.to_le_bytes()))
+    }
+);
+
 pub const MODULE: phf::Map<&'static str, Symbol> = phf_map! {
     "be16" => Symbol::Func(&BE16),
     "be32" => Symbol::Func(&BE32),
@@ -102,4 +117,5 @@ pub const MODULE: phf::Map<&'static str, Symbol> = phf_map! {
     "le16" => Symbol::Func(&LE16),
     "le32" => Symbol::Func(&LE32),
     "le64" => Symbol::Func(&LE64),
+    "u8" => Symbol::Func(&U8),
 };
