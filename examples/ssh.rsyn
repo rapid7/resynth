@@ -1,0 +1,100 @@
+// Vague attempt to simulate regreSSHion, not really close to the real thing
+import ipv4;
+import std;
+import time;
+
+let flow = ipv4::tcp::flow(
+  10.3.245.9/61982,
+  140.82.114.35/22,
+);
+
+flow.client_message(
+  "SSH-2.0-OpenSSH_9.0"
+  "|0d 0a|"
+);
+
+flow.server_message(
+  "SSH-2.0-babeld-05989c77|0d 0a|"
+  "|00 00 02 ec|"
+  "|09|"
+  "|14|"
+  "|7c 52 fa 83 9b 35 6b 6f 37 65 b7 93 7f eb 99 fa|"
+  "|00 00 00 a9|"
+  "curve25519-sha256,"
+  "curve25519-sha256@libssh.org,"
+  "ecdh-sha2-nistp256,"
+  "ecdh-sha2-nistp384,"
+  "ecdh-sha2-nistp521,"
+  "diffie-hellman-group-exchange-sha256,"
+  "kex-strict-s-v00@openssh.com"
+  "|00 00 00 41|"
+  "ssh-ed25519,"
+  "ecdsa-sha2-nistp256,"
+  "rsa-sha2-512,"
+  "rsa-sha2-256,"
+  "ssh-rsa"
+  "|00 00 00 6c|"
+  "chacha20-poly1305@openssh.com,"
+  "aes256-gcm@openssh.com,"
+  "aes128-gcm@openssh.com,"
+  "aes256-ctr,aes192-ctr,"
+  "aes128-ctr"
+  "|00 00 00 6c|"
+  "chacha20-poly1305@openssh.com,"
+  "aes256-gcm@openssh.com,"
+  "aes128-gcm@openssh.com,"
+  "aes256-ctr,"
+  "aes192-ctr,aes128-ctr"
+  "|00 00 00 57|"
+  "hmac-sha2-512-etm@openssh.com,"
+  "hmac-sha2-256-etm@openssh.com,"
+  "hmac-sha2-512,hmac-sha2-256"
+  "|00 00 00 57|"
+  "hmac-sha2-512-etm@openssh.com,"
+  "hmac-sha2-256-etm@openssh.com,"
+  "hmac-sha2-512,hmac-sha2-256"
+  "|00 00 00 1a|"
+  "none,"
+  "zlib@openssh.com,"
+  "zlib"
+  "|00 00 00 1a|"
+  "none,"
+  "zlib@openssh.com,"
+  "zlib"
+  "|00 00 00 00|"
+  "|00 00 00 00|"
+  "|00 00 00 00|"
+  "|00|"
+  "|00 00 00 00 00 00 00 00 00|"
+);
+
+flow.client_message(
+  std::be32(68),
+  std::u8(5),
+  std::u8(20),
+
+  "_COOKIE_MONSTER_",
+
+  std::be32(0),
+  std::be32(0),
+  std::be32(0),
+  std::be32(0),
+  std::be32(0),
+  std::be32(0),
+  std::be32(0),
+  std::be32(0),
+  std::be32(0),
+  std::be32(0),
+
+  std::u8(0),
+  std::be32(0),
+
+  "PPPP"
+);
+
+time::jump_seconds(120);
+
+flow.client_message("P");
+
+//flow.server_reset();
+flow.server_close();
