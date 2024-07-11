@@ -835,7 +835,7 @@ const TLS_MESSAGE: FuncDef = func_def! (
     ValType::Str;
 
     |mut args| {
-        let version: u16= args.next().into();
+        let version: u16 = args.next().into();
         let content: u8 = args.next().into();
         let bytes: Buf = args.join_extra(b"").into();
         let mut msg: Vec<u8> = Vec::with_capacity(bytes.len() + 5);
@@ -845,6 +845,29 @@ const TLS_MESSAGE: FuncDef = func_def! (
         msg.extend((bytes.len() as u16).to_be_bytes());
 
         /* extensions I guess? */
+        msg.extend(bytes.as_ref());
+
+        Ok(Val::str(msg))
+    }
+);
+
+const TLS_EXTENSION: FuncDef = func_def! (
+    "tls::extension";
+    ValType::Str;
+
+    "ext" => ValType::U16,
+    =>
+    =>
+    ValType::Str;
+
+    |mut args| {
+        let ext: u16 = args.next().into();
+        let bytes: Buf = args.join_extra(b"").into();
+        let mut msg: Vec<u8> = Vec::with_capacity(bytes.len() + 5);
+
+        msg.extend(ext.to_be_bytes());
+        msg.extend((bytes.len() as u16).to_be_bytes());
+
         msg.extend(bytes.as_ref());
 
         Ok(Val::str(msg))
@@ -1046,6 +1069,7 @@ pub const TLS: phf::Map<&'static str, Symbol> = phf_map! {
     "cipher" => Symbol::Module(&CIPHER),
 
     "message" => Symbol::Func(&TLS_MESSAGE),
+    "extension" => Symbol::Func(&TLS_EXTENSION),
     "client_hello" => Symbol::Func(&TLS_CLIENT_HELLO),
     "server_hello" => Symbol::Func(&TLS_SERVER_HELLO),
     "ciphers" => Symbol::Func(&TLS_CIPHERS),
