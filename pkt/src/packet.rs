@@ -558,12 +558,11 @@ impl Packet {
     pub fn bit_time(&self) -> u64 {
         let len: u64 = self.len() as u64;
         let bytes = len + self.timing_overhead();
-        let bits = bytes * 8;
 
         /* timestamp is ns, so assuming 1Gbps, 1ns = 1bit, for 10gbps we're goin to need to switch
          * to picoseconds.
          */
-        bits
+        bytes * 8
     }
 }
 
