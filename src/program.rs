@@ -324,7 +324,7 @@ impl<'a> Program<'a> {
                 };
             }
             Val::PktGen(mut gen) => {
-                for pkt in (&gen).iter() {
+                for pkt in gen.iter() {
                     self.update_time(pkt.bit_time());
                 }
 
