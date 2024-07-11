@@ -2,6 +2,7 @@ use phf::{phf_map, phf_ordered_map};
 
 use crate::func_def;
 use crate::libapi::{ArgDecl, FuncDef};
+use crate::str::Buf;
 use crate::sym::Symbol;
 use crate::val::{Val, ValType};
 
@@ -110,6 +111,86 @@ const U8: FuncDef = func_def!(
     }
 );
 
+const LEN_BE64: FuncDef = func_def! (
+    "std::len_be64";
+    ValType::Str;
+
+    =>
+    =>
+    ValType::Str;
+
+    |mut args| {
+        let bytes: Buf = args.join_extra(b"").into();
+        let mut msg: Vec<u8> = Vec::with_capacity(bytes.len() + 5);
+
+        msg.extend((bytes.len() as u64).to_be_bytes());
+
+        msg.extend(bytes.as_ref());
+
+        Ok(Val::str(msg))
+    }
+);
+
+const LEN_BE32: FuncDef = func_def! (
+    "std::len_be32";
+    ValType::Str;
+
+    =>
+    =>
+    ValType::Str;
+
+    |mut args| {
+        let bytes: Buf = args.join_extra(b"").into();
+        let mut msg: Vec<u8> = Vec::with_capacity(bytes.len() + 5);
+
+        msg.extend((bytes.len() as u32).to_be_bytes());
+
+        msg.extend(bytes.as_ref());
+
+        Ok(Val::str(msg))
+    }
+);
+
+const LEN_BE16: FuncDef = func_def! (
+    "std::len_be16";
+    ValType::Str;
+
+    =>
+    =>
+    ValType::Str;
+
+    |mut args| {
+        let bytes: Buf = args.join_extra(b"").into();
+        let mut msg: Vec<u8> = Vec::with_capacity(bytes.len() + 5);
+
+        msg.extend((bytes.len() as u16).to_be_bytes());
+
+        msg.extend(bytes.as_ref());
+
+        Ok(Val::str(msg))
+    }
+);
+
+const LEN_U8: FuncDef = func_def! (
+    "std::len_u8";
+    ValType::Str;
+
+    =>
+    =>
+    ValType::Str;
+
+    |mut args| {
+        let bytes: Buf = args.join_extra(b"").into();
+        let mut msg: Vec<u8> = Vec::with_capacity(bytes.len() + 5);
+
+        msg.push(bytes.len() as u8);
+
+        msg.extend(bytes.as_ref());
+
+        Ok(Val::str(msg))
+    }
+);
+
 pub const MODULE: phf::Map<&'static str, Symbol> = phf_map! {
     "be16" => Symbol::Func(&BE16),
     "be32" => Symbol::Func(&BE32),
@@ -118,4 +199,9 @@ pub const MODULE: phf::Map<&'static str, Symbol> = phf_map! {
     "le32" => Symbol::Func(&LE32),
     "le64" => Symbol::Func(&LE64),
     "u8" => Symbol::Func(&U8),
+
+    "len_be64" => Symbol::Func(&LEN_BE64),
+    "len_be32" => Symbol::Func(&LEN_BE32),
+    "len_be16" => Symbol::Func(&LEN_BE16),
+    "len_u8" => Symbol::Func(&LEN_U8),
 };
