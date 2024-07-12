@@ -12,6 +12,7 @@ use crate::sym::Symbol;
 use crate::val::{Val, ValDef, ValType};
 
 const BROADCAST: FuncDef = func_def!(
+    /// Send a broadcast datagram
     "ipv4::udp::broadcast";
     ValType::Pkt;
 
@@ -46,6 +47,7 @@ const BROADCAST: FuncDef = func_def!(
 );
 
 const UNICAST: FuncDef = func_def!(
+    /// Send a unicast datagram
     "ipv4::udp::unicast";
     ValType::Pkt;
 
@@ -71,6 +73,7 @@ const UNICAST: FuncDef = func_def!(
 );
 
 const HDR: FuncDef = func_def!(
+    /// Returns a UDP header (with no IP header)
     "ipv4::udp::hdr";
     ValType::Str;
 
@@ -100,6 +103,7 @@ const HDR: FuncDef = func_def!(
 );
 
 const CL_DGRAM: FuncDef = func_def!(
+    /// Send a datagram from client to server
     "ipv4::udp::flow.client_dgram";
     ValType::Pkt;
 
@@ -129,6 +133,7 @@ const CL_DGRAM: FuncDef = func_def!(
 );
 
 const SV_DGRAM: FuncDef = func_def!(
+    /// Send a datagram from server to client
     "ipv4::udp::flow.server_dgram";
     ValType::Pkt;
 
@@ -158,6 +163,7 @@ const SV_DGRAM: FuncDef = func_def!(
 );
 
 const CL_RAW_DGRAM: FuncDef = func_def!(
+    /// Return a datagram from client to server (minus IP header)
     "ipv4::udp::flow.client_raw_dgram";
     ValType::Str;
 
@@ -185,6 +191,7 @@ const CL_RAW_DGRAM: FuncDef = func_def!(
 );
 
 const SV_RAW_DGRAM: FuncDef = func_def!(
+    /// Return a datagram from server to client (minus IP header)
     "ipv4::udp::flow.server_raw_dgram";
     ValType::Str;
 
@@ -227,6 +234,7 @@ impl Class for UdpFlow {
 }
 
 const FLOW: FuncDef = func_def!(
+    /// Create a UDP flow context, from which other packets can be created
     "ipv4::udp::flow";
     ValType::Obj;
 

@@ -31,6 +31,7 @@ const PROTO: phf::Map<&'static str, Symbol> = phf_map! {
 const IPV4_DGRAM_OVERHEAD: usize = std::mem::size_of::<eth_hdr>() + std::mem::size_of::<ip_hdr>();
 
 const DGRAM: FuncDef = func_def!(
+    /// Create a raw IPv4 header or datagram
     "ipv4::datagram";
     ValType::Pkt;
 
@@ -93,6 +94,11 @@ const DGRAM: FuncDef = func_def!(
 );
 
 const FRAG_FRAGMENT: FuncDef = func_def!(
+    /// Returns an IPv4 packet fragment
+    ///
+    /// # Arguments
+    /// * `frag_off` Offset in 8-byte blocks
+    /// * `len` Length in bytes
     "ipv4::frag.fragment";
     ValType::Pkt;
 
@@ -115,6 +121,11 @@ const FRAG_FRAGMENT: FuncDef = func_def!(
 );
 
 const FRAG_TAIL: FuncDef = func_def!(
+    /// Returns an IPv4 tail-fragment, ie. with MF (more-fragments) bit set to zero.
+    /// This is just a convenience function which omits the len parameter.
+    ///
+    /// # Arguments
+    /// * `frag_off` Offset in 8-byte blocks
     "ipv4::frag.tail";
     ValType::Pkt;
 
@@ -135,6 +146,7 @@ const FRAG_TAIL: FuncDef = func_def!(
 );
 
 const FRAG_DATAGRAM: FuncDef = func_def!(
+    /// Return the entire datagram without fragmenting it
     "ipv4::frag.datagram";
     ValType::Pkt;
 
@@ -166,6 +178,7 @@ impl Class for IpFrag {
 }
 
 const FRAG: FuncDef = func_def!(
+    /// Create a context for a packet which can be arbitrarily fragmented
     "ipv4::frag";
     ValType::Obj;
 

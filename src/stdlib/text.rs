@@ -7,6 +7,7 @@ use crate::sym::Symbol;
 use crate::val::{Val, ValDef, ValType};
 
 const CONCAT: FuncDef = func_def!(
+    /// Concatenate strings
     "text::concat";
     ValType::Str;
 
@@ -20,6 +21,7 @@ const CONCAT: FuncDef = func_def!(
 );
 
 const CRLFLINES: FuncDef = func_def!(
+    /// join strings with CRLF line-endings
     "text::crlflines";
     ValType::Str;
 
@@ -33,6 +35,7 @@ const CRLFLINES: FuncDef = func_def!(
 );
 
 const LEN: FuncDef = func_def!(
+    /// Return the length of a string (or strings)
     "text::len";
     ValType::U64;
 

@@ -11,6 +11,7 @@ use crate::val::{Val, ValDef, ValType};
 use ezpkt::VxlanFlow;
 
 const ENCAP: FuncDef = func_def!(
+    /// Encapsulate a series of packets
     "vxlan::flow.encap";
     ValType::PktGen;
 
@@ -36,6 +37,7 @@ const ENCAP: FuncDef = func_def!(
 );
 
 const DGRAM: FuncDef = func_def!(
+    /// Encapsulate a single packet
     "vxlan::flow.dgram";
     ValType::Pkt;
 
@@ -68,7 +70,8 @@ impl Class for VxlanFlow {
 }
 
 const SESSION: FuncDef = func_def!(
-    "session";
+    /// Create a VXLAN session
+    "vxlan::session";
     ValType::Obj;
 
     "cl" => ValType::Sock4,

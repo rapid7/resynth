@@ -116,6 +116,7 @@ const CLASS: phf::Map<&'static str, Symbol> = phf_map! {
 };
 
 pub(crate) const DNS_NAME: FuncDef = func_def! (
+    /// A DNS name encoded with length prefixes
     "dns::name";
     ValType::Str;
 
@@ -154,6 +155,7 @@ pub(crate) const DNS_NAME: FuncDef = func_def! (
 );
 
 const DNS_POINTER: FuncDef = func_def! (
+    /// A DNS compression pointer
     "dns::pointer";
     ValType::Str;
 
@@ -172,6 +174,7 @@ const DNS_POINTER: FuncDef = func_def! (
 );
 
 const DNS_FLAGS: FuncDef = func_def!(
+    /// a DNS flags field
     "dns::flags";
     ValType::U16;
 
@@ -219,6 +222,7 @@ const DNS_FLAGS: FuncDef = func_def!(
 );
 
 const DNS_HDR: FuncDef = func_def!(
+    /// A DNS header
     "dns::hdr";
     ValType::Str;
 
@@ -254,6 +258,7 @@ const DNS_HDR: FuncDef = func_def!(
 );
 
 const DNS_QUESTION: FuncDef = func_def!(
+    /// A DNS question
     "dns::question";
     ValType::Str;
 
@@ -280,6 +285,7 @@ const DNS_QUESTION: FuncDef = func_def!(
 );
 
 const DNS_ANSWER: FuncDef = func_def!(
+    /// A DNS answer (RR)
     "dns::answer";
     ValType::Str;
 
@@ -312,6 +318,7 @@ const DNS_ANSWER: FuncDef = func_def!(
 );
 
 const DNS_HOST: FuncDef = func_def!(
+    /// Perform a DNS lookup, with response
     "dns::host";
     ValType::PktGen;
 

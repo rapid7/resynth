@@ -13,7 +13,8 @@ use crate::sym::Symbol;
 use crate::val::{Val, ValType};
 
 const IO_FILE: FuncDef = func_def!(
-    "file";
+    /// Load the contents of a file into a string
+    "io::file";
     ValType::Str;
 
     "filename" => ValType::Str,
@@ -73,6 +74,7 @@ where
 }
 
 const BUFIO_READ: FuncDef = func_def!(
+    /// Read some bytes out of a buffer
     "io::bufio.read";
     ValType::Str;
 
@@ -91,6 +93,7 @@ const BUFIO_READ: FuncDef = func_def!(
 );
 
 const BUFIO_READ_ALL: FuncDef = func_def!(
+    /// Read all remaining bytes out of a buffer
     "io::bufio.read_all";
     ValType::Str;
 
@@ -120,7 +123,8 @@ impl Class for BufIo {
 }
 
 const BUFIO: FuncDef = func_def!(
-    "bufio";
+    /// Create a buffer from a string, from which you can read parts in sequence
+    "io::bufio";
     ValType::Obj;
 
     =>

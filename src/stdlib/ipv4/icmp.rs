@@ -8,6 +8,7 @@ use crate::val::{Val, ValDef, ValType};
 use ezpkt::IcmpFlow;
 
 const ICMP_ECHO: FuncDef = func_def!(
+    /// ICMP Ping
     "ipv4::icmp::flow.echo";
     ValType::Pkt;
 
@@ -26,6 +27,7 @@ const ICMP_ECHO: FuncDef = func_def!(
 );
 
 const ICMP_ECHO_REPLY: FuncDef = func_def!(
+    /// ICMP Ping reply
     "ipv4::icmp::flow.echo_reply";
     ValType::Pkt;
 
@@ -52,12 +54,13 @@ impl Class for IcmpFlow {
     }
 
     fn class_name(&self) -> &'static str {
-        "ipv4::icmp4.flow"
+        "ipv4::icmp.flow"
     }
 }
 
 const ICMP_FLOW: FuncDef = func_def!(
-    "flow";
+    /// Create an ICMP flow
+    "ipv4::icmp::flow";
     ValType::Obj;
 
     "cl" => ValType::Ip4,
