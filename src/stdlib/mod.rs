@@ -63,11 +63,7 @@ pub fn toplevel_module(name: &str) -> Option<&'static Module> {
 }
 
 /// Generate documentation for a module.. This needs a lot of work.
-pub fn recurse(
-    out_dir: &Path,
-    stk: &mut Vec<&'static str>,
-    m: &phf::Map<&'static str, Symbol>,
-) {
+pub fn recurse(out_dir: &Path, stk: &mut Vec<&'static str>, m: &phf::Map<&'static str, Symbol>) {
     let mut mod_path = PathBuf::from(out_dir);
 
     if stk.is_empty() {

@@ -15,12 +15,21 @@ pub enum ArgDecl {
     Named(ValDef),
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct ArgDesc {
+    pub name: &'static str,
+    pub typ: ArgDecl,
+}
+
 /// Defines a function or method for the resynth stdlib
 #[derive(Debug)]
 pub struct FuncDef {
     pub name: &'static str,
     pub return_type: ValType,
-    pub args: phf::OrderedMap<&'static str, ArgDecl>,
+    /// Invariant: All Positionals must come first, then all Named
+    pub args: &'static [ArgDesc],
+    pub arg_pos: fn(name: &str) -> Option<usize>,
+    /// minimum number of args: ie. number of positionals
     pub min_args: usize,
     pub collect_type: ValType,
     pub exec: fn(args: Args) -> Result<Val, Error>,
@@ -63,10 +72,6 @@ impl FuncDef {
         self.collect_type != ValType::Void
     }
 
-    fn arg_index(&self, name: &str) -> Option<usize> {
-        self.args.get_index(name)
-    }
-
     fn split_args(&self, args: Vec<ArgSpec>) -> Result<ArgPrep, Error> {
         enum State {
             Anon,
@@ -95,7 +100,7 @@ impl FuncDef {
                                 continue;
                             }
                             println!(
-                                "ERR: {}: Too many positional args: {} > {}",
+                                "ERR: {}: Too many arguments: {} > {}",
                                 self.name,
                                 positional.len(),
                                 self.args.len()
@@ -114,41 +119,32 @@ impl FuncDef {
 
                         let name = arg.name.unwrap();
 
-                        match self.arg_index(&name) {
-                            None => {
-                                println!("ERR: {}: No such argument: \"{}\"", self.name, &name);
-                                return Err(TypeError);
-                            }
+                        let arg_pos = (self.arg_pos)(&name);
 
-                            // Rule: Positionals must come first
-                            // Rule: First collect arg must be supplied after the last named arg
-                            // Invariant: No argument may be supplied with a value more than once
-                            //
-                            // Therefore:
-                            // the index in self.args of any named arg may not be >= the number of
-                            // positional args that have already been supplied before the first
-                            // named arg.
-                            //
-                            // Proof:
-                            // If n anon args have been supplied before the first named arg, then
-                            // the first n arguments in self.args have been specified. If any of
-                            // these are then subsequently named, an argument has had a value
-                            // supplied twice and the invariant is broken.
-                            Some(index) => {
-                                if index < positional.len() {
-                                    println!(
-                                        "ERR: {}: Positional arg \"{}\" multiply specified",
-                                        self.name, &name
-                                    );
-                                    return Err(TypeError);
-                                }
-                            }
+                        if arg_pos.is_none() {
+                            println!("ERR: {}: No such argument: \"{}\"", self.name, &name);
+                            return Err(TypeError);
                         }
 
+                        let arg_index = arg_pos.unwrap();
+
                         // Invariant: No argument may be supplied with a value more than once
+
+                        // a) If the index of the arg is one of the positionals we've already got,
+                        // then a positional has been specified by position, and is now attempting
+                        // to be specified by name. So nope.
+                        if arg_index < positional.len() {
+                            println!(
+                                "ERR: {}: Positional argument \"{}\" multiply specified",
+                                self.name, &name
+                            );
+                            return Err(TypeError);
+                        }
+
+                        // b) if we've named the same arg twice then that's also not allowed.
                         if named.contains_key(&name) {
                             println!(
-                                "ERR: {}: Argument \"{}\" multiply specified",
+                                "ERR: {}: Named argument \"{}\" multiply specified",
                                 self.name, &name
                             );
                             return Err(TypeError);
@@ -219,11 +215,11 @@ impl FuncDef {
         // are in extra assert!(args.len() <= self.args.len());
 
         // 2. Take named positionals and optionals
-        for (name, spec) in self.args.entries().skip(nr_positional) {
+        for ArgDesc { name, typ } in self.args.iter().skip(nr_positional) {
             if let Some(val) = named.remove(*name) {
                 // positional or optional specified by name, push it
                 args.push(val);
-            } else if let ArgDecl::Named(dfl) = spec {
+            } else if let ArgDecl::Named(dfl) = typ {
                 // not specified, but we're optional, so take the default
                 args.push((*dfl).into());
             } else {
@@ -239,8 +235,8 @@ impl FuncDef {
         assert!(named.is_empty());
 
         // 3. Final type-check of all positional args
-        for ((name, spec), arg) in self.args.entries().zip(args.iter()) {
-            if !match spec {
+        for (ArgDesc { name, typ }, arg) in self.args.iter().zip(args.iter()) {
+            if !match typ {
                 ArgDecl::Positional(typ) => typ.compatible_with(arg),
                 ArgDecl::Named(dfl) => dfl.arg_compatible(arg),
             } {

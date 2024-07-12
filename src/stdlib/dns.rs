@@ -1,4 +1,4 @@
-use phf::{phf_map, phf_ordered_map};
+use phf::phf_map;
 
 use pkt::dns::{class, dns_hdr, opcode, rcode, rrtype, DnsFlags, DnsName};
 use pkt::AsBytes;
@@ -7,7 +7,7 @@ use pkt::Packet;
 use ezpkt::UdpFlow;
 
 use crate::func_def;
-use crate::libapi::{ArgDecl, FuncDef};
+use crate::libapi::{ArgDecl, ArgDesc, FuncDef};
 use crate::str::Buf;
 use crate::sym::Symbol;
 use crate::val::{Val, ValDef, ValType};
@@ -117,14 +117,12 @@ const CLASS: phf::Map<&'static str, Symbol> = phf_map! {
 
 pub(crate) const DNS_NAME: FuncDef = func_def! (
     /// A DNS name encoded with length prefixes
-    "dns::name";
-    ValType::Str;
-
-    =>
-    "complete" => ValDef::Bool(true),
-    =>
-    ValType::Str;
-
+    resynth name(
+        =>
+        complete: ValDef::Bool(true),
+        =>
+        Str
+    ) -> Str
     |mut args| {
         let complete: bool = args.next().into();
         let v: Vec<Buf> = args.collect_extra_args();
@@ -156,14 +154,12 @@ pub(crate) const DNS_NAME: FuncDef = func_def! (
 
 const DNS_POINTER: FuncDef = func_def! (
     /// A DNS compression pointer
-    "dns::pointer";
-    ValType::Str;
-
-    =>
-    "offset" => ValDef::U16(0x0c),
-    =>
-    ValType::Void;
-
+    resynth pointer(
+        =>
+        offset: ValDef::U16(0x0c),
+        =>
+        Void
+    ) -> Str
     |mut args| {
         let offset: u16 = args.next().into();
 
@@ -175,23 +171,21 @@ const DNS_POINTER: FuncDef = func_def! (
 
 const DNS_FLAGS: FuncDef = func_def!(
     /// a DNS flags field
-    "dns::flags";
-    ValType::U16;
-
-    "opcode" => ValType::U8,
-    =>
-    "response" => ValDef::Bool(false),
-    "aa" => ValDef::Bool(false),
-    "tc" => ValDef::Bool(false),
-    "rd" => ValDef::Bool(false),
-    "ra" => ValDef::Bool(false),
-    "z" => ValDef::Bool(false),
-    "ad" => ValDef::Bool(false),
-    "cd" => ValDef::Bool(false),
-    "rcode" => ValDef::U8(rcode::NOERROR),
-    =>
-    ValType::Void;
-
+    resynth flags(
+        opcode: U8,
+        =>
+        response: ValDef::Bool(false),
+        aa: ValDef::Bool(false),
+        tc: ValDef::Bool(false),
+        rd: ValDef::Bool(false),
+        ra: ValDef::Bool(false),
+        z: ValDef::Bool(false),
+        ad: ValDef::Bool(false),
+        cd: ValDef::Bool(false),
+        rcode: ValDef::U8(rcode::NOERROR),
+        =>
+        Void
+    ) -> U16
     |mut args| {
         let opcode: u8 = args.next().into();
 
@@ -223,19 +217,17 @@ const DNS_FLAGS: FuncDef = func_def!(
 
 const DNS_HDR: FuncDef = func_def!(
     /// A DNS header
-    "dns::hdr";
-    ValType::Str;
-
-    "id" => ValType::U16,
-    "flags" => ValType::U16,
-    =>
-    "qdcount" => ValDef::U16(0),
-    "ancount" => ValDef::U16(0),
-    "nscount" => ValDef::U16(0),
-    "arcount" => ValDef::U16(0),
-    =>
-    ValType::Void;
-
+    resynth hdr(
+        id: U16,
+        flags: U16,
+        =>
+        qdcount: ValDef::U16(0),
+        ancount: ValDef::U16(0),
+        nscount: ValDef::U16(0),
+        arcount: ValDef::U16(0),
+        =>
+        Void
+    ) -> Str
     |mut args| {
         let id: u16 = args.next().into();
         let flags: u16 = args.next().into();
@@ -259,16 +251,14 @@ const DNS_HDR: FuncDef = func_def!(
 
 const DNS_QUESTION: FuncDef = func_def!(
     /// A DNS question
-    "dns::question";
-    ValType::Str;
-
-    "qname" => ValType::Str,
-    =>
-    "qtype" => ValDef::U16(1),
-    "qclass" => ValDef::U16(1),
-    =>
-    ValType::Void;
-
+    resynth question(
+        qname: Str,
+        =>
+        qtype: ValDef::U16(1),
+        qclass: ValDef::U16(1),
+        =>
+        Void
+    ) -> Str
     |mut args| {
         let name: Buf = args.next().into();
         let qtype: u16 = args.next().into();
@@ -286,17 +276,15 @@ const DNS_QUESTION: FuncDef = func_def!(
 
 const DNS_ANSWER: FuncDef = func_def!(
     /// A DNS answer (RR)
-    "dns::answer";
-    ValType::Str;
-
-    "aname" => ValType::Str,
-    =>
-    "atype" => ValDef::U16(1),
-    "aclass" => ValDef::U16(1),
-    "ttl" => ValDef::U32(229),
-    =>
-    ValType::Str;
-
+    resynth answer(
+        aname: Str,
+        =>
+        atype: ValDef::U16(1),
+        aclass: ValDef::U16(1),
+        ttl: ValDef::U32(229),
+        =>
+        Str
+    ) -> Str
     |mut args| {
         let name: Buf = args.next().into();
         let atype: u16 = args.next().into();
@@ -319,18 +307,16 @@ const DNS_ANSWER: FuncDef = func_def!(
 
 const DNS_HOST: FuncDef = func_def!(
     /// Perform a DNS lookup, with response
-    "dns::host";
-    ValType::PktGen;
-
-    "client" => ValType::Ip4,
-    "qname" => ValType::Str,
-    =>
-    "ttl" => ValDef::U32(229),
-    "ns" => ValDef::Ip4(Ipv4Addr::new(1, 1, 1, 1)),
-    "raw" => ValDef::Bool(false),
-    =>
-    ValType::Ip4;
-
+    resynth host(
+        client: Ip4,
+        qname: Str,
+        =>
+        ttl: ValDef::U32(229),
+        ns: ValDef::Ip4(Ipv4Addr::new(1, 1, 1, 1)),
+        raw: ValDef::Bool(false),
+        =>
+        Ip4
+    ) -> PktGen
     |mut args| {
         let client: Ipv4Addr = args.next().into();
         let qname: DnsName = DnsName::from(args.next().as_ref());

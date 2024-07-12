@@ -1,11 +1,11 @@
-use phf::{phf_map, phf_ordered_map};
+use phf::phf_map;
 
 use pkt::dns::{rcode, DnsFlags};
 use pkt::netbios::{name, ns};
 
 use crate::err::Error::RuntimeError;
 use crate::func_def;
-use crate::libapi::{ArgDecl, FuncDef};
+use crate::libapi::{ArgDecl, ArgDesc, FuncDef};
 use crate::str::Buf;
 use crate::sym::Symbol;
 use crate::val::{Val, ValDef, ValType};
@@ -33,23 +33,21 @@ const RCODE: phf::Map<&'static str, Symbol> = phf_map! {
 
 const NBNS_FLAGS: FuncDef = func_def!(
     /// Returns netbios-ns flags
-    "netbios::ns::flags";
-    ValType::U16;
-
-    "opcode" => ValType::U8,
-    =>
-    "response" => ValDef::Bool(false),
-    "aa" => ValDef::Bool(false),
-    "tc" => ValDef::Bool(false),
-    "rd" => ValDef::Bool(false),
-    "ra" => ValDef::Bool(false),
-    "z" => ValDef::Bool(false),
-    "ad" => ValDef::Bool(false), // must be zero
-    "b" => ValDef::Bool(false),
-    "rcode" => ValDef::U8(rcode::NOERROR),
-    =>
-    ValType::Void;
-
+    resynth flags(
+        opcode: U8,
+        =>
+        response: ValDef::Bool(false),
+        aa: ValDef::Bool(false),
+        tc: ValDef::Bool(false),
+        rd: ValDef::Bool(false),
+        ra: ValDef::Bool(false),
+        z: ValDef::Bool(false),
+        ad: ValDef::Bool(false), // must be zero
+        b: ValDef::Bool(false),
+        rcode: ValDef::U8(rcode::NOERROR),
+        =>
+        Void
+    ) -> U16
     |mut args| {
         let opcode: u8 = args.next().into();
 
@@ -88,14 +86,12 @@ pub const NS: phf::Map<&'static str, Symbol> = phf_map! {
 
 const NAME_ENCODE: FuncDef = func_def! (
     /// Encode a netbios name, including the one-byte suffix field
-    "netbios::name::encode";
-    ValType::Str;
-
-    =>
-    "suffix" => ValDef::U8(0),
-    =>
-    ValType::Str;
-
+    resynth encode(
+        =>
+        suffix: ValDef::U8(0),
+        =>
+        Str
+    ) -> Str
     |mut args| {
         let suffix: u8 = args.next().into();
         let data: Buf = args.join_extra(b"").into();

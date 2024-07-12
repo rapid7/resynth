@@ -1,25 +1,23 @@
 use std::rc::Rc;
 
-use phf::{phf_map, phf_ordered_map};
+use phf::phf_map;
 
 use pkt::{vxlan, Packet};
 
 use crate::func_def;
-use crate::libapi::{ArgDecl, Class, FuncDef};
+use crate::libapi::{ArgDecl, ArgDesc, Class, FuncDef};
 use crate::sym::Symbol;
 use crate::val::{Val, ValDef, ValType};
 use ezpkt::VxlanFlow;
 
 const ENCAP: FuncDef = func_def!(
     /// Encapsulate a series of packets
-    "vxlan::flow.encap";
-    ValType::PktGen;
-
-    "gen" => ValType::PktGen
-    =>
-    =>
-    ValType::Void;
-
+    resynth encap(
+        gen: PktGen
+        =>
+        =>
+        Void
+    ) -> PktGen
     |mut args| {
         let obj = args.take_this();
         let mut r = obj.borrow_mut();
@@ -38,14 +36,12 @@ const ENCAP: FuncDef = func_def!(
 
 const DGRAM: FuncDef = func_def!(
     /// Encapsulate a single packet
-    "vxlan::flow.dgram";
-    ValType::Pkt;
-
-    "pkt" => ValType::Pkt
-    =>
-    =>
-    ValType::Void;
-
+    resynth dgram(
+        pkt: Pkt
+        =>
+        =>
+        Void
+    ) -> Pkt
     |mut args| {
         let obj = args.take_this();
         let mut r = obj.borrow_mut();
@@ -71,17 +67,15 @@ impl Class for VxlanFlow {
 
 const SESSION: FuncDef = func_def!(
     /// Create a VXLAN session
-    "vxlan::session";
-    ValType::Obj;
-
-    "cl" => ValType::Sock4,
-    "sv" => ValType::Sock4,
-    =>
-    "sessionid" => ValDef::U32(0), // TODO: Make it optional
-    "raw" => ValDef::Bool(false),
-    =>
-    ValType::Void;
-
+    resynth session(
+        cl: Sock4,
+        sv: Sock4,
+        =>
+        sessionid: ValDef::U32(0), // TODO: Make it optional
+        raw: ValDef::Bool(false),
+        =>
+        Void
+    ) -> Obj
     |mut args| {
         let cl = args.next();
         let sv = args.next();

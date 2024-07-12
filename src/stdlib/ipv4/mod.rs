@@ -1,4 +1,4 @@
-use phf::{phf_map, phf_ordered_map};
+use phf::phf_map;
 use std::net::Ipv4Addr;
 
 use pkt::eth::{eth_hdr, ethertype};
@@ -8,7 +8,7 @@ use pkt::Packet;
 use ezpkt::IpFrag;
 
 use crate::func_def;
-use crate::libapi::{ArgDecl, Class, FuncDef};
+use crate::libapi::{ArgDecl, ArgDesc, Class, FuncDef};
 use crate::str::Buf;
 use crate::sym::Symbol;
 use crate::val::{Val, ValDef, ValType};
@@ -32,22 +32,20 @@ const IPV4_DGRAM_OVERHEAD: usize = std::mem::size_of::<eth_hdr>() + std::mem::si
 
 const DGRAM: FuncDef = func_def!(
     /// Create a raw IPv4 header or datagram
-    "ipv4::datagram";
-    ValType::Pkt;
-
-    "src" => ValType::Ip4,
-    "dst" => ValType::Ip4,
-    =>
-    "id" => ValDef::U16(0),
-    "evil" => ValDef::Bool(false),
-    "df" => ValDef::Bool(false),
-    "mf" => ValDef::Bool(false),
-    "ttl" => ValDef::U8(64),
-    "frag_off" => ValDef::U16(0),
-    "proto" => ValDef::U8(proto::UDP),
-    =>
-    ValType::Str;
-
+    resynth datagram(
+        src: Ip4,
+        dst: Ip4,
+        =>
+        id: ValDef::U16(0),
+        evil: ValDef::Bool(false),
+        df: ValDef::Bool(false),
+        mf: ValDef::Bool(false),
+        ttl: ValDef::U8(64),
+        frag_off: ValDef::U16(0),
+        proto: ValDef::U8(proto::UDP),
+        =>
+        Str
+    ) -> Pkt
     |mut args| {
         let src: Ipv4Addr = args.next().into();
         let dst: Ipv4Addr = args.next().into();
@@ -99,15 +97,13 @@ const FRAG_FRAGMENT: FuncDef = func_def!(
     /// # Arguments
     /// * `frag_off` Offset in 8-byte blocks
     /// * `len` Length in bytes
-    "ipv4::frag.fragment";
-    ValType::Pkt;
-
-    "frag_off" => ValType::U16,
-    "len" => ValType::U16,
-    =>
-    =>
-    ValType::Str;
-
+    resynth fragment(
+        frag_off: U16,
+        len: U16,
+        =>
+        =>
+        Str
+    ) -> Pkt
     |mut args| {
         let obj = args.take_this();
         let mut r = obj.borrow_mut();
@@ -126,14 +122,12 @@ const FRAG_TAIL: FuncDef = func_def!(
     ///
     /// # Arguments
     /// * `frag_off` Offset in 8-byte blocks
-    "ipv4::frag.tail";
-    ValType::Pkt;
-
-    "frag_off" => ValType::U16,
-    =>
-    =>
-    ValType::Str;
-
+    resynth tail(
+        frag_off: U16,
+        =>
+        =>
+        Str
+    ) -> Pkt
     |mut args| {
         let obj = args.take_this();
         let mut r = obj.borrow_mut();
@@ -147,13 +141,11 @@ const FRAG_TAIL: FuncDef = func_def!(
 
 const FRAG_DATAGRAM: FuncDef = func_def!(
     /// Return the entire datagram without fragmenting it
-    "ipv4::frag.datagram";
-    ValType::Pkt;
-
-    =>
-    =>
-    ValType::Str;
-
+    resynth datagram(
+        =>
+        =>
+        Str
+    ) -> Pkt
     |mut args| {
         let obj = args.take_this();
         let mut r = obj.borrow_mut();
@@ -179,20 +171,18 @@ impl Class for IpFrag {
 
 const FRAG: FuncDef = func_def!(
     /// Create a context for a packet which can be arbitrarily fragmented
-    "ipv4::frag";
-    ValType::Obj;
-
-    "src" => ValType::Ip4,
-    "dst" => ValType::Ip4,
-    =>
-    "id" => ValDef::U16(0),
-    "evil" => ValDef::Bool(false),
-    "df" => ValDef::Bool(false),
-    "ttl" => ValDef::U8(64),
-    "proto" => ValDef::U8(proto::UDP),
-    =>
-    ValType::Str;
-
+    resynth frag(
+        src: Ip4,
+        dst: Ip4,
+        =>
+        id: ValDef::U16(0),
+        evil: ValDef::Bool(false),
+        df: ValDef::Bool(false),
+        ttl: ValDef::U8(64),
+        proto: ValDef::U8(proto::UDP),
+        =>
+        Str
+    ) -> Obj
     |mut args| {
         let src: Ipv4Addr = args.next().into();
         let dst: Ipv4Addr = args.next().into();

@@ -1,7 +1,7 @@
-use phf::{phf_map, phf_ordered_map};
+use phf::phf_map;
 
 use crate::func_def;
-use crate::libapi::{ArgDecl, FuncDef};
+use crate::libapi::{ArgDecl, ArgDesc, FuncDef};
 use crate::sym::Symbol;
 use crate::val::{Val, ValType};
 
@@ -11,14 +11,12 @@ const MHZ: u64 = KHZ / 1000;
 
 const JUMP_SECS: FuncDef = func_def!(
     /// Advance the pcap timestamp clock by some number of seconds
-    "time::jump_seconds";
-    ValType::TimeJump;
-
-    "seconds" => ValType::U32,
-    =>
-    =>
-    ValType::Void;
-
+    resynth jump_seconds(
+        seconds: U32,
+        =>
+        =>
+        Void
+    ) -> TimeJump
     |mut args| {
         let secs: u32 = args.next().into();
 
@@ -28,14 +26,12 @@ const JUMP_SECS: FuncDef = func_def!(
 
 const JUMP_MILLIS: FuncDef = func_def!(
     /// Advance the pcap timestamp clock by some number of milliseconds
-    "time::jump_millis";
-    ValType::TimeJump;
-
-    "ms" => ValType::U64,
-    =>
-    =>
-    ValType::Void;
-
+    resynth jump_millis(
+        ms: U64,
+        =>
+        =>
+        Void
+    ) -> TimeJump
     |mut args| {
         let ms: u64 = args.next().into();
 
@@ -45,14 +41,12 @@ const JUMP_MILLIS: FuncDef = func_def!(
 
 const JUMP_MICROS: FuncDef = func_def!(
     /// Advance the pcap timestamp clock by some number of microseconds
-    "time::jump_micros";
-    ValType::TimeJump;
-
-    "us" => ValType::U64,
-    =>
-    =>
-    ValType::Void;
-
+    resynth jump_micros(
+        us: U64,
+        =>
+        =>
+        Void
+    ) -> TimeJump
     |mut args| {
         let us: u64 = args.next().into();
 
@@ -62,14 +56,12 @@ const JUMP_MICROS: FuncDef = func_def!(
 
 const JUMP_NANOS: FuncDef = func_def!(
     /// Advance the pcap timestamp clock by some number of nanoseconds
-    "time::jump_nanos";
-    ValType::TimeJump;
-
-    "ns" => ValType::U64,
-    =>
-    =>
-    ValType::Void;
-
+    resynth jump_nanos(
+        ns: U64,
+        =>
+        =>
+        Void
+    ) -> TimeJump
     |mut args| {
         let ns: u64 = args.next().into();
 

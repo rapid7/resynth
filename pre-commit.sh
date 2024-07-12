@@ -7,3 +7,4 @@ exec 1>&2
 cargo clippy
 cargo test --all
 cargo doc
+cargo fmt

@@ -1,24 +1,21 @@
 use crate::args::{ArgSpec, ArgVec};
 use crate::err::Error;
-use crate::libapi::{ArgDecl, FuncDef};
+use crate::libapi::{ArgDecl, ArgDesc, FuncDef};
 use crate::str::Buf;
 use crate::val::{Val, ValDef, ValType};
-use phf::phf_ordered_map;
 
 const PLAIN: FuncDef = func_def! {
     /// PLAIN
-    "PLAIN";
-    ValType::Void;
-
-    "a" => ValType::U64,
-    "b" => ValType::Str,
-    =>
-    "c" => ValDef::U64(123),
-    "d" => ValDef::Str(b"hello"),
-    "e" => ValDef::Type(ValType::Bool),
-    =>
-    ValType::Void;
-
+    resynth PLAIN(
+        a: U64,
+        b: Str,
+        =>
+        c: ValDef::U64(123),
+        d: ValDef::Str(b"hello"),
+        e: ValDef::Type(ValType::Bool),
+        =>
+        Void
+    ) -> Void
     |_args| {
         Ok(Val::Nil)
     }
@@ -186,15 +183,13 @@ fn argvec_multiple_named_optional() {
 
 const COLLECT: FuncDef = func_def! {
     /// COLLECT
-    "COLLECT";
-    ValType::Void;
-
-    "a" => ValType::U64,
-    =>
-    "b" => ValDef::U64(123),
-    =>
-    ValType::Str;
-
+    resynth COLLECT(
+        a: U64,
+        =>
+        b: ValDef::U64(123),
+        =>
+        Str
+    ) -> Void
     |_args| {
         Ok(Val::Nil)
     }
@@ -261,13 +256,11 @@ fn collect_bad_type() {
 
 const EMPTY: FuncDef = func_def! {
     /// EMPTY
-    "EMPTY";
-    ValType::Void;
-
-    =>
-    =>
-    ValType::Str;
-
+    resynth EMPTY(
+        =>
+        =>
+        Str
+    ) -> Void
     |_args| {
         Ok(Val::Nil)
     }
@@ -301,16 +294,14 @@ fn argvec_empty_extra() {
 
 const NAMED: FuncDef = func_def! {
     /// NAMED
-    "NAMED";
-    ValType::Void;
-
-    =>
-    "a" => ValDef::U64(123),
-    "b" => ValDef::Str(b"hello"),
-    "c" => ValDef::Bool(true),
-    =>
-    ValType::Void;
-
+    resynth NAMED(
+        =>
+        a: ValDef::U64(123),
+        b: ValDef::Str(b"hello"),
+        c: ValDef::Bool(true),
+        =>
+        Void
+    ) -> Void
     |_args| {
         Ok(Val::Nil)
     }
@@ -333,16 +324,14 @@ fn argvec_optional_anonymous() {
 
 const OPTIONAL_COLLECT_STR: FuncDef = func_def! {
     /// OPTIONAL_COLLECT_STR
-    "OPTIONAL_COLLECT_STR";
-    ValType::Void;
-
-    =>
-    "a" => ValDef::Bool(true),
-    "b" => ValDef::U64(123),
-    "c" => ValDef::Str(b"hello"),
-    =>
-    ValType::Str;
-
+    resynth OPTIONAL_COLLECT_STR(
+        =>
+        a: ValDef::Bool(true),
+        b: ValDef::U64(123),
+        c: ValDef::Str(b"hello"),
+        =>
+        Str
+    ) -> Void
     |_args| {
         Ok(Val::Nil)
     }
@@ -366,16 +355,14 @@ fn argvec_optional_collect_str() {
 
 const OPTIONAL_COLLECT_U64: FuncDef = func_def! {
     /// OPTIONAL_COLLECT_U64
-    "OPTIONAL_COLLECT_U64";
-    ValType::Void;
-
-    =>
-    "a" => ValDef::U64(123),
-    "b" => ValDef::Str(b"hello"),
-    "c" => ValDef::Bool(true),
-    =>
-    ValType::U64;
-
+    resynth OPTIONAL_COLLECT_U64(
+        =>
+        a: ValDef::U64(123),
+        b: ValDef::Str(b"hello"),
+        c: ValDef::Bool(true),
+        =>
+        U64
+    ) -> Void
     |_args| {
         Ok(Val::Nil)
     }

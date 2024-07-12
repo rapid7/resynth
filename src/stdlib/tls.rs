@@ -1,9 +1,9 @@
-use phf::{phf_map, phf_ordered_map};
+use phf::phf_map;
 
 use pkt::tls::{ciphers, content, ext, handshake, version};
 
 use crate::func_def;
-use crate::libapi::{ArgDecl, FuncDef};
+use crate::libapi::{ArgDecl, ArgDesc, FuncDef};
 use crate::str::Buf;
 use crate::sym::Symbol;
 use crate::val::{Val, ValDef, ValType};
@@ -826,15 +826,13 @@ const CIPHER: phf::Map<&'static str, Symbol> = phf_map! {
 
 const TLS_MESSAGE: FuncDef = func_def! (
     /// Returns a TLS record
-    "tls::message";
-    ValType::Str;
-
-    =>
-    "version" => ValDef::U16(version::TLS_1_2),
-    "content" => ValDef::U8(content::HANDSHAKE),
-    =>
-    ValType::Str;
-
+    resynth message(
+        =>
+        version: ValDef::U16(version::TLS_1_2),
+        content: ValDef::U8(content::HANDSHAKE),
+        =>
+        Str
+    ) -> Str
     |mut args| {
         let version: u16 = args.next().into();
         let content: u8 = args.next().into();
@@ -854,14 +852,12 @@ const TLS_MESSAGE: FuncDef = func_def! (
 
 const TLS_EXTENSION: FuncDef = func_def! (
     /// Returns a TLS extension
-    "tls::extension";
-    ValType::Str;
-
-    "ext" => ValType::U16,
-    =>
-    =>
-    ValType::Str;
-
+    resynth extension(
+        ext: U16,
+        =>
+        =>
+        Str
+    ) -> Str
     |mut args| {
         let ext: u16 = args.next().into();
         let bytes: Buf = args.join_extra(b"").into();
@@ -883,13 +879,11 @@ fn len24(len: usize) -> [u8; 3] {
 
 const TLS_CIPHERS: FuncDef = func_def! (
     /// Returns a TLS ciphers list
-    "tls::ciphers";
-    ValType::Str;
-
-    =>
-    =>
-    ValType::U16;
-
+    resynth ciphers(
+        =>
+        =>
+        U16
+    ) -> Str
     |mut args| {
         let extra: Vec<u16> = args.collect_extra_args();
         let list_len = extra.len() * 2;
@@ -908,17 +902,15 @@ const TLS_CIPHERS: FuncDef = func_def! (
 
 const TLS_CLIENT_HELLO: FuncDef = func_def! (
     /// Returns a TLS client hello
-    "tls::client_hello";
-    ValType::Str;
-
-    =>
-    "version" => ValDef::U16(version::TLS_1_2),
-    "sessionid" => ValDef::Str(b"\x00"),
-    "ciphers" => ValDef::Str(b"\x00\x02\x00\x00"), // null cipher
-    "compression" => ValDef::Str(b"\x01\x00"), // null compression
-    =>
-    ValType::Str;
-
+    resynth client_hello(
+        =>
+        version: ValDef::U16(version::TLS_1_2),
+        sessionid: ValDef::Str(b"\x00"),
+        ciphers: ValDef::Str(b"\x00\x02\x00\x00"), // null cipher
+        compression: ValDef::Str(b"\x01\x00"), // null compression
+        =>
+        Str
+    ) -> Str
     |mut args| {
         let version: u16 = args.next().into();
         let sessionid: Buf = args.next().into();
@@ -958,17 +950,15 @@ const TLS_CLIENT_HELLO: FuncDef = func_def! (
 
 const TLS_SERVER_HELLO: FuncDef = func_def! (
     /// Returns a TLS server hello
-    "tls::server_hello";
-    ValType::Str;
-
-    =>
-    "version" => ValDef::U16(version::TLS_1_2),
-    "sessionid" => ValDef::Str(b"\x00"),
-    "cipher" => ValDef::U16(ciphers::NULL_WITH_NULL_NULL),
-    "compression" => ValDef::U8(0),
-    =>
-    ValType::Str;
-
+    resynth server_hello(
+        =>
+        version: ValDef::U16(version::TLS_1_2),
+        sessionid: ValDef::Str(b"\x00"),
+        cipher: ValDef::U16(ciphers::NULL_WITH_NULL_NULL),
+        compression: ValDef::U8(0),
+        =>
+        Str
+    ) -> Str
     |mut args| {
         let version: u16 = args.next().into();
         let sessionid: Buf = args.next().into();
@@ -1009,13 +999,11 @@ const TLS_SERVER_HELLO: FuncDef = func_def! (
 
 const TLS_SNI: FuncDef = func_def! (
     /// Returns a TLS SNI extension
-    "tls::sni";
-    ValType::Str;
-
-    =>
-    =>
-    ValType::Str;
-
+    resynth sni(
+        =>
+        =>
+        Str
+    ) -> Str
     |mut args| {
         let names: Vec<Buf> = args.collect_extra_args();
         let names_len: usize = names.iter().map(|x| -> Buf { x.into() }).map(|x| x.len()).sum();
@@ -1040,13 +1028,11 @@ const TLS_SNI: FuncDef = func_def! (
 
 const TLS_CERTIFICATES: FuncDef = func_def! (
     /// Returns a chain of X.509 certificates
-    "tls::certificates";
-    ValType::Str;
-
-    =>
-    =>
-    ValType::Str;
-
+    resynth certificates(
+        =>
+        =>
+        Str
+    ) -> Str
     |mut args| {
         let certs: Vec<Buf> = args.collect_extra_args();
         let certs_len: usize = certs.iter().map(|x| -> Buf { x.into() }).map(|x| x.len()).sum();
