@@ -10,6 +10,7 @@ use ezpkt::TcpFlow;
 use pkt::Packet;
 
 const TCP_OPEN: FuncDef = func_def!(
+    /// Performs a TCP 3-way handshake
     "ipv4::tcp::flow.open";
     ValType::PktGen;
 
@@ -26,6 +27,7 @@ const TCP_OPEN: FuncDef = func_def!(
 );
 
 const TCP_CL_MSG: FuncDef = func_def!(
+    /// Sends a message from client to server, may also send an ACK in response
     "ipv4::tcp::flow.client_message";
     ValType::PktGen;
 
@@ -57,6 +59,7 @@ const TCP_CL_MSG: FuncDef = func_def!(
 );
 
 const TCP_SV_MSG: FuncDef = func_def!(
+    /// Sends a message from server to client, may also send an ACK in response
     "ipv4::tcp::flow.server_message";
     ValType::PktGen;
 
@@ -88,6 +91,7 @@ const TCP_SV_MSG: FuncDef = func_def!(
 );
 
 const TCP_CL_SEG: FuncDef = func_def!(
+    /// Returns a single segment from client to server
     "ipv4::tcp::flow.client_segment";
     ValType::Pkt;
 
@@ -115,6 +119,7 @@ const TCP_CL_SEG: FuncDef = func_def!(
 );
 
 const TCP_SV_SEG: FuncDef = func_def!(
+    /// Returns a single segment from server to client
     "ipv4::tcp::flow.server_segment";
     ValType::Pkt;
 
@@ -142,6 +147,7 @@ const TCP_SV_SEG: FuncDef = func_def!(
 );
 
 const TCP_CL_RAW_SEG: FuncDef = func_def!(
+    /// Returns a single segment, minus the IP header, from client to server
     "ipv4::tcp::flow.client_raw_segment";
     ValType::Str;
 
@@ -169,6 +175,7 @@ const TCP_CL_RAW_SEG: FuncDef = func_def!(
 );
 
 const TCP_SV_RAW_SEG: FuncDef = func_def!(
+    /// Returns a single segment, minus the IP header, from server to client
     "ipv4::tcp::flow.server_raw_segment";
     ValType::Str;
 
@@ -196,6 +203,7 @@ const TCP_SV_RAW_SEG: FuncDef = func_def!(
 );
 
 const TCP_CL_HDR: FuncDef = func_def!(
+    /// Returns only the TCP header, from client to server
     "ipv4::tcp::flow.client_hdr";
     ValType::Str;
 
@@ -215,6 +223,7 @@ const TCP_CL_HDR: FuncDef = func_def!(
 );
 
 const TCP_SV_HDR: FuncDef = func_def!(
+    /// Returns only the TCP header, from server to client
     "ipv4::tcp::flow.server_hdr";
     ValType::Str;
 
@@ -234,6 +243,7 @@ const TCP_SV_HDR: FuncDef = func_def!(
 );
 
 const TCP_CL_ACK: FuncDef = func_def!(
+    /// Sends an ACK from the client
     "ipv4::tcp::flow.client_ack";
     ValType::Pkt;
 
@@ -259,6 +269,7 @@ const TCP_CL_ACK: FuncDef = func_def!(
 );
 
 const TCP_SV_ACK: FuncDef = func_def!(
+    /// Sends an ACK from the server
     "ipv4::tcp::flow.server_ack";
     ValType::Pkt;
 
@@ -284,6 +295,8 @@ const TCP_SV_ACK: FuncDef = func_def!(
 );
 
 const TCP_CL_HOLE: FuncDef = func_def!(
+    /// Creates a hole in the sever's Tx sequence space, making it look like we missed a packet
+    /// from the client
     "ipv4::tcp::flow.client_hole";
     ValType::Void;
 
@@ -304,6 +317,8 @@ const TCP_CL_HOLE: FuncDef = func_def!(
 );
 
 const TCP_SV_HOLE: FuncDef = func_def!(
+    /// Creates a hole in the sever's Tx sequence space, making it look like we missed a packet
+    /// from the server
     "ipv4::tcp::flow.server_hole";
     ValType::Void;
 
@@ -324,6 +339,7 @@ const TCP_SV_HOLE: FuncDef = func_def!(
 );
 
 const TCP_CL_CLOSE: FuncDef = func_def!(
+    /// Shutdown both sides of the TCP connection, with the client sending the first FIN
     "ipv4::tcp::flow.client_close";
     ValType::PktGen;
 
@@ -340,6 +356,7 @@ const TCP_CL_CLOSE: FuncDef = func_def!(
 );
 
 const TCP_SV_CLOSE: FuncDef = func_def!(
+    /// Shutdown both sides of the TCP connection, with the server sending the first FIN
     "ipv4::tcp::flow.server_close";
     ValType::PktGen;
 
@@ -356,6 +373,7 @@ const TCP_SV_CLOSE: FuncDef = func_def!(
 );
 
 const TCP_CL_RESET: FuncDef = func_def!(
+    /// Send a RST packet from the client
     "ipv4::tcp::flow.client_reset";
     ValType::Pkt;
 
@@ -372,6 +390,7 @@ const TCP_CL_RESET: FuncDef = func_def!(
 );
 
 const TCP_SV_RESET: FuncDef = func_def!(
+    /// Send a RST packet from the server
     "ipv4::tcp::flow.server_reset";
     ValType::Pkt;
 
@@ -416,7 +435,8 @@ impl Class for TcpFlow {
 }
 
 const TCP_FLOW: FuncDef = func_def!(
-    "flow";
+    /// Create a TCP flow context, from which packets can be created
+    "ipv4::tcp::flow";
     ValType::Obj;
 
     "cl" => ValType::Sock4,

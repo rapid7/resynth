@@ -1,5 +1,6 @@
 use pkt::PcapWriter;
 
+use resynth::stdlib::write_docs;
 use resynth::{error, ok, warn};
 use resynth::{Error, Lexer, Loc, Parser, Program, EOF};
 
@@ -127,6 +128,14 @@ fn resynth() -> Result<(), ()> {
                 .help("Keep pcap files on error"),
         )
         .arg(
+            Arg::new("docs")
+                .long("output-docs")
+                .value_name("FILE")
+                .required(false)
+                .value_parser(value_parser!(PathBuf))
+                .help("Output documentation"),
+        )
+        .arg(
             Arg::new("out")
                 .short('o')
                 .long("output")
@@ -173,6 +182,11 @@ fn resynth() -> Result<(), ()> {
         _ => ColorChoice::Never,
     };
     let mut stdout = StandardStream::stdout(color);
+
+    if let Some(docs_dir) = argv.get_one::<PathBuf>("docs") {
+        write_docs(docs_dir);
+        return Ok(());
+    }
 
     let use_filenames = argv.contains_id("out");
 

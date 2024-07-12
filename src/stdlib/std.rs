@@ -7,6 +7,7 @@ use crate::sym::Symbol;
 use crate::val::{Val, ValType};
 
 const BE16: FuncDef = func_def!(
+    /// Encode a 16bit integer into 2 big-endian bytes
     "std::be16";
     ValType::Str;
 
@@ -22,6 +23,7 @@ const BE16: FuncDef = func_def!(
 );
 
 const BE32: FuncDef = func_def!(
+    /// Encode a 32bit integer into 4 big-endian bytes
     "std::be32";
     ValType::Str;
 
@@ -37,6 +39,7 @@ const BE32: FuncDef = func_def!(
 );
 
 const BE64: FuncDef = func_def!(
+    /// Encode a 64bit integer into 8 big-endian bytes
     "std::be64";
     ValType::Str;
 
@@ -52,6 +55,7 @@ const BE64: FuncDef = func_def!(
 );
 
 const LE16: FuncDef = func_def!(
+    /// Encode a 16bit integer into 2 little-endian bytes
     "std::le16";
     ValType::Str;
 
@@ -67,6 +71,7 @@ const LE16: FuncDef = func_def!(
 );
 
 const LE32: FuncDef = func_def!(
+    /// Encode a 32bit integer into 4 little-endian bytes
     "std::le32";
     ValType::Str;
 
@@ -82,6 +87,7 @@ const LE32: FuncDef = func_def!(
 );
 
 const LE64: FuncDef = func_def!(
+    /// Encode a 64bit integer into 8 little-endian bytes
     "std::le64";
     ValType::Str;
 
@@ -97,6 +103,7 @@ const LE64: FuncDef = func_def!(
 );
 
 const U8: FuncDef = func_def!(
+    /// Convert an integer into a one-byte string
     "std::u8";
     ValType::Str;
 
@@ -112,6 +119,7 @@ const U8: FuncDef = func_def!(
 );
 
 const LEN_BE64: FuncDef = func_def! (
+    /// Prefix a buffer with a 64-bit big-endian length field
     "std::len_be64";
     ValType::Str;
 
@@ -132,6 +140,7 @@ const LEN_BE64: FuncDef = func_def! (
 );
 
 const LEN_BE32: FuncDef = func_def! (
+    /// Prefix a buffer with a 32-bit big-endian length field
     "std::len_be32";
     ValType::Str;
 
@@ -152,6 +161,7 @@ const LEN_BE32: FuncDef = func_def! (
 );
 
 const LEN_BE16: FuncDef = func_def! (
+    /// Prefix a buffer with a 16-bit big-endian length field
     "std::len_be16";
     ValType::Str;
 
@@ -172,6 +182,7 @@ const LEN_BE16: FuncDef = func_def! (
 );
 
 const LEN_U8: FuncDef = func_def! (
+    /// Prefix a buffer with a 8-bit byte length field
     "std::len_u8";
     ValType::Str;
 

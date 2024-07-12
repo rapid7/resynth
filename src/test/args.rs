@@ -6,21 +6,22 @@ use crate::val::{Val, ValDef, ValType};
 use phf::phf_ordered_map;
 
 const PLAIN: FuncDef = func_def! {
-        "PLAIN";
-        ValType::Void;
+    /// PLAIN
+    "PLAIN";
+    ValType::Void;
 
-        "a" => ValType::U64,
-        "b" => ValType::Str,
-        =>
-        "c" => ValDef::U64(123),
-        "d" => ValDef::Str(b"hello"),
-        "e" => ValDef::Type(ValType::Bool),
-        =>
-        ValType::Void;
+    "a" => ValType::U64,
+    "b" => ValType::Str,
+    =>
+    "c" => ValDef::U64(123),
+    "d" => ValDef::Str(b"hello"),
+    "e" => ValDef::Type(ValType::Bool),
+    =>
+    ValType::Void;
 
-        |_args| {
-            Ok(Val::Nil)
-        }
+    |_args| {
+        Ok(Val::Nil)
+    }
 };
 
 /// Just supply the positional arguments
@@ -184,18 +185,19 @@ fn argvec_multiple_named_optional() {
 }
 
 const COLLECT: FuncDef = func_def! {
-        "COLLECT";
-        ValType::Void;
+    /// COLLECT
+    "COLLECT";
+    ValType::Void;
 
-        "a" => ValType::U64,
-        =>
-        "b" => ValDef::U64(123),
-        =>
-        ValType::Str;
+    "a" => ValType::U64,
+    =>
+    "b" => ValDef::U64(123),
+    =>
+    ValType::Str;
 
-        |_args| {
-            Ok(Val::Nil)
-        }
+    |_args| {
+        Ok(Val::Nil)
+    }
 };
 
 /// Empty set of collect args
@@ -258,16 +260,17 @@ fn collect_bad_type() {
 }
 
 const EMPTY: FuncDef = func_def! {
-        "COLLECT";
-        ValType::Void;
+    /// EMPTY
+    "EMPTY";
+    ValType::Void;
 
-        =>
-        =>
-        ValType::Str;
+    =>
+    =>
+    ValType::Str;
 
-        |_args| {
-            Ok(Val::Nil)
-        }
+    |_args| {
+        Ok(Val::Nil)
+    }
 };
 
 /// Test a func which takes no args
@@ -297,19 +300,20 @@ fn argvec_empty_extra() {
 }
 
 const NAMED: FuncDef = func_def! {
-        "NAMED";
-        ValType::Void;
+    /// NAMED
+    "NAMED";
+    ValType::Void;
 
-        =>
-        "a" => ValDef::U64(123),
-        "b" => ValDef::Str(b"hello"),
-        "c" => ValDef::Bool(true),
-        =>
-        ValType::Void;
+    =>
+    "a" => ValDef::U64(123),
+    "b" => ValDef::Str(b"hello"),
+    "c" => ValDef::Bool(true),
+    =>
+    ValType::Void;
 
-        |_args| {
-            Ok(Val::Nil)
-        }
+    |_args| {
+        Ok(Val::Nil)
+    }
 };
 
 /// Supply named arguments in a positional manner
@@ -328,19 +332,20 @@ fn argvec_optional_anonymous() {
 }
 
 const OPTIONAL_COLLECT_STR: FuncDef = func_def! {
-        "OPTIONAL_COLLECT_STR";
-        ValType::Void;
+    /// OPTIONAL_COLLECT_STR
+    "OPTIONAL_COLLECT_STR";
+    ValType::Void;
 
-        =>
-        "a" => ValDef::Bool(true),
-        "b" => ValDef::U64(123),
-        "c" => ValDef::Str(b"hello"),
-        =>
-        ValType::Str;
+    =>
+    "a" => ValDef::Bool(true),
+    "b" => ValDef::U64(123),
+    "c" => ValDef::Str(b"hello"),
+    =>
+    ValType::Str;
 
-        |_args| {
-            Ok(Val::Nil)
-        }
+    |_args| {
+        Ok(Val::Nil)
+    }
 };
 
 /// This time, we have optional arguments and string collect-args. Now optional arguments MUST be
@@ -360,19 +365,20 @@ fn argvec_optional_collect_str() {
 }
 
 const OPTIONAL_COLLECT_U64: FuncDef = func_def! {
-        "OPTIONAL_COLLECT_U64";
-        ValType::Void;
+    /// OPTIONAL_COLLECT_U64
+    "OPTIONAL_COLLECT_U64";
+    ValType::Void;
 
-        =>
-        "a" => ValDef::U64(123),
-        "b" => ValDef::Str(b"hello"),
-        "c" => ValDef::Bool(true),
-        =>
-        ValType::U64;
+    =>
+    "a" => ValDef::U64(123),
+    "b" => ValDef::Str(b"hello"),
+    "c" => ValDef::Bool(true),
+    =>
+    ValType::U64;
 
-        |_args| {
-            Ok(Val::Nil)
-        }
+    |_args| {
+        Ok(Val::Nil)
+    }
 };
 
 /// This time, we have optional arguments and int collect-args. Now optional arguments MUST be

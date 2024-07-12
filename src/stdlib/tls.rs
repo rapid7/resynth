@@ -825,6 +825,7 @@ const CIPHER: phf::Map<&'static str, Symbol> = phf_map! {
 };
 
 const TLS_MESSAGE: FuncDef = func_def! (
+    /// Returns a TLS record
     "tls::message";
     ValType::Str;
 
@@ -852,6 +853,7 @@ const TLS_MESSAGE: FuncDef = func_def! (
 );
 
 const TLS_EXTENSION: FuncDef = func_def! (
+    /// Returns a TLS extension
     "tls::extension";
     ValType::Str;
 
@@ -880,6 +882,7 @@ fn len24(len: usize) -> [u8; 3] {
 }
 
 const TLS_CIPHERS: FuncDef = func_def! (
+    /// Returns a TLS ciphers list
     "tls::ciphers";
     ValType::Str;
 
@@ -904,6 +907,7 @@ const TLS_CIPHERS: FuncDef = func_def! (
 );
 
 const TLS_CLIENT_HELLO: FuncDef = func_def! (
+    /// Returns a TLS client hello
     "tls::client_hello";
     ValType::Str;
 
@@ -953,6 +957,7 @@ const TLS_CLIENT_HELLO: FuncDef = func_def! (
 );
 
 const TLS_SERVER_HELLO: FuncDef = func_def! (
+    /// Returns a TLS server hello
     "tls::server_hello";
     ValType::Str;
 
@@ -1003,6 +1008,7 @@ const TLS_SERVER_HELLO: FuncDef = func_def! (
 );
 
 const TLS_SNI: FuncDef = func_def! (
+    /// Returns a TLS SNI extension
     "tls::sni";
     ValType::Str;
 
@@ -1033,6 +1039,7 @@ const TLS_SNI: FuncDef = func_def! (
 );
 
 const TLS_CERTIFICATES: FuncDef = func_def! (
+    /// Returns a chain of X.509 certificates
     "tls::certificates";
     ValType::Str;
 

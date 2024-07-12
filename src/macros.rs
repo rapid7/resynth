@@ -1,3 +1,5 @@
+extern crate concat_with;
+
 macro_rules! replace_expr {
     ($_t:tt $sub:expr) => {
         $sub
@@ -7,7 +9,8 @@ macro_rules! replace_expr {
 #[macro_export]
 macro_rules! func_def {
     (
-        $name:expr
+        $(#[doc = $doc:literal])+
+        $name:literal
         ;
         $return_type:expr
         ;
@@ -30,10 +33,12 @@ macro_rules! func_def {
             min_args: {<[()]>::len(&[$(replace_expr!($arg_name ())),*])},
             collect_type: $collect_type,
             exec: $exec,
+            doc: &concat_with::concat_line!($($doc),+),
         }
     };
     (
-        $name:expr
+        $(#[doc = $doc:literal])+
+        $name:literal
         ;
         $return_type:expr
         ;
@@ -53,6 +58,7 @@ macro_rules! func_def {
             min_args: 0,
             collect_type: $collect_type,
             exec: $exec,
+            doc: &concat_with::concat_line!($($doc),+),
         }
     };
 }

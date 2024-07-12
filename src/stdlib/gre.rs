@@ -12,6 +12,7 @@ use crate::val::{Val, ValDef, ValType};
 use ezpkt::GreFlow;
 
 const ENCAP: FuncDef = func_def!(
+    /// Encapsulate packets in GRETAP
     "gre::session.encap";
     ValType::PktGen;
 
@@ -49,7 +50,8 @@ impl Class for GreFlow {
 }
 
 const SESSION: FuncDef = func_def!(
-    "session";
+    /// Create a GRETAP session
+    "gre::session";
     ValType::Obj;
 
     "cl" => ValType::Ip4,

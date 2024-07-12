@@ -24,6 +24,7 @@ pub struct FuncDef {
     pub min_args: usize,
     pub collect_type: ValType,
     pub exec: fn(args: Args) -> Result<Val, Error>,
+    pub doc: &'static str,
 }
 
 impl Eq for FuncDef {}

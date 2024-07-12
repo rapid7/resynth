@@ -11,6 +11,7 @@ use crate::val::{Val, ValDef, ValType};
 use ezpkt::Erspan2Flow;
 
 const ENCAP: FuncDef = func_def!(
+    /// Encapsulate packets in ERSPAN2
     "erspan2::session.encap";
     ValType::PktGen;
 
@@ -50,7 +51,8 @@ impl Class for Erspan2Flow {
 }
 
 const SESSION: FuncDef = func_def!(
-    "session";
+    /// Create an erspan2 session
+    "erspan2::session";
     ValType::Obj;
 
     "cl" => ValType::Ip4,

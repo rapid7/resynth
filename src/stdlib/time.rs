@@ -10,7 +10,8 @@ const KHZ: u64 = HZ / 1000;
 const MHZ: u64 = KHZ / 1000;
 
 const JUMP_SECS: FuncDef = func_def!(
-    "jump_seconds";
+    /// Advance the pcap timestamp clock by some number of seconds
+    "time::jump_seconds";
     ValType::TimeJump;
 
     "seconds" => ValType::U32,
@@ -26,7 +27,8 @@ const JUMP_SECS: FuncDef = func_def!(
 );
 
 const JUMP_MILLIS: FuncDef = func_def!(
-    "jump_millis";
+    /// Advance the pcap timestamp clock by some number of milliseconds
+    "time::jump_millis";
     ValType::TimeJump;
 
     "ms" => ValType::U64,
@@ -42,7 +44,8 @@ const JUMP_MILLIS: FuncDef = func_def!(
 );
 
 const JUMP_MICROS: FuncDef = func_def!(
-    "jump_micros";
+    /// Advance the pcap timestamp clock by some number of microseconds
+    "time::jump_micros";
     ValType::TimeJump;
 
     "us" => ValType::U64,
@@ -58,7 +61,8 @@ const JUMP_MICROS: FuncDef = func_def!(
 );
 
 const JUMP_NANOS: FuncDef = func_def!(
-    "jump_nanos";
+    /// Advance the pcap timestamp clock by some number of nanoseconds
+    "time::jump_nanos";
     ValType::TimeJump;
 
     "ns" => ValType::U64,

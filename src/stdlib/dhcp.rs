@@ -60,6 +60,7 @@ const OPT: phf::Map<&'static str, Symbol> = phf_map! {
 };
 
 const HDR: FuncDef = func_def!(
+    /// DHCP header
     "dhcp::hdr";
     ValType::Str;
 
@@ -132,6 +133,7 @@ const HDR: FuncDef = func_def!(
 );
 
 const OPTION: FuncDef = func_def!(
+    /// DHCP Option
     "dhcp::option";
     ValType::Str;
 

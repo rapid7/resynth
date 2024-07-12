@@ -32,6 +32,7 @@ const RCODE: phf::Map<&'static str, Symbol> = phf_map! {
 };
 
 const NBNS_FLAGS: FuncDef = func_def!(
+    /// Returns netbios-ns flags
     "netbios::ns::flags";
     ValType::U16;
 
@@ -86,7 +87,8 @@ pub const NS: phf::Map<&'static str, Symbol> = phf_map! {
 };
 
 const NAME_ENCODE: FuncDef = func_def! (
-    "netbios::name";
+    /// Encode a netbios name, including the one-byte suffix field
+    "netbios::name::encode";
     ValType::Str;
 
     =>

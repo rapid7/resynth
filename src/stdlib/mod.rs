@@ -7,6 +7,10 @@ use crate::libapi::Module;
 use crate::sym::Symbol;
 use crate::val::Val;
 
+use ::std::fs::{create_dir_all, File};
+use ::std::io::{BufWriter, Write};
+use ::std::path::{Path, PathBuf};
+
 pub fn unimplemented(mut args: Args) -> Result<Val, Error> {
     println!("Unimplemented stdlib call");
     args.void();
@@ -56,6 +60,58 @@ pub fn toplevel_module(name: &str) -> Option<&'static Module> {
             unreachable!();
         }
     }
+}
+
+/// Generate documentation for a module.. This needs a lot of work.
+pub fn recurse(
+    out_dir: &Path,
+    stk: &mut Vec<&'static str>,
+    m: &phf::Map<&'static str, Symbol>,
+) {
+    let mut mod_path = PathBuf::from(out_dir);
+
+    if stk.is_empty() {
+        mod_path.push("README.md");
+    } else {
+        for item in &stk[..stk.len() - 1] {
+            mod_path.push(item);
+        }
+        create_dir_all(&mod_path).expect("mkdir");
+        mod_path.push(format!("{}.md", &stk[stk.len() - 1]));
+    }
+
+    println!("mod path: {}", mod_path.display());
+
+    let f = File::create(mod_path).expect("Unable to create file");
+    let mut wr = BufWriter::new(f);
+
+    for (name, sym) in m.entries() {
+        stk.push(name);
+        match sym {
+            Symbol::Module(child) => {
+                recurse(out_dir, stk, child);
+            }
+            Symbol::Func(func) => {
+                // let qname = stk.join("::");
+
+                wr.write_all(format!("# {}\n", func.name).as_bytes())
+                    .expect("write func name");
+                wr.write_all(func.doc.as_bytes()).expect("write body");
+                wr.write_all(b"\n\n").expect("write LF");
+            }
+            _ => (),
+        }
+        stk.pop();
+    }
+}
+
+pub fn write_docs(out_dir: &Path) {
+    println!("Write docs to {}", out_dir.display());
+    create_dir_all(out_dir).expect("mkdir");
+
+    let mut stk: Vec<&'static str> = Vec::new();
+
+    recurse(out_dir, &mut stk, &STDLIB)
 }
 
 #[cfg(test)]
