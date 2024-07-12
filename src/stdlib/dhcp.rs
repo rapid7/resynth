@@ -1,11 +1,11 @@
-use phf::{phf_map, phf_ordered_map};
+use phf::phf_map;
 
 use ezpkt::Dhcp;
 use pkt::arp::hrd;
 use pkt::dhcp::{dhcp_opt, message, opcode, opt, CLIENT_PORT, MAGIC, SERVER_PORT};
 
 use crate::func_def;
-use crate::libapi::{ArgDecl, FuncDef};
+use crate::libapi::{ArgDecl, ArgDesc, FuncDef};
 use crate::str::Buf;
 use crate::sym::Symbol;
 use crate::val::{Val, ValDef, ValType};
@@ -61,31 +61,29 @@ const OPT: phf::Map<&'static str, Symbol> = phf_map! {
 
 const HDR: FuncDef = func_def!(
     /// DHCP header
-    "dhcp::hdr";
-    ValType::Str;
+    resynth hdr(
+        =>
+        opcode: ValDef::U8(opcode::REQUEST),
+        htype: ValDef::U8(hrd::ETHER),
+        hlen: ValDef::U8(6),
+        hops: ValDef::U8(0),
 
-    =>
-    "opcode" => ValDef::U8(opcode::REQUEST),
-    "htype" => ValDef::U8(hrd::ETHER),
-    "hlen" => ValDef::U8(6),
-    "hops" => ValDef::U8(0),
+        xid: ValDef::U32(0),
 
-    "xid" => ValDef::U32(0),
+        ciaddr: ValDef::Ip4(Ipv4Addr::new(0, 0, 0, 0)),
+        yiaddr: ValDef::Ip4(Ipv4Addr::new(0, 0, 0, 0)),
+        siaddr: ValDef::Ip4(Ipv4Addr::new(0, 0, 0, 0)),
+        giaddr: ValDef::Ip4(Ipv4Addr::new(0, 0, 0, 0)),
 
-    "ciaddr" => ValDef::Ip4(Ipv4Addr::new(0, 0, 0, 0)),
-    "yiaddr" => ValDef::Ip4(Ipv4Addr::new(0, 0, 0, 0)),
-    "siaddr" => ValDef::Ip4(Ipv4Addr::new(0, 0, 0, 0)),
-    "giaddr" => ValDef::Ip4(Ipv4Addr::new(0, 0, 0, 0)),
+        chaddr: ValDef::Type(ValType::Str),
 
-    "chaddr" => ValDef::Type(ValType::Str),
+        sname: ValDef::Type(ValType::Str),
+        file: ValDef::Type(ValType::Str),
 
-    "sname" => ValDef::Type(ValType::Str),
-    "file" => ValDef::Type(ValType::Str),
-
-    "magic" => ValDef::U32(MAGIC),
-    =>
-    ValType::Void;
-
+        magic: ValDef::U32(MAGIC),
+        =>
+        Void
+    ) -> Str
     |mut args| {
         let opcode: u8 = args.next().into();
         let htype: u8 = args.next().into();
@@ -134,14 +132,12 @@ const HDR: FuncDef = func_def!(
 
 const OPTION: FuncDef = func_def!(
     /// DHCP Option
-    "dhcp::option";
-    ValType::Str;
-
-    "opt" => ValType::U8,
-    =>
-    =>
-    ValType::Str;
-
+    resynth option(
+        opt: U8,
+        =>
+        =>
+        Str
+    ) -> Str
     |mut args| {
         let opt: u8 = args.next().into();
         let data = args.join_extra(b"");

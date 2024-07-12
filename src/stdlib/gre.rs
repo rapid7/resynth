@@ -1,26 +1,24 @@
 use std::rc::Rc;
 
-use phf::{phf_map, phf_ordered_map};
+use phf::phf_map;
 
 use pkt::gre::GreFlags;
 use pkt::Packet;
 
 use crate::func_def;
-use crate::libapi::{ArgDecl, Class, FuncDef};
+use crate::libapi::{ArgDecl, ArgDesc, Class, FuncDef};
 use crate::sym::Symbol;
 use crate::val::{Val, ValDef, ValType};
 use ezpkt::GreFlow;
 
 const ENCAP: FuncDef = func_def!(
     /// Encapsulate packets in GRETAP
-    "gre::session.encap";
-    ValType::PktGen;
-
-    "gen" => ValType::PktGen
-    =>
-    =>
-    ValType::Void;
-
+    resynth encap(
+        gen: PktGen
+        =>
+        =>
+        Void
+    ) -> PktGen
     |mut args| {
         let obj = args.take_this();
         let mut r = obj.borrow_mut();
@@ -51,17 +49,15 @@ impl Class for GreFlow {
 
 const SESSION: FuncDef = func_def!(
     /// Create a GRETAP session
-    "gre::session";
-    ValType::Obj;
-
-    "cl" => ValType::Ip4,
-    "sv" => ValType::Ip4,
-    "ethertype" => ValType::U16,
-    =>
-    "raw" => ValDef::Bool(false),
-    =>
-    ValType::Void;
-
+    resynth session(
+        cl: Ip4,
+        sv: Ip4,
+        ethertype: U16,
+        =>
+        raw: ValDef::Bool(false),
+        =>
+        Void
+    ) -> Obj
     |mut args| {
         let cl = args.next();
         let sv = args.next();

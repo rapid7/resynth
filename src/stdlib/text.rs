@@ -1,4 +1,4 @@
-use phf::{phf_map, phf_ordered_map};
+use phf::phf_map;
 
 use crate::func_def;
 use crate::libapi::FuncDef;
@@ -8,13 +8,11 @@ use crate::val::{Val, ValDef, ValType};
 
 const CONCAT: FuncDef = func_def!(
     /// Concatenate strings
-    "text::concat";
-    ValType::Str;
-
-    =>
-    =>
-    ValType::Str;
-
+    resynth concat(
+        =>
+        =>
+        Str
+    ) -> Str
     |mut args| {
         Ok(args.join_extra(b""))
     }
@@ -22,13 +20,11 @@ const CONCAT: FuncDef = func_def!(
 
 const CRLFLINES: FuncDef = func_def!(
     /// join strings with CRLF line-endings
-    "text::crlflines";
-    ValType::Str;
-
-    =>
-    =>
-    ValType::Str;
-
+    resynth crlflines(
+        =>
+        =>
+        Str
+    ) -> Str
     |mut args| {
         Ok(args.join_extra(b"\r\n"))
     }
@@ -36,13 +32,11 @@ const CRLFLINES: FuncDef = func_def!(
 
 const LEN: FuncDef = func_def!(
     /// Return the length of a string (or strings)
-    "text::len";
-    ValType::U64;
-
-    =>
-    =>
-    ValType::Str;
-
+    resynth len(
+        =>
+        =>
+        Str
+    ) -> U64
     |mut args| {
         let buf: Buf = args.join_extra(b"").into();
         Ok(Val::U64(buf.len() as u64))

@@ -1,7 +1,7 @@
-use phf::{phf_map, phf_ordered_map};
+use phf::phf_map;
 
 use crate::func_def;
-use crate::libapi::{ArgDecl, Class, FuncDef};
+use crate::libapi::{ArgDecl, ArgDesc, Class, FuncDef};
 use crate::str::Buf;
 use crate::sym::Symbol;
 use crate::val::{Val, ValDef, ValType};
@@ -11,34 +11,30 @@ use pkt::Packet;
 
 const TCP_OPEN: FuncDef = func_def!(
     /// Performs a TCP 3-way handshake
-    "ipv4::tcp::flow.open";
-    ValType::PktGen;
-
-    =>
-    =>
-    ValType::Void;
-
+    resynth open(
+        =>
+        =>
+        Void
+    ) -> PktGen
     |mut args| {
         let obj = args.take_this();
         let mut r = obj.borrow_mut();
         let this: &mut TcpFlow = r.as_mut_any().downcast_mut().unwrap();
         Ok(this.open().into())
-    }
+        }
 );
 
 const TCP_CL_MSG: FuncDef = func_def!(
     /// Sends a message from client to server, may also send an ACK in response
-    "ipv4::tcp::flow.client_message";
-    ValType::PktGen;
-
-    =>
-    "send_ack" => ValDef::Bool(true),
-    "seq" => ValDef::Type(ValType::U32),
-    "ack" => ValDef::Type(ValType::U32),
-    "frag_off" => ValDef::U16(0),
-    =>
-    ValType::Str;
-
+    resynth client_message(
+        =>
+        send_ack: ValDef::Bool(true),
+        seq: ValDef::Type(ValType::U32),
+        ack: ValDef::Type(ValType::U32),
+        frag_off: ValDef::U16(0),
+        =>
+        Str
+    ) -> PktGen
     |mut args| {
         let obj = args.take_this();
         let mut r = obj.borrow_mut();
@@ -60,17 +56,15 @@ const TCP_CL_MSG: FuncDef = func_def!(
 
 const TCP_SV_MSG: FuncDef = func_def!(
     /// Sends a message from server to client, may also send an ACK in response
-    "ipv4::tcp::flow.server_message";
-    ValType::PktGen;
-
-    =>
-    "send_ack" => ValDef::Bool(true),
-    "seq" => ValDef::Type(ValType::U32),
-    "ack" => ValDef::Type(ValType::U32),
-    "frag_off" => ValDef::U16(0),
-    =>
-    ValType::Str;
-
+    resynth server_message(
+        =>
+        send_ack: ValDef::Bool(true),
+        seq: ValDef::Type(ValType::U32),
+        ack: ValDef::Type(ValType::U32),
+        frag_off: ValDef::U16(0),
+        =>
+        Str
+    ) -> PktGen
     |mut args| {
         let obj = args.take_this();
         let mut r = obj.borrow_mut();
@@ -92,15 +86,13 @@ const TCP_SV_MSG: FuncDef = func_def!(
 
 const TCP_CL_SEG: FuncDef = func_def!(
     /// Returns a single segment from client to server
-    "ipv4::tcp::flow.client_segment";
-    ValType::Pkt;
-
-    =>
-    "seq" => ValDef::Type(ValType::U32),
-    "ack" => ValDef::Type(ValType::U32),
-    =>
-    ValType::Str;
-
+    resynth client_segment(
+        =>
+        seq: ValDef::Type(ValType::U32),
+        ack: ValDef::Type(ValType::U32),
+        =>
+        Str
+    ) -> Pkt
     |mut args| {
         let obj = args.take_this();
         let mut r = obj.borrow_mut();
@@ -120,15 +112,13 @@ const TCP_CL_SEG: FuncDef = func_def!(
 
 const TCP_SV_SEG: FuncDef = func_def!(
     /// Returns a single segment from server to client
-    "ipv4::tcp::flow.server_segment";
-    ValType::Pkt;
-
-    =>
-    "seq" => ValDef::Type(ValType::U32),
-    "ack" => ValDef::Type(ValType::U32),
-    =>
-    ValType::Str;
-
+    resynth server_segment(
+        =>
+        seq: ValDef::Type(ValType::U32),
+        ack: ValDef::Type(ValType::U32),
+        =>
+        Str
+    ) -> Pkt
     |mut args| {
         let obj = args.take_this();
         let mut r = obj.borrow_mut();
@@ -148,15 +138,13 @@ const TCP_SV_SEG: FuncDef = func_def!(
 
 const TCP_CL_RAW_SEG: FuncDef = func_def!(
     /// Returns a single segment, minus the IP header, from client to server
-    "ipv4::tcp::flow.client_raw_segment";
-    ValType::Str;
-
-    =>
-    "seq" => ValDef::Type(ValType::U32),
-    "ack" => ValDef::Type(ValType::U32),
-    =>
-    ValType::Str;
-
+    resynth client_raw_segment(
+        =>
+        seq: ValDef::Type(ValType::U32),
+        ack: ValDef::Type(ValType::U32),
+        =>
+        Str
+    ) -> Str
     |mut args| {
         let obj = args.take_this();
         let mut r = obj.borrow_mut();
@@ -176,15 +164,13 @@ const TCP_CL_RAW_SEG: FuncDef = func_def!(
 
 const TCP_SV_RAW_SEG: FuncDef = func_def!(
     /// Returns a single segment, minus the IP header, from server to client
-    "ipv4::tcp::flow.server_raw_segment";
-    ValType::Str;
-
-    =>
-    "seq" => ValDef::Type(ValType::U32),
-    "ack" => ValDef::Type(ValType::U32),
-    =>
-    ValType::Str;
-
+    resynth server_raw_segment(
+        =>
+        seq: ValDef::Type(ValType::U32),
+        ack: ValDef::Type(ValType::U32),
+        =>
+        Str
+    ) -> Str
     |mut args| {
         let obj = args.take_this();
         let mut r = obj.borrow_mut();
@@ -204,14 +190,12 @@ const TCP_SV_RAW_SEG: FuncDef = func_def!(
 
 const TCP_CL_HDR: FuncDef = func_def!(
     /// Returns only the TCP header, from client to server
-    "ipv4::tcp::flow.client_hdr";
-    ValType::Str;
-
-    =>
-    "bytes" => ValDef::U32(0),
-    =>
-    ValType::Void;
-
+    resynth client_hdr(
+        =>
+        bytes: ValDef::U32(0),
+        =>
+        Void
+    ) -> Str
     |mut args| {
         let obj = args.take_this();
         let mut r = obj.borrow_mut();
@@ -224,14 +208,12 @@ const TCP_CL_HDR: FuncDef = func_def!(
 
 const TCP_SV_HDR: FuncDef = func_def!(
     /// Returns only the TCP header, from server to client
-    "ipv4::tcp::flow.server_hdr";
-    ValType::Str;
-
-    =>
-    "bytes" => ValDef::U32(0),
-    =>
-    ValType::Void;
-
+    resynth server_hdr(
+        =>
+        bytes: ValDef::U32(0),
+        =>
+        Void
+    ) -> Str
     |mut args| {
         let obj = args.take_this();
         let mut r = obj.borrow_mut();
@@ -244,15 +226,13 @@ const TCP_SV_HDR: FuncDef = func_def!(
 
 const TCP_CL_ACK: FuncDef = func_def!(
     /// Sends an ACK from the client
-    "ipv4::tcp::flow.client_ack";
-    ValType::Pkt;
-
-    =>
-    "seq" => ValDef::Type(ValType::U32),
-    "ack" => ValDef::Type(ValType::U32),
-    =>
-    ValType::Void;
-
+    resynth client_ack(
+        =>
+        seq: ValDef::Type(ValType::U32),
+        ack: ValDef::Type(ValType::U32),
+        =>
+        Void
+    ) -> Pkt
     |mut args| {
         let obj = args.take_this();
         let mut r = obj.borrow_mut();
@@ -270,15 +250,13 @@ const TCP_CL_ACK: FuncDef = func_def!(
 
 const TCP_SV_ACK: FuncDef = func_def!(
     /// Sends an ACK from the server
-    "ipv4::tcp::flow.server_ack";
-    ValType::Pkt;
-
-    =>
-    "seq" => ValDef::Type(ValType::U32),
-    "ack" => ValDef::Type(ValType::U32),
-    =>
-    ValType::Void;
-
+    resynth server_ack(
+        =>
+        seq: ValDef::Type(ValType::U32),
+        ack: ValDef::Type(ValType::U32),
+        =>
+        Void
+    ) -> Pkt
     |mut args| {
         let obj = args.take_this();
         let mut r = obj.borrow_mut();
@@ -297,14 +275,12 @@ const TCP_SV_ACK: FuncDef = func_def!(
 const TCP_CL_HOLE: FuncDef = func_def!(
     /// Creates a hole in the sever's Tx sequence space, making it look like we missed a packet
     /// from the client
-    "ipv4::tcp::flow.client_hole";
-    ValType::Void;
-
-    "bytes" => ValType::U32,
-    =>
-    =>
-    ValType::Void;
-
+    resynth client_hole(
+        bytes: U32,
+        =>
+        =>
+        Void
+    ) -> Void
     |mut args| {
         let obj = args.take_this();
         let mut r = obj.borrow_mut();
@@ -319,14 +295,12 @@ const TCP_CL_HOLE: FuncDef = func_def!(
 const TCP_SV_HOLE: FuncDef = func_def!(
     /// Creates a hole in the sever's Tx sequence space, making it look like we missed a packet
     /// from the server
-    "ipv4::tcp::flow.server_hole";
-    ValType::Void;
-
-    "bytes" => ValType::U32,
-    =>
-    =>
-    ValType::Void;
-
+    resynth server_hole(
+        bytes: U32,
+        =>
+        =>
+        Void
+    ) -> Void
     |mut args| {
         let obj = args.take_this();
         let mut r = obj.borrow_mut();
@@ -340,13 +314,11 @@ const TCP_SV_HOLE: FuncDef = func_def!(
 
 const TCP_CL_CLOSE: FuncDef = func_def!(
     /// Shutdown both sides of the TCP connection, with the client sending the first FIN
-    "ipv4::tcp::flow.client_close";
-    ValType::PktGen;
-
-    =>
-    =>
-    ValType::Void;
-
+    resynth client_close(
+        =>
+        =>
+        Void
+    ) -> PktGen
     |mut args| {
         let obj = args.take_this();
         let mut r = obj.borrow_mut();
@@ -357,13 +329,11 @@ const TCP_CL_CLOSE: FuncDef = func_def!(
 
 const TCP_SV_CLOSE: FuncDef = func_def!(
     /// Shutdown both sides of the TCP connection, with the server sending the first FIN
-    "ipv4::tcp::flow.server_close";
-    ValType::PktGen;
-
-    =>
-    =>
-    ValType::Void;
-
+    resynth server_close(
+        =>
+        =>
+        Void
+    ) -> PktGen
     |mut args| {
         let obj = args.take_this();
         let mut r = obj.borrow_mut();
@@ -374,13 +344,11 @@ const TCP_SV_CLOSE: FuncDef = func_def!(
 
 const TCP_CL_RESET: FuncDef = func_def!(
     /// Send a RST packet from the client
-    "ipv4::tcp::flow.client_reset";
-    ValType::Pkt;
-
-    =>
-    =>
-    ValType::Void;
-
+    resynth client_reset(
+        =>
+        =>
+        Void
+    ) -> Pkt
     |mut args| {
         let obj = args.take_this();
         let mut r = obj.borrow_mut();
@@ -391,13 +359,11 @@ const TCP_CL_RESET: FuncDef = func_def!(
 
 const TCP_SV_RESET: FuncDef = func_def!(
     /// Send a RST packet from the server
-    "ipv4::tcp::flow.server_reset";
-    ValType::Pkt;
-
-    =>
-    =>
-    ValType::Void;
-
+    resynth server_reset(
+        =>
+        =>
+        Void
+    ) -> Pkt
     |mut args| {
         let obj = args.take_this();
         let mut r = obj.borrow_mut();
@@ -436,18 +402,16 @@ impl Class for TcpFlow {
 
 const TCP_FLOW: FuncDef = func_def!(
     /// Create a TCP flow context, from which packets can be created
-    "ipv4::tcp::flow";
-    ValType::Obj;
-
-    "cl" => ValType::Sock4,
-    "sv" => ValType::Sock4,
-    =>
-    "cl_seq" => ValDef::U32(1),
-    "sv_seq" => ValDef::U32(1),
-    "raw" => ValDef::Bool(false),
-    =>
-    ValType::Void;
-
+    resynth flow(
+        cl: Sock4,
+        sv: Sock4,
+        =>
+        cl_seq: ValDef::U32(1),
+        sv_seq: ValDef::U32(1),
+        raw: ValDef::Bool(false),
+        =>
+        Void
+    ) -> Obj
     |mut args| {
         let cl = args.next();
         let sv = args.next();

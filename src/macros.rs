@@ -1,64 +1,85 @@
 extern crate concat_with;
 
-macro_rules! replace_expr {
-    ($_t:tt $sub:expr) => {
-        $sub
-    };
-}
-
 #[macro_export]
 macro_rules! func_def {
+    (@replace $_t:tt $sub:expr) => {
+        $sub
+    };
+
+    (@len $($tt:tt)*) => {
+        {<[()]>::len(&[$(func_def!(@replace $tt ())),*])}
+    };
+
     (
-        $(#[doc = $doc:literal])+
-        $name:literal
-        ;
-        $return_type:expr
-        ;
-        $($arg_name:expr => $arg_val:expr),+ $(,)*
-        =>
-        $($dfl_name:expr => $dfl_val:expr),* $(,)*
-        =>
-        $collect_type:expr
-        ;
-        $exec:expr
+        @pdecl $type:ident
     ) => {
-        FuncDef {
-            name: $name,
-            return_type: $return_type,
-            args: phf_ordered_map!(
-                $($arg_name => ArgDecl::Positional($arg_val)),*
-                ,
-                $($dfl_name => ArgDecl::Named($dfl_val)),*
-            ),
-            min_args: {<[()]>::len(&[$(replace_expr!($arg_name ())),*])},
-            collect_type: $collect_type,
-            exec: $exec,
-            doc: &concat_with::concat_line!($($doc),+),
+        ArgDecl::Positional(ValType::$type)
+    };
+
+    (
+        @ndecl $type:expr
+    ) => {
+        ArgDecl::Named($type)
+    };
+
+    (
+        @pos $name:ident $type:ident
+    ) => {
+        ArgDesc {
+            name: stringify!($name),
+            typ: func_def!(@pdecl $type),
         }
     };
+
+    (
+        @named $name:ident $type:expr
+    ) => {
+        ArgDesc {
+            name: stringify!($name),
+            typ: func_def!(@ndecl $type),
+        }
+    };
+
     (
         $(#[doc = $doc:literal])+
-        $name:literal
-        ;
-        $return_type:expr
-        ;
-        =>
-        $($dfl_name:expr => $dfl_val:expr),* $(,)*
-        =>
-        $collect_type:expr
-        ;
+        resynth $name:ident
+        (
+            $($arg_name:ident : $arg_type:ident),* $(,)*
+            =>
+            $($dfl_name:ident : $dfl_type:expr),* $(,)*
+            =>
+            $collect_type:ident
+        ) -> $return_type:ident
         $exec:expr
     ) => {
-        FuncDef {
-            name: $name,
-            return_type: $return_type,
-            args: phf_ordered_map!(
-                $($dfl_name => ArgDecl::Named($dfl_val)),*
-            ),
-            min_args: 0,
-            collect_type: $collect_type,
-            exec: $exec,
-            doc: &concat_with::concat_line!($($doc),+),
+        {
+            #[allow(non_camel_case_types,unused)]
+            enum ArgName {
+               $($arg_name,)*
+               $($dfl_name,)*
+            }
+
+            fn arg_pos(name: &str) -> Option<usize> {
+                match name {
+                    $(stringify!($arg_name) => Some(ArgName::$arg_name as usize),)*
+                    $(stringify!($dfl_name) => Some(ArgName::$dfl_name as usize),)*
+                    _ => None,
+                }
+            }
+
+            FuncDef {
+                name: stringify!($name),
+                return_type: ValType::$return_type,
+                args: &[
+                    $(func_def!(@pos $arg_name $arg_type),)*
+                    $(func_def!(@named $dfl_name $dfl_type),)*
+                ],
+                arg_pos,
+                min_args: func_def!(@len $($arg_name)*),
+                collect_type: ValType::$collect_type,
+                exec: $exec,
+                doc: concat_with::concat_line!($($doc),+),
+            }
         }
     };
 }

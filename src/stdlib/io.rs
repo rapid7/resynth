@@ -4,24 +4,22 @@ use std::io::Read;
 use std::os::unix::ffi::OsStrExt;
 use std::path::Path;
 
-use phf::{phf_map, phf_ordered_map};
+use phf::phf_map;
 
 use crate::func_def;
-use crate::libapi::{ArgDecl, Class, FuncDef};
+use crate::libapi::{ArgDecl, ArgDesc, Class, FuncDef};
 use crate::str::Buf;
 use crate::sym::Symbol;
 use crate::val::{Val, ValType};
 
 const IO_FILE: FuncDef = func_def!(
     /// Load the contents of a file into a string
-    "io::file";
-    ValType::Str;
-
-    "filename" => ValType::Str,
-    =>
-    =>
-    ValType::Str;
-
+    resynth file(
+        filename: Str,
+        =>
+        =>
+        Str
+    ) -> Str
     |mut args| {
         let arg: Buf = args.next().into();
         let path = Path::new(OsStr::from_bytes(arg.as_ref()));
@@ -75,14 +73,12 @@ where
 
 const BUFIO_READ: FuncDef = func_def!(
     /// Read some bytes out of a buffer
-    "io::bufio.read";
-    ValType::Str;
-
-    "bytes" => ValType::U64,
-    =>
-    =>
-    ValType::Void;
-
+    resynth read(
+        bytes: U64,
+        =>
+        =>
+        Void
+    ) -> Str
     |mut args| {
         let bytes: u64 = args.next().into();
         let obj = args.take_this();
@@ -94,13 +90,11 @@ const BUFIO_READ: FuncDef = func_def!(
 
 const BUFIO_READ_ALL: FuncDef = func_def!(
     /// Read all remaining bytes out of a buffer
-    "io::bufio.read_all";
-    ValType::Str;
-
-    =>
-    =>
-    ValType::Void;
-
+    resynth read_all(
+        =>
+        =>
+        Void
+    ) -> Str
     |mut args| {
         let obj = args.take_this();
         let mut r = obj.borrow_mut();
@@ -124,13 +118,11 @@ impl Class for BufIo {
 
 const BUFIO: FuncDef = func_def!(
     /// Create a buffer from a string, from which you can read parts in sequence
-    "io::bufio";
-    ValType::Obj;
-
-    =>
-    =>
-    ValType::Str;
-
+    resynth bufio(
+        =>
+        =>
+        Str
+    ) -> Obj
     |mut args| {
         let bytes: Buf = args.join_extra(b"").into();
         Ok(Val::from(BufIo::from(bytes.as_ref())))

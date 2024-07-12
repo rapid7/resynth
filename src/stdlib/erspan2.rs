@@ -1,26 +1,24 @@
 use std::rc::Rc;
 
-use phf::{phf_map, phf_ordered_map};
+use phf::phf_map;
 
 use pkt::Packet;
 
 use crate::func_def;
-use crate::libapi::{ArgDecl, Class, FuncDef};
+use crate::libapi::{ArgDecl, ArgDesc, Class, FuncDef};
 use crate::sym::Symbol;
 use crate::val::{Val, ValDef, ValType};
 use ezpkt::Erspan2Flow;
 
 const ENCAP: FuncDef = func_def!(
     /// Encapsulate packets in ERSPAN2
-    "erspan2::session.encap";
-    ValType::PktGen;
-
-    "gen" => ValType::PktGen
-    =>
-    "port_index" => ValDef::U32(0),
-    =>
-    ValType::Void;
-
+    resynth encap(
+        gen: PktGen
+        =>
+        port_index: ValDef::U32(0),
+        =>
+        Void
+    ) -> PktGen
     |mut args| {
         let obj = args.take_this();
         let mut r = obj.borrow_mut();
@@ -52,16 +50,14 @@ impl Class for Erspan2Flow {
 
 const SESSION: FuncDef = func_def!(
     /// Create an erspan2 session
-    "erspan2::session";
-    ValType::Obj;
-
-    "cl" => ValType::Ip4,
-    "sv" => ValType::Ip4,
-    =>
-    "raw" => ValDef::Bool(false),
-    =>
-    ValType::Void;
-
+    resynth session(
+        cl: Ip4,
+        sv: Ip4,
+        =>
+        raw: ValDef::Bool(false),
+        =>
+        Void
+    ) -> Obj
     |mut args| {
         let cl = args.next();
         let sv = args.next();

@@ -1,4 +1,4 @@
-use phf::{phf_map, phf_ordered_map};
+use phf::phf_map;
 
 use std::net::Ipv4Addr;
 
@@ -6,24 +6,22 @@ use ezpkt::{UdpDgram, UdpFlow};
 use pkt::{ipv4::udp_hdr, AsBytes, Packet};
 
 use crate::func_def;
-use crate::libapi::{ArgDecl, Class, FuncDef};
+use crate::libapi::{ArgDecl, ArgDesc, Class, FuncDef};
 use crate::str::Buf;
 use crate::sym::Symbol;
 use crate::val::{Val, ValDef, ValType};
 
 const BROADCAST: FuncDef = func_def!(
     /// Send a broadcast datagram
-    "ipv4::udp::broadcast";
-    ValType::Pkt;
-
-    "src" => ValType::Sock4,
-    "dst" => ValType::Sock4,
-    =>
-    "srcip" => ValDef::Type(ValType::Ip4),
-    "raw" => ValDef::Bool(false),
-    =>
-    ValType::Str;
-
+    resynth broadcast(
+        src: Sock4,
+        dst: Sock4,
+        =>
+        srcip: ValDef::Type(ValType::Ip4),
+        raw: ValDef::Bool(false),
+        =>
+        Str
+    ) -> Pkt
     |mut args| {
         let src = args.next();
         let dst = args.next();
@@ -48,16 +46,14 @@ const BROADCAST: FuncDef = func_def!(
 
 const UNICAST: FuncDef = func_def!(
     /// Send a unicast datagram
-    "ipv4::udp::unicast";
-    ValType::Pkt;
-
-    "src" => ValType::Sock4,
-    "dst" => ValType::Sock4,
-    =>
-    "raw" => ValDef::Bool(false),
-    =>
-    ValType::Str;
-
+    resynth unicast(
+        src: Sock4,
+        dst: Sock4,
+        =>
+        raw: ValDef::Bool(false),
+        =>
+        Str
+    ) -> Pkt
     |mut args| {
         let src = args.next();
         let dst = args.next();
@@ -74,17 +70,15 @@ const UNICAST: FuncDef = func_def!(
 
 const HDR: FuncDef = func_def!(
     /// Returns a UDP header (with no IP header)
-    "ipv4::udp::hdr";
-    ValType::Str;
-
-    "src" => ValType::U16,
-    "dst" => ValType::U16,
-    =>
-    "len" => ValDef::U16(0),
-    "csum" => ValDef::U16(0),
-    =>
-    ValType::Void;
-
+    resynth hdr(
+        src: U16,
+        dst: U16,
+        =>
+        len: ValDef::U16(0),
+        csum: ValDef::U16(0),
+        =>
+        Void
+    ) -> Str
     |mut args| {
         let src: u16 = args.next().into();
         let dst: u16 = args.next().into();
@@ -104,15 +98,13 @@ const HDR: FuncDef = func_def!(
 
 const CL_DGRAM: FuncDef = func_def!(
     /// Send a datagram from client to server
-    "ipv4::udp::flow.client_dgram";
-    ValType::Pkt;
-
-    =>
-    "frag_off" => ValDef::U16(0),
-    "csum" => ValDef::Bool(true),
-    =>
-    ValType::Str;
-
+    resynth client_dgram(
+        =>
+        frag_off: ValDef::U16(0),
+        csum: ValDef::Bool(true),
+        =>
+        Str
+    ) -> Pkt
     |mut args| {
         let obj = args.take_this();
         let mut r = obj.borrow_mut();
@@ -134,15 +126,13 @@ const CL_DGRAM: FuncDef = func_def!(
 
 const SV_DGRAM: FuncDef = func_def!(
     /// Send a datagram from server to client
-    "ipv4::udp::flow.server_dgram";
-    ValType::Pkt;
-
-    =>
-    "frag_off" => ValDef::U16(0),
-    "csum" => ValDef::Bool(true),
-    =>
-    ValType::Str;
-
+    resynth server_dgram(
+        =>
+        frag_off: ValDef::U16(0),
+        csum: ValDef::Bool(true),
+        =>
+        Str
+    ) -> Pkt
     |mut args| {
         let obj = args.take_this();
         let mut r = obj.borrow_mut();
@@ -164,14 +154,12 @@ const SV_DGRAM: FuncDef = func_def!(
 
 const CL_RAW_DGRAM: FuncDef = func_def!(
     /// Return a datagram from client to server (minus IP header)
-    "ipv4::udp::flow.client_raw_dgram";
-    ValType::Str;
-
-    =>
-    "csum" => ValDef::Bool(true),
-    =>
-    ValType::Str;
-
+    resynth client_raw_dgram(
+        =>
+        csum: ValDef::Bool(true),
+        =>
+        Str
+    ) -> Str
     |mut args| {
         let obj = args.take_this();
         let mut r = obj.borrow_mut();
@@ -192,14 +180,12 @@ const CL_RAW_DGRAM: FuncDef = func_def!(
 
 const SV_RAW_DGRAM: FuncDef = func_def!(
     /// Return a datagram from server to client (minus IP header)
-    "ipv4::udp::flow.server_raw_dgram";
-    ValType::Str;
-
-    =>
-    "csum" => ValDef::Bool(true),
-    =>
-    ValType::Str;
-
+    resynth server_raw_dgram(
+        =>
+        csum: ValDef::Bool(true),
+        =>
+        Str
+    ) -> Str
     |mut args| {
         let obj = args.take_this();
         let mut r = obj.borrow_mut();
@@ -235,16 +221,14 @@ impl Class for UdpFlow {
 
 const FLOW: FuncDef = func_def!(
     /// Create a UDP flow context, from which other packets can be created
-    "ipv4::udp::flow";
-    ValType::Obj;
-
-    "cl" => ValType::Sock4,
-    "sv" => ValType::Sock4,
-    =>
-    "raw" => ValDef::Bool(false),
-    =>
-    ValType::Void;
-
+    resynth flow(
+        cl: Sock4,
+        sv: Sock4,
+        =>
+        raw: ValDef::Bool(false),
+        =>
+        Void
+    ) -> Obj
     |mut args| {
         let cl = args.next();
         let sv = args.next();

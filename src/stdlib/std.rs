@@ -1,21 +1,19 @@
-use phf::{phf_map, phf_ordered_map};
+use phf::phf_map;
 
 use crate::func_def;
-use crate::libapi::{ArgDecl, FuncDef};
+use crate::libapi::{ArgDecl, ArgDesc, FuncDef};
 use crate::str::Buf;
 use crate::sym::Symbol;
 use crate::val::{Val, ValType};
 
 const BE16: FuncDef = func_def!(
     /// Encode a 16bit integer into 2 big-endian bytes
-    "std::be16";
-    ValType::Str;
-
-    "val" => ValType::U64,
-    =>
-    =>
-    ValType::Void;
-
+    resynth be16(
+        val: U64,
+        =>
+        =>
+        Void
+    ) -> Str
     |mut args| {
         let val: u16 = args.next().into();
         Ok(Val::str(&val.to_be_bytes()))
@@ -24,14 +22,12 @@ const BE16: FuncDef = func_def!(
 
 const BE32: FuncDef = func_def!(
     /// Encode a 32bit integer into 4 big-endian bytes
-    "std::be32";
-    ValType::Str;
-
-    "val" => ValType::U64,
-    =>
-    =>
-    ValType::Void;
-
+    resynth be32(
+        val: U64,
+        =>
+        =>
+        Void
+    ) -> Str
     |mut args| {
         let val: u32 = args.next().into();
         Ok(Val::str(&val.to_be_bytes()))
@@ -40,14 +36,12 @@ const BE32: FuncDef = func_def!(
 
 const BE64: FuncDef = func_def!(
     /// Encode a 64bit integer into 8 big-endian bytes
-    "std::be64";
-    ValType::Str;
-
-    "val" => ValType::U64,
-    =>
-    =>
-    ValType::Void;
-
+    resynth be64(
+        val: U64,
+        =>
+        =>
+        Void
+    ) -> Str
     |mut args| {
         let val: u64 = args.next().into();
         Ok(Val::str(&val.to_be_bytes()))
@@ -56,14 +50,12 @@ const BE64: FuncDef = func_def!(
 
 const LE16: FuncDef = func_def!(
     /// Encode a 16bit integer into 2 little-endian bytes
-    "std::le16";
-    ValType::Str;
-
-    "val" => ValType::U64,
-    =>
-    =>
-    ValType::Void;
-
+    resynth le16(
+        val: U64,
+        =>
+        =>
+        Void
+    ) -> Str
     |mut args| {
         let val: u16 = args.next().into();
         Ok(Val::str(&val.to_le_bytes()))
@@ -72,14 +64,12 @@ const LE16: FuncDef = func_def!(
 
 const LE32: FuncDef = func_def!(
     /// Encode a 32bit integer into 4 little-endian bytes
-    "std::le32";
-    ValType::Str;
-
-    "val" => ValType::U64,
-    =>
-    =>
-    ValType::Void;
-
+    resynth le32(
+        val: U64,
+        =>
+        =>
+        Void
+    ) -> Str
     |mut args| {
         let val: u32 = args.next().into();
         Ok(Val::str(&val.to_le_bytes()))
@@ -88,14 +78,12 @@ const LE32: FuncDef = func_def!(
 
 const LE64: FuncDef = func_def!(
     /// Encode a 64bit integer into 8 little-endian bytes
-    "std::le64";
-    ValType::Str;
-
-    "val" => ValType::U64,
-    =>
-    =>
-    ValType::Void;
-
+    resynth le64(
+        val: U64,
+        =>
+        =>
+        Void
+    ) -> Str
     |mut args| {
         let val: u64 = args.next().into();
         Ok(Val::str(&val.to_le_bytes()))
@@ -104,14 +92,12 @@ const LE64: FuncDef = func_def!(
 
 const U8: FuncDef = func_def!(
     /// Convert an integer into a one-byte string
-    "std::u8";
-    ValType::Str;
-
-    "val" => ValType::U8,
-    =>
-    =>
-    ValType::Void;
-
+    resynth u8(
+        val: U8,
+        =>
+        =>
+        Void
+    ) -> Str
     |mut args| {
         let val: u8 = args.next().into();
         Ok(Val::str(&val.to_le_bytes()))
@@ -120,13 +106,11 @@ const U8: FuncDef = func_def!(
 
 const LEN_BE64: FuncDef = func_def! (
     /// Prefix a buffer with a 64-bit big-endian length field
-    "std::len_be64";
-    ValType::Str;
-
-    =>
-    =>
-    ValType::Str;
-
+    resynth len_be64(
+        =>
+        =>
+        Str
+    ) -> Str
     |mut args| {
         let bytes: Buf = args.join_extra(b"").into();
         let mut msg: Vec<u8> = Vec::with_capacity(bytes.len() + 5);
@@ -141,13 +125,11 @@ const LEN_BE64: FuncDef = func_def! (
 
 const LEN_BE32: FuncDef = func_def! (
     /// Prefix a buffer with a 32-bit big-endian length field
-    "std::len_be32";
-    ValType::Str;
-
-    =>
-    =>
-    ValType::Str;
-
+    resynth len_be32(
+        =>
+        =>
+        Str
+    ) -> Str
     |mut args| {
         let bytes: Buf = args.join_extra(b"").into();
         let mut msg: Vec<u8> = Vec::with_capacity(bytes.len() + 5);
@@ -162,13 +144,11 @@ const LEN_BE32: FuncDef = func_def! (
 
 const LEN_BE16: FuncDef = func_def! (
     /// Prefix a buffer with a 16-bit big-endian length field
-    "std::len_be16";
-    ValType::Str;
-
-    =>
-    =>
-    ValType::Str;
-
+    resynth len_be16(
+        =>
+        =>
+        Str
+    ) -> Str
     |mut args| {
         let bytes: Buf = args.join_extra(b"").into();
         let mut msg: Vec<u8> = Vec::with_capacity(bytes.len() + 5);
@@ -183,13 +163,11 @@ const LEN_BE16: FuncDef = func_def! (
 
 const LEN_U8: FuncDef = func_def! (
     /// Prefix a buffer with a 8-bit byte length field
-    "std::len_u8";
-    ValType::Str;
-
-    =>
-    =>
-    ValType::Str;
-
+    resynth len_u8(
+        =>
+        =>
+        Str
+    ) -> Str
     |mut args| {
         let bytes: Buf = args.join_extra(b"").into();
         let mut msg: Vec<u8> = Vec::with_capacity(bytes.len() + 5);

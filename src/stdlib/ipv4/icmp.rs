@@ -1,7 +1,7 @@
-use phf::{phf_map, phf_ordered_map};
+use phf::phf_map;
 
 use crate::func_def;
-use crate::libapi::{ArgDecl, Class, FuncDef};
+use crate::libapi::{ArgDecl, ArgDesc, Class, FuncDef};
 use crate::str::Buf;
 use crate::sym::Symbol;
 use crate::val::{Val, ValDef, ValType};
@@ -9,15 +9,13 @@ use ezpkt::IcmpFlow;
 
 const ICMP_ECHO: FuncDef = func_def!(
     /// ICMP Ping
-    "ipv4::icmp::flow.echo";
-    ValType::Pkt;
-
-    "payload" => ValType::Str,
-    =>
-    =>
-    ValType::Void;
-
-    |mut args| {
+    resynth echo(
+        payload: Str,
+        =>
+        =>
+        Void
+    ) -> Pkt
+    | mut args | {
         let obj = args.take_this();
         let mut r = obj.borrow_mut();
         let this: &mut IcmpFlow = r.as_mut_any().downcast_mut().unwrap();
@@ -28,14 +26,12 @@ const ICMP_ECHO: FuncDef = func_def!(
 
 const ICMP_ECHO_REPLY: FuncDef = func_def!(
     /// ICMP Ping reply
-    "ipv4::icmp::flow.echo_reply";
-    ValType::Pkt;
-
-    "payload" => ValType::Str,
-    =>
-    =>
-    ValType::Void;
-
+    resynth echo_reply(
+        payload: Str,
+        =>
+        =>
+        Void
+    ) -> Pkt
     |mut args| {
         let obj = args.take_this();
         let mut r = obj.borrow_mut();
@@ -60,16 +56,14 @@ impl Class for IcmpFlow {
 
 const ICMP_FLOW: FuncDef = func_def!(
     /// Create an ICMP flow
-    "ipv4::icmp::flow";
-    ValType::Obj;
-
-    "cl" => ValType::Ip4,
-    "sv" => ValType::Ip4,
-    =>
-    "raw" => ValDef::Bool(false),
-    =>
-    ValType::Void;
-
+    resynth flow(
+        cl: Ip4,
+        sv: Ip4,
+        =>
+        raw: ValDef::Bool(false),
+        =>
+        Void
+    ) -> Obj
     |mut args| {
         let cl = args.next();
         let sv = args.next();
