@@ -1,4 +1,3 @@
-use phf::phf_map;
 use std::net::Ipv4Addr;
 
 use pkt::eth::{eth_hdr, ethertype};
@@ -8,7 +7,7 @@ use pkt::Packet;
 use ezpkt::IpFrag;
 
 use crate::func_def;
-use crate::libapi::{Class, FuncDef, Module};
+use crate::libapi::{Class, ClassDef, FuncDef, Module};
 use crate::str::Buf;
 use crate::sym::Symbol;
 use crate::val::{Val, ValDef};
@@ -158,17 +157,18 @@ const FRAG_DATAGRAM: FuncDef = func_def!(
     }
 );
 
-impl Class for IpFrag {
-    fn symbols(&self) -> phf::Map<&'static str, Symbol> {
-        phf_map! {
-            "fragment" => Symbol::Func(&FRAG_FRAGMENT),
-            "tail" => Symbol::Func(&FRAG_TAIL),
-            "datagram" => Symbol::Func(&FRAG_DATAGRAM),
-        }
+const IPFRAG: ClassDef = class!(
+    /// IP Packet Fragment Builder
+    resynth class IpFrag {
+        fragment => Symbol::Func(&FRAG_FRAGMENT),
+        tail => Symbol::Func(&FRAG_TAIL),
+        datagram => Symbol::Func(&FRAG_DATAGRAM),
     }
+);
 
-    fn class_name(&self) -> &'static str {
-        "ipv4::frag"
+impl Class for IpFrag {
+    fn def(&self) -> &'static ClassDef {
+        &IPFRAG
     }
 }
 
@@ -215,6 +215,7 @@ const FRAG: FuncDef = func_def!(
 pub const IPV4: Module = module! {
     /// Internet Protocol Version 4
     resynth mod ipv4 {
+        IpFrag => Symbol::Class(&IPFRAG),
         tcp => Symbol::Module(&TCP4),
         udp => Symbol::Module(&UDP4),
         icmp => Symbol::Module(&ICMP4),

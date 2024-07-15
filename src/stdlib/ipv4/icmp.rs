@@ -1,7 +1,5 @@
-use phf::phf_map;
-
 use crate::func_def;
-use crate::libapi::{Class, FuncDef, Module};
+use crate::libapi::{Class, ClassDef, FuncDef, Module};
 use crate::str::Buf;
 use crate::sym::Symbol;
 use crate::val::{Val, ValDef};
@@ -41,16 +39,17 @@ const ICMP_ECHO_REPLY: FuncDef = func_def!(
     }
 );
 
-impl Class for IcmpFlow {
-    fn symbols(&self) -> phf::Map<&'static str, Symbol> {
-        phf_map! {
-            "echo" => Symbol::Func(&ICMP_ECHO),
-            "echo_reply" => Symbol::Func(&ICMP_ECHO_REPLY),
-        }
+const ICMP: ClassDef = class!(
+    /// ICMP Session
+    resynth class Icmp {
+        echo => Symbol::Func(&ICMP_ECHO),
+        echo_reply => Symbol::Func(&ICMP_ECHO_REPLY),
     }
+);
 
-    fn class_name(&self) -> &'static str {
-        "ipv4::icmp.flow"
+impl Class for IcmpFlow {
+    fn def(&self) -> &'static ClassDef {
+        &ICMP
     }
 }
 
@@ -75,6 +74,7 @@ const ICMP_FLOW: FuncDef = func_def!(
 pub const ICMP4: Module = module! {
     /// ICMP
     resynth mod icmp {
+        Icmp => Symbol::Class(&ICMP),
         flow => Symbol::Func(&ICMP_FLOW),
     }
 };

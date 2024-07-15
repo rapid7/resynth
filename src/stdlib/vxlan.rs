@@ -1,11 +1,9 @@
 use std::rc::Rc;
 
-use phf::phf_map;
-
 use pkt::{vxlan, Packet};
 
 use crate::func_def;
-use crate::libapi::{Class, FuncDef, Module};
+use crate::libapi::{Class, ClassDef, FuncDef, Module};
 use crate::sym::Symbol;
 use crate::val::{Val, ValDef};
 use ezpkt::VxlanFlow;
@@ -52,16 +50,17 @@ const DGRAM: FuncDef = func_def!(
     }
 );
 
-impl Class for VxlanFlow {
-    fn symbols(&self) -> phf::Map<&'static str, Symbol> {
-        phf_map! {
-            "dgram" => Symbol::Func(&DGRAM),
-            "encap" => Symbol::Func(&ENCAP),
-        }
+const VXLAN: ClassDef = class!(
+    /// VXLAN Session
+    resynth class Vxlan {
+        dgram => Symbol::Func(&DGRAM),
+        encap => Symbol::Func(&ENCAP),
     }
+);
 
-    fn class_name(&self) -> &'static str {
-        "vxlan.flow"
+impl Class for VxlanFlow {
+    fn def(&self) -> &'static ClassDef {
+        &VXLAN
     }
 }
 
@@ -90,6 +89,7 @@ pub const MODULE: Module = module! {
     ///
     /// Encapsulates ethernet frames in UDP datagrams.
     resynth mod vxlan {
+        Vxlan => Symbol::Class(&VXLAN),
         session => Symbol::Func(&SESSION),
         DEFAULT_PORT => Symbol::u16(vxlan::DEFAULT_PORT),
     }

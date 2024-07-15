@@ -113,6 +113,10 @@ impl<'a> Program<'a> {
                 println!("Component is a module, cannot be a variable: {}", topvar);
                 return Err(TypeError);
             }
+            Some(Symbol::Class(_)) => {
+                println!("Component is a class, cannot be a variable: {}", topvar);
+                return Err(TypeError);
+            }
             None => {
                 println!("Can't find ref component: {}", topvar);
                 return Err(NameError);

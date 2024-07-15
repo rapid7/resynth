@@ -1,12 +1,10 @@
-use phf::phf_map;
-
 use std::net::Ipv4Addr;
 
 use ezpkt::{UdpDgram, UdpFlow};
 use pkt::{ipv4::udp_hdr, AsBytes, Packet};
 
 use crate::func_def;
-use crate::libapi::{Class, FuncDef, Module};
+use crate::libapi::{Class, ClassDef, FuncDef, Module};
 use crate::str::Buf;
 use crate::sym::Symbol;
 use crate::val::{Val, ValDef};
@@ -204,18 +202,19 @@ const SV_RAW_DGRAM: FuncDef = func_def!(
     }
 );
 
-impl Class for UdpFlow {
-    fn symbols(&self) -> phf::Map<&'static str, Symbol> {
-        phf_map! {
-            "client_dgram" => Symbol::Func(&CL_DGRAM),
-            "server_dgram" => Symbol::Func(&SV_DGRAM),
-            "client_raw_dgram" => Symbol::Func(&CL_RAW_DGRAM),
-            "server_raw_dgram" => Symbol::Func(&SV_RAW_DGRAM),
-        }
+const UDP_FLOW: ClassDef = class!(
+    /// UDP Flow
+    resynth class UdpFlow {
+        client_dgram => Symbol::Func(&CL_DGRAM),
+        server_dgram => Symbol::Func(&SV_DGRAM),
+        client_raw_dgram => Symbol::Func(&CL_RAW_DGRAM),
+        server_raw_dgram => Symbol::Func(&SV_RAW_DGRAM),
     }
+);
 
-    fn class_name(&self) -> &'static str {
-        "ipv4::udp.flow"
+impl Class for UdpFlow {
+    fn def(&self) -> &'static ClassDef {
+        &UDP_FLOW
     }
 }
 
@@ -240,6 +239,7 @@ const FLOW: FuncDef = func_def!(
 pub const UDP4: Module = module! {
     /// User Datagram Protocol
     resynth mod udp {
+        UdpFlow => Symbol::Class(&UDP_FLOW),
         flow => Symbol::Func(&FLOW),
         broadcast => Symbol::Func(&BROADCAST),
         unicast => Symbol::Func(&UNICAST),

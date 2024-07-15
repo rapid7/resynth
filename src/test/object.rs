@@ -1,10 +1,8 @@
 use crate::err::Error::{NameError, TypeError};
-use crate::libapi::Class;
+use crate::libapi::{Class, ClassDef};
 use crate::object::ObjRef;
 use crate::sym::Symbol;
 use crate::val::{Val, ValDef};
-
-use phf::phf_map;
 
 #[derive(Debug, PartialEq, Eq)]
 pub(self) struct Tcp {
@@ -12,16 +10,17 @@ pub(self) struct Tcp {
     pub sv_seq: u32,
 }
 
-impl Class for Tcp {
-    fn symbols(&self) -> phf::Map<&'static str, Symbol> {
-        phf_map! {
-            "client_message" => Symbol::Val(ValDef::U64(1)),
-            "server_message" => Symbol::Val(ValDef::U64(2)),
-        }
+const TCP: ClassDef = class!(
+    /// TCP Session
+    resynth class Tcp {
+        client_message => Symbol::Val(ValDef::U64(1)),
+        server_message => Symbol::Val(ValDef::U64(2)),
     }
+);
 
-    fn class_name(&self) -> &'static str {
-        "Tcp"
+impl Class for Tcp {
+    fn def(&self) -> &'static ClassDef {
+        &TCP
     }
 }
 
@@ -34,16 +33,17 @@ impl Tcp {
 #[derive(Debug, PartialEq, Eq)]
 pub(self) struct Udp {}
 
-impl Class for Udp {
-    fn symbols(&self) -> phf::Map<&'static str, Symbol> {
-        phf_map! {
-            "client_dgram" => Symbol::Val(ValDef::U64(1)),
-            "server_dgram" => Symbol::Val(ValDef::U64(2)),
-        }
+const UDP: ClassDef = class!(
+    /// UDP Session
+    resynth class Udp {
+        client_dgram => Symbol::Val(ValDef::U64(1)),
+        server_dgram => Symbol::Val(ValDef::U64(2)),
     }
+);
 
-    fn class_name(&self) -> &'static str {
-        "Udp"
+impl Class for Udp {
+    fn def(&self) -> &'static ClassDef {
+        &UDP
     }
 }
 

@@ -33,7 +33,7 @@ impl<T: 'static + PartialEq + Eq + Class + Debug> Obj for T {
 
 impl<T: Obj> Dispatchable for T {
     fn lookup_symbol(&self, name: &str) -> Option<Symbol> {
-        self.symbols().get(name).copied()
+        self.get(name).copied()
     }
 }
 

@@ -1,12 +1,10 @@
 use std::rc::Rc;
 
-use phf::phf_map;
-
 use pkt::gre::GreFlags;
 use pkt::Packet;
 
 use crate::func_def;
-use crate::libapi::{Class, FuncDef, Module};
+use crate::libapi::{Class, ClassDef, FuncDef, Module};
 use crate::sym::Symbol;
 use crate::val::{Val, ValDef};
 use ezpkt::GreFlow;
@@ -35,15 +33,16 @@ const ENCAP: FuncDef = func_def!(
     }
 );
 
-impl Class for GreFlow {
-    fn symbols(&self) -> phf::Map<&'static str, Symbol> {
-        phf_map! {
-            "encap" => Symbol::Func(&ENCAP),
-        }
+const GRE: ClassDef = class!(
+    /// GRE Session
+    resynth class Gre {
+        encap => Symbol::Func(&ENCAP),
     }
+);
 
-    fn class_name(&self) -> &'static str {
-        "gre.session"
+impl Class for GreFlow {
+    fn def(&self) -> &'static ClassDef {
+        &GRE
     }
 }
 
@@ -72,6 +71,7 @@ const SESSION: FuncDef = func_def!(
 pub const MODULE: Module = module! {
     /// Genneric Routing Encapsulation (GRE)
     resynth mod gre {
+        Gre => Symbol::Class(&GRE),
         session => Symbol::Func(&SESSION),
     }
 };

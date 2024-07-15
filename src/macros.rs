@@ -134,6 +134,51 @@ macro_rules! module {
 }
 
 #[macro_export]
+macro_rules! class {
+    (
+        @sym $name:ident $sym:expr
+    ) => {
+        SymDesc {
+            name: stringify!($name),
+            sym: $sym,
+        }
+    };
+
+    (
+        $(#[doc = $doc:literal])+
+        resynth class $modname:ident {$(
+            $name:ident => $sym:expr,
+        )*}
+    ) => {
+        {
+            #[allow(unused)]
+            use $crate::libapi::{ClassDef, SymDesc};
+
+            #[allow(non_camel_case_types,unused)]
+            enum MethodName {
+               $($name,)*
+            }
+
+            fn lookup(name: &str) -> Option<usize> {
+                match name {
+                    $(stringify!($name) => Some(MethodName::$name as usize),)*
+                    _ => None,
+                }
+            }
+
+            ClassDef {
+                name: stringify!($modname),
+                symtab: &[
+                    $(class!(@sym $name $sym),)*
+                ],
+                lookup,
+                doc: concat_with::concat_line!($($doc),+),
+            }
+        }
+    };
+}
+
+#[macro_export]
 macro_rules! ok {
     ($st:expr, $fmt:expr $(, $($arg:expr),*)*) => {{
         $st.set_color(ColorSpec::new()

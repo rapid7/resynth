@@ -4,10 +4,8 @@ use std::io::Read;
 use std::os::unix::ffi::OsStrExt;
 use std::path::Path;
 
-use phf::phf_map;
-
 use crate::func_def;
-use crate::libapi::{Class, FuncDef, Module};
+use crate::libapi::{Class, ClassDef, FuncDef, Module};
 use crate::str::Buf;
 use crate::sym::Symbol;
 use crate::val::Val;
@@ -103,16 +101,17 @@ const BUFIO_READ_ALL: FuncDef = func_def!(
     }
 );
 
-impl Class for BufIo {
-    fn symbols(&self) -> phf::Map<&'static str, Symbol> {
-        phf_map! {
-            "read" => Symbol::Func(&BUFIO_READ),
-            "read_all" => Symbol::Func(&BUFIO_READ_ALL),
-        }
+const BUFIO_CLASS: ClassDef = class!(
+    /// Buffered I/O
+    resynth class BufIO {
+        read => Symbol::Func(&BUFIO_READ),
+        read_all => Symbol::Func(&BUFIO_READ_ALL),
     }
+);
 
-    fn class_name(&self) -> &'static str {
-        "io::bufio"
+impl Class for BufIo {
+    fn def(&self) -> &'static ClassDef {
+        &BUFIO_CLASS
     }
 }
 
@@ -132,6 +131,7 @@ const BUFIO: FuncDef = func_def!(
 pub const MODULE: Module = module!(
     /// Buffers and File I/O
     resynth mod io {
+        BufIO => Symbol::Class(&BUFIO_CLASS),
         file => Symbol::Func(&IO_FILE),
         bufio => Symbol::Func(&BUFIO),
     }
