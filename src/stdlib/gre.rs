@@ -13,7 +13,7 @@ use ezpkt::GreFlow;
 
 const ENCAP: FuncDef = func_def!(
     /// Encapsulate packets in GRETAP
-    resynth encap(
+    resynth fn encap(
         gen: PktGen
         =>
         =>
@@ -49,7 +49,7 @@ impl Class for GreFlow {
 
 const SESSION: FuncDef = func_def!(
     /// Create a GRETAP session
-    resynth session(
+    resynth fn session(
         cl: Ip4,
         sv: Ip4,
         ethertype: U16,
@@ -71,7 +71,7 @@ const SESSION: FuncDef = func_def!(
 
 pub const MODULE: Module = module! {
     /// Genneric Routing Encapsulation (GRE)
-    module gre {
+    resynth mod gre {
         session => Symbol::Func(&SESSION),
     }
 };

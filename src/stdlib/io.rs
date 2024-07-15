@@ -14,7 +14,7 @@ use crate::val::Val;
 
 const IO_FILE: FuncDef = func_def!(
     /// Load the contents of a file into a string
-    resynth file(
+    resynth fn file(
         filename: Str,
         =>
         =>
@@ -73,7 +73,7 @@ where
 
 const BUFIO_READ: FuncDef = func_def!(
     /// Read some bytes out of a buffer
-    resynth read(
+    resynth fn read(
         bytes: U64,
         =>
         =>
@@ -90,7 +90,7 @@ const BUFIO_READ: FuncDef = func_def!(
 
 const BUFIO_READ_ALL: FuncDef = func_def!(
     /// Read all remaining bytes out of a buffer
-    resynth read_all(
+    resynth fn read_all(
         =>
         =>
         Void
@@ -118,7 +118,7 @@ impl Class for BufIo {
 
 const BUFIO: FuncDef = func_def!(
     /// Create a buffer from a string, from which you can read parts in sequence
-    resynth bufio(
+    resynth fn bufio(
         =>
         =>
         Str
@@ -131,7 +131,7 @@ const BUFIO: FuncDef = func_def!(
 
 pub const MODULE: Module = module!(
     /// Buffers and File I/O
-    module io {
+    resynth mod io {
         file => Symbol::Func(&IO_FILE),
         bufio => Symbol::Func(&BUFIO),
     }

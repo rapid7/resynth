@@ -13,7 +13,7 @@ use crate::val::{Val, ValDef};
 
 const BROADCAST: FuncDef = func_def!(
     /// Send a broadcast datagram
-    resynth broadcast(
+    resynth fn broadcast(
         src: Sock4,
         dst: Sock4,
         =>
@@ -46,7 +46,7 @@ const BROADCAST: FuncDef = func_def!(
 
 const UNICAST: FuncDef = func_def!(
     /// Send a unicast datagram
-    resynth unicast(
+    resynth fn unicast(
         src: Sock4,
         dst: Sock4,
         =>
@@ -70,7 +70,7 @@ const UNICAST: FuncDef = func_def!(
 
 const HDR: FuncDef = func_def!(
     /// Returns a UDP header (with no IP header)
-    resynth hdr(
+    resynth fn hdr(
         src: U16,
         dst: U16,
         =>
@@ -98,7 +98,7 @@ const HDR: FuncDef = func_def!(
 
 const CL_DGRAM: FuncDef = func_def!(
     /// Send a datagram from client to server
-    resynth client_dgram(
+    resynth fn client_dgram(
         =>
         frag_off: ValDef::U16(0),
         csum: ValDef::Bool(true),
@@ -126,7 +126,7 @@ const CL_DGRAM: FuncDef = func_def!(
 
 const SV_DGRAM: FuncDef = func_def!(
     /// Send a datagram from server to client
-    resynth server_dgram(
+    resynth fn server_dgram(
         =>
         frag_off: ValDef::U16(0),
         csum: ValDef::Bool(true),
@@ -154,7 +154,7 @@ const SV_DGRAM: FuncDef = func_def!(
 
 const CL_RAW_DGRAM: FuncDef = func_def!(
     /// Return a datagram from client to server (minus IP header)
-    resynth client_raw_dgram(
+    resynth fn client_raw_dgram(
         =>
         csum: ValDef::Bool(true),
         =>
@@ -180,7 +180,7 @@ const CL_RAW_DGRAM: FuncDef = func_def!(
 
 const SV_RAW_DGRAM: FuncDef = func_def!(
     /// Return a datagram from server to client (minus IP header)
-    resynth server_raw_dgram(
+    resynth fn server_raw_dgram(
         =>
         csum: ValDef::Bool(true),
         =>
@@ -221,7 +221,7 @@ impl Class for UdpFlow {
 
 const FLOW: FuncDef = func_def!(
     /// Create a UDP flow context, from which other packets can be created
-    resynth flow(
+    resynth fn flow(
         cl: Sock4,
         sv: Sock4,
         =>
@@ -239,7 +239,7 @@ const FLOW: FuncDef = func_def!(
 
 pub const UDP4: Module = module! {
     /// User Datagram Protocol
-    module udp {
+    resynth mod udp {
         flow => Symbol::Func(&FLOW),
         broadcast => Symbol::Func(&BROADCAST),
         unicast => Symbol::Func(&UNICAST),

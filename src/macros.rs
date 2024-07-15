@@ -42,7 +42,7 @@ macro_rules! func_def {
 
     (
         $(#[doc = $doc:literal])+
-        resynth $name:ident
+        resynth fn $name:ident
         (
             $($arg_name:ident : $arg_type:ident),* $(,)*
             =>
@@ -101,7 +101,7 @@ macro_rules! module {
 
     (
         $(#[doc = $doc:literal])+
-        module $modname:ident {$(
+        resynth mod $modname:ident {$(
             $name:ident => $sym:expr,
         )*}
     ) => {

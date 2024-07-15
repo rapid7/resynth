@@ -6,7 +6,7 @@ use crate::val::ValDef;
 
 const TYPE: Module = module! {
     /// Ethernet Ethertype
-    module ethertype {
+    resynth mod ethertype {
         VLAN => Symbol::u16(ethertype::VLAN),
         FABRICPATH => Symbol::u16(ethertype::FABRICPATH),
 
@@ -22,7 +22,7 @@ const TYPE: Module = module! {
 
 pub const MODULE: Module = module! {
     /// Ethernet
-    module eth {
+    resynth mod eth {
         ethertype => Symbol::Module(&TYPE),
         BROADCAST => Symbol::Val(ValDef::Str(&BROADCAST)),
     }

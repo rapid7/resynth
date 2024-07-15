@@ -14,7 +14,7 @@ use std::net::{Ipv4Addr, SocketAddrV4};
 
 const OPCODE: Module = module! {
     /// DNS Opcode
-    module opcode {
+    resynth mod opcode {
         QUERY => Symbol::u8(opcode::QUERY),
         IQUERY => Symbol::u8(opcode::IQUERY),
         STATUS => Symbol::u8(opcode::STATUS),
@@ -26,7 +26,7 @@ const OPCODE: Module = module! {
 
 const RCODE: Module = module! {
     /// DNS Response Codes (Errors)
-    module rcode {
+    resynth mod rcode {
         NOERROR => Symbol::u8(rcode::NOERROR),
         FORMERR => Symbol::u8(rcode::FORMERR),
         SERVFAIL => Symbol::u8(rcode::SERVFAIL),
@@ -43,7 +43,7 @@ const RCODE: Module = module! {
 
 const RTYPE: Module = module! {
     /// DNS Record Type
-    module rtype {
+    resynth mod rtype {
         A => Symbol::u16(rrtype::A),
         NS => Symbol::u16(rrtype::NS),
         MD => Symbol::u16(rrtype::MD),
@@ -114,7 +114,7 @@ const RTYPE: Module = module! {
 
 const CLASS: Module = module! {
     /// Class
-    module class {
+    resynth mod class {
         IN => Symbol::u16(class::IN),
         CS => Symbol::u16(class::CS),
         CH => Symbol::u16(class::CH),
@@ -127,7 +127,7 @@ const CLASS: Module = module! {
 
 pub(crate) const DNS_NAME: FuncDef = func_def! (
     /// A DNS name encoded with length prefixes
-    resynth name(
+    resynth fn name(
         =>
         complete: ValDef::Bool(true),
         =>
@@ -164,7 +164,7 @@ pub(crate) const DNS_NAME: FuncDef = func_def! (
 
 const DNS_POINTER: FuncDef = func_def! (
     /// A DNS compression pointer
-    resynth pointer(
+    resynth fn pointer(
         =>
         offset: ValDef::U16(0x0c),
         =>
@@ -181,7 +181,7 @@ const DNS_POINTER: FuncDef = func_def! (
 
 const DNS_FLAGS: FuncDef = func_def!(
     /// a DNS flags field
-    resynth flags(
+    resynth fn flags(
         opcode: U8,
         =>
         response: ValDef::Bool(false),
@@ -227,7 +227,7 @@ const DNS_FLAGS: FuncDef = func_def!(
 
 const DNS_HDR: FuncDef = func_def!(
     /// A DNS header
-    resynth hdr(
+    resynth fn hdr(
         id: U16,
         flags: U16,
         =>
@@ -261,7 +261,7 @@ const DNS_HDR: FuncDef = func_def!(
 
 const DNS_QUESTION: FuncDef = func_def!(
     /// A DNS question
-    resynth question(
+    resynth fn question(
         qname: Str,
         =>
         qtype: ValDef::U16(1),
@@ -286,7 +286,7 @@ const DNS_QUESTION: FuncDef = func_def!(
 
 const DNS_ANSWER: FuncDef = func_def!(
     /// A DNS answer (RR)
-    resynth answer(
+    resynth fn answer(
         aname: Str,
         =>
         atype: ValDef::U16(1),
@@ -317,7 +317,7 @@ const DNS_ANSWER: FuncDef = func_def!(
 
 const DNS_HOST: FuncDef = func_def!(
     /// Perform a DNS lookup, with response
-    resynth host(
+    resynth fn host(
         client: Ip4,
         qname: Str,
         =>
@@ -394,7 +394,7 @@ const DNS_HOST: FuncDef = func_def!(
 
 pub const DNS: Module = module! {
     /// Domain Name System
-    module dns {
+    resynth mod dns {
         opcode => Symbol::Module(&OPCODE),
         rcode => Symbol::Module(&RCODE),
         rtype => Symbol::Module(&RTYPE),

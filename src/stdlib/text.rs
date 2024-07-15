@@ -6,7 +6,7 @@ use crate::val::{Val, ValDef};
 
 const CONCAT: FuncDef = func_def!(
     /// Concatenate strings
-    resynth concat(
+    resynth fn concat(
         =>
         =>
         Str
@@ -18,7 +18,7 @@ const CONCAT: FuncDef = func_def!(
 
 const CRLFLINES: FuncDef = func_def!(
     /// join strings with CRLF line-endings
-    resynth crlflines(
+    resynth fn crlflines(
         =>
         =>
         Str
@@ -30,7 +30,7 @@ const CRLFLINES: FuncDef = func_def!(
 
 const LEN: FuncDef = func_def!(
     /// Return the length of a string (or strings)
-    resynth len(
+    resynth fn len(
         =>
         =>
         Str
@@ -43,7 +43,7 @@ const LEN: FuncDef = func_def!(
 
 pub const MODULE: Module = module! {
     /// Text/bytestring manipulations
-    module text {
+    resynth mod text {
         concat => Symbol::Func(&CONCAT),
         crlflines => Symbol::Func(&CRLFLINES),
         len => Symbol::Func(&LEN),

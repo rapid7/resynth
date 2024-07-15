@@ -12,7 +12,7 @@ use ezpkt::Erspan1Flow;
 
 const ENCAP: FuncDef = func_def!(
     /// Encapsulate a sequence of packets
-    resynth encap(
+    resynth fn encap(
         gen: PktGen
         =>
         =>
@@ -48,7 +48,7 @@ impl Class for Erspan1Flow {
 
 const SESSION: FuncDef = func_def!(
     /// Create an ERSPAN session
-    resynth session(
+    resynth fn session(
         cl: Ip4,
         sv: Ip4,
         =>
@@ -66,7 +66,7 @@ const SESSION: FuncDef = func_def!(
 
 pub const MODULE: Module = module! {
     /// ERSPAN Version 1
-    module erspan1 {
+    resynth mod erspan1 {
         session => Symbol::Func(&SESSION),
     }
 };

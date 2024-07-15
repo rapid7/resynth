@@ -8,7 +8,7 @@ use crate::{func_def, module};
 
 const VERSION: Module = module!(
     /// TLS Versions
-    module version {
+    resynth mod version {
         SSL_1 => Symbol::u16(version::SSL_1),
         SSL_2 => Symbol::u16(version::SSL_2),
         SSL_3 => Symbol::u16(version::SSL_3),
@@ -21,7 +21,7 @@ const VERSION: Module = module!(
 
 const CONTENT: Module = module! {
     /// TLS Record Content Types
-    module content {
+    resynth mod content {
         INVALID => Symbol::u8(content::INVALID),
         CHANGE_CIPHER_SPEC => Symbol::u8(content::CHANGE_CIPHER_SPEC),
         ALERT => Symbol::u8(content::ALERT),
@@ -35,7 +35,7 @@ const CONTENT: Module = module! {
 
 const HANDSHAKE: Module = module! {
     /// TLS Handshake types
-    module handshake {
+    resynth mod handshake {
         HELLO_REQUEST => Symbol::u8(handshake::HELLO_REQUEST),
         CLIENT_HELLO => Symbol::u8(handshake::CLIENT_HELLO),
         SERVER_HELLO => Symbol::u8(handshake::SERVER_HELLO),
@@ -65,7 +65,7 @@ const HANDSHAKE: Module = module! {
 
 const EXT: Module = module! {
     /// TLS Extensions
-    module ext {
+    resynth mod ext {
         SERVER_NAME => Symbol::u16(ext::SERVER_NAME),
         MAX_FRAGMENT_LENGTH => Symbol::u16(ext::MAX_FRAGMENT_LENGTH),
         CLIENT_CERTIFICATE_URL => Symbol::u16(ext::CLIENT_CERTIFICATE_URL),
@@ -133,7 +133,7 @@ const EXT: Module = module! {
 
 const CIPHER: Module = module! {
     /// TLS Cipher Suites
-    module cipher {
+    resynth mod cipher {
         NULL_WITH_NULL_NULL =>
             Symbol::u16(ciphers::NULL_WITH_NULL_NULL),
         RSA_WITH_NULL_MD5 =>
@@ -839,7 +839,7 @@ const CIPHER: Module = module! {
 
 const TLS_MESSAGE: FuncDef = func_def! (
     /// Returns a TLS record
-    resynth message(
+    resynth fn message(
         =>
         version: ValDef::U16(version::TLS_1_2),
         content: ValDef::U8(content::HANDSHAKE),
@@ -865,7 +865,7 @@ const TLS_MESSAGE: FuncDef = func_def! (
 
 const TLS_EXTENSION: FuncDef = func_def! (
     /// Returns a TLS extension
-    resynth extension(
+    resynth fn extension(
         ext: U16,
         =>
         =>
@@ -892,7 +892,7 @@ fn len24(len: usize) -> [u8; 3] {
 
 const TLS_CIPHERS: FuncDef = func_def! (
     /// Returns a TLS ciphers list
-    resynth ciphers(
+    resynth fn ciphers(
         =>
         =>
         U16
@@ -915,7 +915,7 @@ const TLS_CIPHERS: FuncDef = func_def! (
 
 const TLS_CLIENT_HELLO: FuncDef = func_def! (
     /// Returns a TLS client hello
-    resynth client_hello(
+    resynth fn client_hello(
         =>
         version: ValDef::U16(version::TLS_1_2),
         sessionid: ValDef::Str(b"\x00"),
@@ -963,7 +963,7 @@ const TLS_CLIENT_HELLO: FuncDef = func_def! (
 
 const TLS_SERVER_HELLO: FuncDef = func_def! (
     /// Returns a TLS server hello
-    resynth server_hello(
+    resynth fn server_hello(
         =>
         version: ValDef::U16(version::TLS_1_2),
         sessionid: ValDef::Str(b"\x00"),
@@ -1012,7 +1012,7 @@ const TLS_SERVER_HELLO: FuncDef = func_def! (
 
 const TLS_SNI: FuncDef = func_def! (
     /// Returns a TLS SNI extension
-    resynth sni(
+    resynth fn sni(
         =>
         =>
         Str
@@ -1041,7 +1041,7 @@ const TLS_SNI: FuncDef = func_def! (
 
 const TLS_CERTIFICATES: FuncDef = func_def! (
     /// Returns a chain of X.509 certificates
-    resynth certificates(
+    resynth fn certificates(
         =>
         =>
         Str
@@ -1069,7 +1069,7 @@ const TLS_CERTIFICATES: FuncDef = func_def! (
 
 pub const TLS: Module = module! {
     /// Transport Layer Security
-    module tls {
+    resynth mod tls {
         version => Symbol::Module(&VERSION),
         content => Symbol::Module(&CONTENT),
         handshake => Symbol::Module(&HANDSHAKE),

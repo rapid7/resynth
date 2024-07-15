@@ -10,7 +10,7 @@ use crate::val::{Val, ValDef};
 
 const OPCODE: Module = module! {
     /// Netbios Name-Service Opcodes
-    module opcode {
+    resynth mod opcode {
         QUERY => Symbol::u8(ns::opcode::QUERY),
         REGISTRATION => Symbol::u8(ns::opcode::REGISTRATION),
         RELEASE => Symbol::u8(ns::opcode::RELEASE),
@@ -23,7 +23,7 @@ const OPCODE: Module = module! {
 
 const RRTYPE: Module = module! {
     /// RR types
-    module rrtype {
+    resynth mod rrtype {
         NULL => Symbol::u16(ns::rrtype::NULL),
         NB => Symbol::u16(ns::rrtype::NB),
         NBSTAT => Symbol::u16(ns::rrtype::NBSTAT),
@@ -32,7 +32,7 @@ const RRTYPE: Module = module! {
 
 const RCODE: Module = module! {
     /// Response codes
-    module rcode {
+    resynth mod rcode {
         ACT_ERR => Symbol::u8(ns::rcode::ACT_ERR),
         CFT_ERR => Symbol::u8(ns::rcode::CFT_ERR),
     }
@@ -40,7 +40,7 @@ const RCODE: Module = module! {
 
 const NBNS_FLAGS: FuncDef = func_def!(
     /// Returns netbios-ns flags
-    resynth flags(
+    resynth fn flags(
         opcode: U8,
         =>
         response: ValDef::Bool(false),
@@ -86,7 +86,7 @@ const NBNS_FLAGS: FuncDef = func_def!(
 
 pub const NS: Module = module! {
     /// Netbios Name Service
-    module ns {
+    resynth mod ns {
         opcode => Symbol::Module(&OPCODE),
         rrtype => Symbol::Module(&RRTYPE),
         rcode => Symbol::Module(&RCODE),
@@ -96,7 +96,7 @@ pub const NS: Module = module! {
 
 const NAME_ENCODE: FuncDef = func_def! (
     /// Encode a netbios name, including the one-byte suffix field
-    resynth encode(
+    resynth fn encode(
         =>
         suffix: ValDef::U8(0),
         =>
@@ -113,14 +113,14 @@ const NAME_ENCODE: FuncDef = func_def! (
 
 pub const NAME: Module = module! {
     /// netbios names
-    module name {
+    resynth mod name {
         encode => Symbol::Func(&NAME_ENCODE),
     }
 };
 
 pub const NETBIOS: Module = module! {
     /// Microsoft NetBIOS
-    module netbios {
+    resynth mod netbios {
         ns => Symbol::Module(&NS),
         name => Symbol::Module(&NAME),
     }
