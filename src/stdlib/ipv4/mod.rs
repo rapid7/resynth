@@ -8,10 +8,10 @@ use pkt::Packet;
 use ezpkt::IpFrag;
 
 use crate::func_def;
-use crate::libapi::{ArgDecl, ArgDesc, Class, FuncDef};
+use crate::libapi::{Class, FuncDef, Module};
 use crate::str::Buf;
 use crate::sym::Symbol;
-use crate::val::{Val, ValDef, ValType};
+use crate::val::{Val, ValDef};
 
 mod icmp;
 mod tcp;
@@ -21,11 +21,14 @@ use icmp::ICMP4;
 use tcp::TCP4;
 use udp::UDP4;
 
-const PROTO: phf::Map<&'static str, Symbol> = phf_map! {
-    "ICMP" => Symbol::u8(proto::ICMP),
-    "TCP" => Symbol::u8(proto::TCP),
-    "UDP" => Symbol::u8(proto::UDP),
-    "GRE" => Symbol::u8(proto::GRE),
+const PROTO: Module = module! {
+    /// IP Protocols
+    module proto {
+        ICMP => Symbol::u8(proto::ICMP),
+        TCP => Symbol::u8(proto::TCP),
+        UDP => Symbol::u8(proto::UDP),
+        GRE => Symbol::u8(proto::GRE),
+    }
 };
 
 const IPV4_DGRAM_OVERHEAD: usize = std::mem::size_of::<eth_hdr>() + std::mem::size_of::<ip_hdr>();
@@ -209,11 +212,14 @@ const FRAG: FuncDef = func_def!(
     }
 );
 
-pub const IPV4: phf::Map<&'static str, Symbol> = phf_map! {
-    "tcp" => Symbol::Module(&TCP4),
-    "udp" => Symbol::Module(&UDP4),
-    "icmp" => Symbol::Module(&ICMP4),
-    "datagram" => Symbol::Func(&DGRAM),
-    "frag" => Symbol::Func(&FRAG),
-    "proto" => Symbol::Module(&PROTO),
+pub const IPV4: Module = module! {
+    /// Internet Protocol Version 4
+    module ipv4 {
+        tcp => Symbol::Module(&TCP4),
+        udp => Symbol::Module(&UDP4),
+        icmp => Symbol::Module(&ICMP4),
+        datagram => Symbol::Func(&DGRAM),
+        frag => Symbol::Func(&FRAG),
+        proto => Symbol::Module(&PROTO),
+    }
 };

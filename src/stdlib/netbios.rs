@@ -1,34 +1,41 @@
-use phf::phf_map;
-
 use pkt::dns::{rcode, DnsFlags};
 use pkt::netbios::{name, ns};
 
 use crate::err::Error::RuntimeError;
 use crate::func_def;
-use crate::libapi::{ArgDecl, ArgDesc, FuncDef};
+use crate::libapi::{FuncDef, Module};
 use crate::str::Buf;
 use crate::sym::Symbol;
-use crate::val::{Val, ValDef, ValType};
+use crate::val::{Val, ValDef};
 
-const OPCODE: phf::Map<&'static str, Symbol> = phf_map! {
-    "QUERY" => Symbol::u8(ns::opcode::QUERY),
-    "REGISTRATION" => Symbol::u8(ns::opcode::REGISTRATION),
-    "RELEASE" => Symbol::u8(ns::opcode::RELEASE),
-    "WACK" => Symbol::u8(ns::opcode::WACK),
-    "REFRESH" => Symbol::u8(ns::opcode::REFRESH),
-    "REFRESH_ALT" => Symbol::u8(ns::opcode::REFRESH_ALT),
-    "MH_REGISTRATION" => Symbol::u8(ns::opcode::MH_REGISTRATION),
+const OPCODE: Module = module! {
+    /// Netbios Name-Service Opcodes
+    module opcode {
+        QUERY => Symbol::u8(ns::opcode::QUERY),
+        REGISTRATION => Symbol::u8(ns::opcode::REGISTRATION),
+        RELEASE => Symbol::u8(ns::opcode::RELEASE),
+        WACK => Symbol::u8(ns::opcode::WACK),
+        REFRESH => Symbol::u8(ns::opcode::REFRESH),
+        REFRESH_ALT => Symbol::u8(ns::opcode::REFRESH_ALT),
+        MH_REGISTRATION => Symbol::u8(ns::opcode::MH_REGISTRATION),
+    }
 };
 
-const RRTYPE: phf::Map<&'static str, Symbol> = phf_map! {
-    "NULL" => Symbol::u16(ns::rrtype::NULL),
-    "NB" => Symbol::u16(ns::rrtype::NB),
-    "NBSTAT" => Symbol::u16(ns::rrtype::NBSTAT),
+const RRTYPE: Module = module! {
+    /// RR types
+    module rrtype {
+        NULL => Symbol::u16(ns::rrtype::NULL),
+        NB => Symbol::u16(ns::rrtype::NB),
+        NBSTAT => Symbol::u16(ns::rrtype::NBSTAT),
+    }
 };
 
-const RCODE: phf::Map<&'static str, Symbol> = phf_map! {
-    "ACT_ERR" => Symbol::u8(ns::rcode::ACT_ERR),
-    "CFT_ERR" => Symbol::u8(ns::rcode::CFT_ERR),
+const RCODE: Module = module! {
+    /// Response codes
+    module rcode {
+        ACT_ERR => Symbol::u8(ns::rcode::ACT_ERR),
+        CFT_ERR => Symbol::u8(ns::rcode::CFT_ERR),
+    }
 };
 
 const NBNS_FLAGS: FuncDef = func_def!(
@@ -77,11 +84,14 @@ const NBNS_FLAGS: FuncDef = func_def!(
     }
 );
 
-pub const NS: phf::Map<&'static str, Symbol> = phf_map! {
-    "opcode" => Symbol::Module(&OPCODE),
-    "rrtype" => Symbol::Module(&RRTYPE),
-    "rcode" => Symbol::Module(&RCODE),
-    "flags" => Symbol::Func(&NBNS_FLAGS),
+pub const NS: Module = module! {
+    /// Netbios Name Service
+    module ns {
+        opcode => Symbol::Module(&OPCODE),
+        rrtype => Symbol::Module(&RRTYPE),
+        rcode => Symbol::Module(&RCODE),
+        flags => Symbol::Func(&NBNS_FLAGS),
+    }
 };
 
 const NAME_ENCODE: FuncDef = func_def! (
@@ -101,11 +111,17 @@ const NAME_ENCODE: FuncDef = func_def! (
     }
 );
 
-pub const NAME: phf::Map<&'static str, Symbol> = phf_map! {
-    "encode" => Symbol::Func(&NAME_ENCODE),
+pub const NAME: Module = module! {
+    /// netbios names
+    module name {
+        encode => Symbol::Func(&NAME_ENCODE),
+    }
 };
 
-pub const NETBIOS: phf::Map<&'static str, Symbol> = phf_map! {
-    "ns" => Symbol::Module(&NS),
-    "name" => Symbol::Module(&NAME),
+pub const NETBIOS: Module = module! {
+    /// Microsoft NetBIOS
+    module netbios {
+        ns => Symbol::Module(&NS),
+        name => Symbol::Module(&NAME),
+    }
 };

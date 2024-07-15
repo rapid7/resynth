@@ -7,10 +7,10 @@ use std::path::Path;
 use phf::phf_map;
 
 use crate::func_def;
-use crate::libapi::{ArgDecl, ArgDesc, Class, FuncDef};
+use crate::libapi::{Class, FuncDef, Module};
 use crate::str::Buf;
 use crate::sym::Symbol;
-use crate::val::{Val, ValType};
+use crate::val::Val;
 
 const IO_FILE: FuncDef = func_def!(
     /// Load the contents of a file into a string
@@ -129,7 +129,10 @@ const BUFIO: FuncDef = func_def!(
     }
 );
 
-pub const MODULE: phf::Map<&'static str, Symbol> = phf_map! {
-    "file" => Symbol::Func(&IO_FILE),
-    "bufio" => Symbol::Func(&BUFIO),
-};
+pub const MODULE: Module = module!(
+    /// Buffers and File I/O
+    module io {
+        file => Symbol::Func(&IO_FILE),
+        bufio => Symbol::Func(&BUFIO),
+    }
+);

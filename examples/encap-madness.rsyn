@@ -49,7 +49,7 @@ let req = dns.client_dgram(
   ),
   dns::question(
     qname: dns::name("www", "google", "com"),
-    qtype: dns::type::A,
+    qtype: dns::qtype::A,
     qclass: dns::class::IN,
   )
 );
@@ -67,12 +67,12 @@ let resp = dns.server_dgram(
   ),
   dns::question(
     qname: dns::name("www", "google", "com"),
-    qtype: dns::type::A,
+    qtype: dns::qtype::A,
     qclass: dns::class::IN,
   ),
   dns::answer(
     aname: dns::name("www", "google", "com"),
-    atype: dns::type::A,
+    atype: dns::qtype::A,
     aclass: dns::class::IN,
     server,
   ),

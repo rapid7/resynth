@@ -5,9 +5,9 @@ use phf::phf_map;
 use pkt::{vxlan, Packet};
 
 use crate::func_def;
-use crate::libapi::{ArgDecl, ArgDesc, Class, FuncDef};
+use crate::libapi::{Class, FuncDef, Module};
 use crate::sym::Symbol;
-use crate::val::{Val, ValDef, ValType};
+use crate::val::{Val, ValDef};
 use ezpkt::VxlanFlow;
 
 const ENCAP: FuncDef = func_def!(
@@ -85,7 +85,12 @@ const SESSION: FuncDef = func_def!(
     }
 );
 
-pub const MODULE: phf::Map<&'static str, Symbol> = phf_map! {
-    "session" => Symbol::Func(&SESSION),
-    "DEFAULT_PORT" => Symbol::u16(vxlan::DEFAULT_PORT),
+pub const MODULE: Module = module! {
+    /// VXLAN Encapsulation
+    ///
+    /// Encapsulates ethernet frames in UDP datagrams.
+    module vxlan {
+        session => Symbol::Func(&SESSION),
+        DEFAULT_PORT => Symbol::u16(vxlan::DEFAULT_PORT),
+    }
 };

@@ -1,9 +1,10 @@
-use phf::phf_map;
+// Required to allow DSL symbols to be all uppercase
+#![allow(clippy::upper_case_acronyms)]
 
 use crate::args::Args;
 use crate::err::Error;
 use crate::err::Error::RuntimeError;
-use crate::libapi::Module;
+use crate::libapi::{Module, SymDesc};
 use crate::sym::Symbol;
 use crate::val::Val;
 
@@ -33,22 +34,25 @@ mod time;
 mod tls;
 mod vxlan;
 
-const STDLIB: phf::Map<&'static str, Symbol> = phf_map! {
-    "std" => Symbol::Module(&std::MODULE),
-    "text" => Symbol::Module(&text::MODULE),
-    "io" => Symbol::Module(&io::MODULE),
-    "ipv4" => Symbol::Module(&ipv4::IPV4),
-    "dns" => Symbol::Module(&dns::DNS),
-    "netbios" => Symbol::Module(&netbios::NETBIOS),
-    "dhcp" => Symbol::Module(&dhcp::MODULE),
-    "arp" => Symbol::Module(&arp::MODULE),
-    "tls" => Symbol::Module(&tls::TLS),
-    "vxlan" => Symbol::Module(&vxlan::MODULE),
-    "gre" => Symbol::Module(&gre::MODULE),
-    "eth" => Symbol::Module(&eth::MODULE),
-    "erspan1" => Symbol::Module(&erspan1::MODULE),
-    "erspan2" => Symbol::Module(&erspan2::MODULE),
-    "time" => Symbol::Module(&time::MODULE),
+const STDLIB: Module = module! {
+    /// Resynth Standard Library
+    module stdlib {
+        std => Symbol::Module(&std::MODULE),
+        text => Symbol::Module(&text::MODULE),
+        io => Symbol::Module(&io::MODULE),
+        ipv4 => Symbol::Module(&ipv4::IPV4),
+        dns => Symbol::Module(&dns::DNS),
+        netbios => Symbol::Module(&netbios::NETBIOS),
+        dhcp => Symbol::Module(&dhcp::MODULE),
+        arp => Symbol::Module(&arp::MODULE),
+        tls => Symbol::Module(&tls::TLS),
+        vxlan => Symbol::Module(&vxlan::MODULE),
+        gre => Symbol::Module(&gre::MODULE),
+        eth => Symbol::Module(&eth::MODULE),
+        erspan1 => Symbol::Module(&erspan1::MODULE),
+        erspan2 => Symbol::Module(&erspan2::MODULE),
+        time => Symbol::Module(&time::MODULE),
+    }
 };
 
 pub fn toplevel_module(name: &str) -> Option<&'static Module> {
@@ -63,7 +67,7 @@ pub fn toplevel_module(name: &str) -> Option<&'static Module> {
 }
 
 /// Generate documentation for a module.. This needs a lot of work.
-pub fn recurse(out_dir: &Path, stk: &mut Vec<&'static str>, m: &phf::Map<&'static str, Symbol>) {
+pub fn recurse(out_dir: &Path, stk: &mut Vec<&'static str>, m: &'static Module) {
     let mut mod_path = PathBuf::from(out_dir);
 
     if stk.is_empty() {
@@ -81,7 +85,7 @@ pub fn recurse(out_dir: &Path, stk: &mut Vec<&'static str>, m: &phf::Map<&'stati
     let f = File::create(mod_path).expect("Unable to create file");
     let mut wr = BufWriter::new(f);
 
-    for (name, sym) in m.entries() {
+    for SymDesc { name, sym } in m.symtab.iter() {
         stk.push(name);
         match sym {
             Symbol::Module(child) => {

@@ -1,5 +1,3 @@
-use phf::phf_map;
-
 use pkt::dns::{class, dns_hdr, opcode, rcode, rrtype, DnsFlags, DnsName};
 use pkt::AsBytes;
 use pkt::Packet;
@@ -7,112 +5,124 @@ use pkt::Packet;
 use ezpkt::UdpFlow;
 
 use crate::func_def;
-use crate::libapi::{ArgDecl, ArgDesc, FuncDef};
+use crate::libapi::{FuncDef, Module};
 use crate::str::Buf;
 use crate::sym::Symbol;
-use crate::val::{Val, ValDef, ValType};
+use crate::val::{Val, ValDef};
 
 use std::net::{Ipv4Addr, SocketAddrV4};
 
-const OPCODE: phf::Map<&'static str, Symbol> = phf_map! {
-    "QUERY" => Symbol::u8(opcode::QUERY),
-    "IQUERY" => Symbol::u8(opcode::IQUERY),
-    "STATUS" => Symbol::u8(opcode::STATUS),
-    "NOTIFY" => Symbol::u8(opcode::NOTIFY),
-    "UPDATE" => Symbol::u8(opcode::UPDATE),
-    "DSO" => Symbol::u8(opcode::DSO),
+const OPCODE: Module = module! {
+    /// DNS Opcode
+    module opcode {
+        QUERY => Symbol::u8(opcode::QUERY),
+        IQUERY => Symbol::u8(opcode::IQUERY),
+        STATUS => Symbol::u8(opcode::STATUS),
+        NOTIFY => Symbol::u8(opcode::NOTIFY),
+        UPDATE => Symbol::u8(opcode::UPDATE),
+        DSO => Symbol::u8(opcode::DSO),
+    }
 };
 
-const RCODE: phf::Map<&'static str, Symbol> = phf_map! {
-    "NOERROR" => Symbol::u8(rcode::NOERROR),
-    "FORMERR" => Symbol::u8(rcode::FORMERR),
-    "SERVFAIL" => Symbol::u8(rcode::SERVFAIL),
-    "NXDOMAIN" => Symbol::u8(rcode::NXDOMAIN),
-    "NOTIMP" => Symbol::u8(rcode::NOTIMP),
-    "REFUSED" => Symbol::u8(rcode::REFUSED),
-    "YXDOMAIN" => Symbol::u8(rcode::YXDOMAIN),
-    "YXRRSET" => Symbol::u8(rcode::YXRRSET),
-    "NXRRSET" => Symbol::u8(rcode::NXRRSET),
-    "NOTAUTH" => Symbol::u8(rcode::NOTAUTH),
-    "NOTZONE" => Symbol::u8(rcode::NOTZONE),
+const RCODE: Module = module! {
+    /// DNS Response Codes (Errors)
+    module rcode {
+        NOERROR => Symbol::u8(rcode::NOERROR),
+        FORMERR => Symbol::u8(rcode::FORMERR),
+        SERVFAIL => Symbol::u8(rcode::SERVFAIL),
+        NXDOMAIN => Symbol::u8(rcode::NXDOMAIN),
+        NOTIMP => Symbol::u8(rcode::NOTIMP),
+        REFUSED => Symbol::u8(rcode::REFUSED),
+        YXDOMAIN => Symbol::u8(rcode::YXDOMAIN),
+        YXRRSET => Symbol::u8(rcode::YXRRSET),
+        NXRRSET => Symbol::u8(rcode::NXRRSET),
+        NOTAUTH => Symbol::u8(rcode::NOTAUTH),
+        NOTZONE => Symbol::u8(rcode::NOTZONE),
+    }
 };
 
-const TYPE: phf::Map<&'static str, Symbol> = phf_map! {
-    "A" => Symbol::u16(rrtype::A),
-    "NS" => Symbol::u16(rrtype::NS),
-    "MD" => Symbol::u16(rrtype::MD),
-    "MF" => Symbol::u16(rrtype::MF),
-    "CNAME" => Symbol::u16(rrtype::CNAME),
-    "SOA" => Symbol::u16(rrtype::SOA),
-    "MB" => Symbol::u16(rrtype::MB),
-    "MG" => Symbol::u16(rrtype::MG),
-    "NMR" => Symbol::u16(rrtype::NMR),
-    "NULL" => Symbol::u16(rrtype::NULL),
-    "WKS" => Symbol::u16(rrtype::WKS),
-    "PTR" => Symbol::u16(rrtype::PTR),
-    "HINFO" => Symbol::u16(rrtype::HINFO),
-    "MINFO" => Symbol::u16(rrtype::MINFO),
-    "MX" => Symbol::u16(rrtype::MX),
-    "TXT" => Symbol::u16(rrtype::TXT),
-    "RP" => Symbol::u16(rrtype::RP),
-    "AFSDB" => Symbol::u16(rrtype::AFSDB),
-    "SIG" => Symbol::u16(rrtype::SIG),
-    "KEY" => Symbol::u16(rrtype::KEY),
-    "AAAA" => Symbol::u16(rrtype::AAAA),
-    "LOC" => Symbol::u16(rrtype::LOC),
-    "SRV" => Symbol::u16(rrtype::SRV),
-    "NAPTR" => Symbol::u16(rrtype::NAPTR),
-    "KX" => Symbol::u16(rrtype::KX),
-    "CERT" => Symbol::u16(rrtype::CERT),
-    "DNAME" => Symbol::u16(rrtype::DNAME),
-    "OPT" => Symbol::u16(rrtype::OPT),
-    "APL" => Symbol::u16(rrtype::APL),
-    "DS" => Symbol::u16(rrtype::DS),
-    "SSHFP" => Symbol::u16(rrtype::SSHFP),
-    "IPSECKEY" => Symbol::u16(rrtype::IPSECKEY),
-    "RRSIG" => Symbol::u16(rrtype::RRSIG),
-    "NSEC" => Symbol::u16(rrtype::NSEC),
-    "DNSKEY" => Symbol::u16(rrtype::DNSKEY),
-    "DHCID" => Symbol::u16(rrtype::DHCID),
-    "NSEC3" => Symbol::u16(rrtype::NSEC3),
-    "NSEC3PARAM" => Symbol::u16(rrtype::NSEC3PARAM),
-    "TLSA" => Symbol::u16(rrtype::TLSA),
-    "SMIMEA" => Symbol::u16(rrtype::SMIMEA),
-    "HIP" => Symbol::u16(rrtype::HIP),
-    "CDS" => Symbol::u16(rrtype::CDS),
-    "CDNSKEY" => Symbol::u16(rrtype::CDNSKEY),
-    "OPENPGPKEY" => Symbol::u16(rrtype::OPENPGPKEY),
-    "CSYNC" => Symbol::u16(rrtype::CSYNC),
-    "ZONEMD" => Symbol::u16(rrtype::ZONEMD),
-    "SVCB" => Symbol::u16(rrtype::SVCB),
-    "HTTPS" => Symbol::u16(rrtype::HTTPS),
-    "EUI48" => Symbol::u16(rrtype::EUI48),
-    "EUI64" => Symbol::u16(rrtype::EUI64),
-    "TKEY" => Symbol::u16(rrtype::TKEY),
-    "TSIG" => Symbol::u16(rrtype::TSIG),
-    "IXFR" => Symbol::u16(rrtype::IXFR),
+const RTYPE: Module = module! {
+    /// DNS Record Type
+    module rtype {
+        A => Symbol::u16(rrtype::A),
+        NS => Symbol::u16(rrtype::NS),
+        MD => Symbol::u16(rrtype::MD),
+        MF => Symbol::u16(rrtype::MF),
+        CNAME => Symbol::u16(rrtype::CNAME),
+        SOA => Symbol::u16(rrtype::SOA),
+        MB => Symbol::u16(rrtype::MB),
+        MG => Symbol::u16(rrtype::MG),
+        NMR => Symbol::u16(rrtype::NMR),
+        NULL => Symbol::u16(rrtype::NULL),
+        WKS => Symbol::u16(rrtype::WKS),
+        PTR => Symbol::u16(rrtype::PTR),
+        HINFO => Symbol::u16(rrtype::HINFO),
+        MINFO => Symbol::u16(rrtype::MINFO),
+        MX => Symbol::u16(rrtype::MX),
+        TXT => Symbol::u16(rrtype::TXT),
+        RP => Symbol::u16(rrtype::RP),
+        AFSDB => Symbol::u16(rrtype::AFSDB),
+        SIG => Symbol::u16(rrtype::SIG),
+        KEY => Symbol::u16(rrtype::KEY),
+        AAAA => Symbol::u16(rrtype::AAAA),
+        LOC => Symbol::u16(rrtype::LOC),
+        SRV => Symbol::u16(rrtype::SRV),
+        NAPTR => Symbol::u16(rrtype::NAPTR),
+        KX => Symbol::u16(rrtype::KX),
+        CERT => Symbol::u16(rrtype::CERT),
+        DNAME => Symbol::u16(rrtype::DNAME),
+        OPT => Symbol::u16(rrtype::OPT),
+        APL => Symbol::u16(rrtype::APL),
+        DS => Symbol::u16(rrtype::DS),
+        SSHFP => Symbol::u16(rrtype::SSHFP),
+        IPSECKEY => Symbol::u16(rrtype::IPSECKEY),
+        RRSIG => Symbol::u16(rrtype::RRSIG),
+        NSEC => Symbol::u16(rrtype::NSEC),
+        DNSKEY => Symbol::u16(rrtype::DNSKEY),
+        DHCID => Symbol::u16(rrtype::DHCID),
+        NSEC3 => Symbol::u16(rrtype::NSEC3),
+        NSEC3PARAM => Symbol::u16(rrtype::NSEC3PARAM),
+        TLSA => Symbol::u16(rrtype::TLSA),
+        SMIMEA => Symbol::u16(rrtype::SMIMEA),
+        HIP => Symbol::u16(rrtype::HIP),
+        CDS => Symbol::u16(rrtype::CDS),
+        CDNSKEY => Symbol::u16(rrtype::CDNSKEY),
+        OPENPGPKEY => Symbol::u16(rrtype::OPENPGPKEY),
+        CSYNC => Symbol::u16(rrtype::CSYNC),
+        ZONEMD => Symbol::u16(rrtype::ZONEMD),
+        SVCB => Symbol::u16(rrtype::SVCB),
+        HTTPS => Symbol::u16(rrtype::HTTPS),
+        EUI48 => Symbol::u16(rrtype::EUI48),
+        EUI64 => Symbol::u16(rrtype::EUI64),
+        TKEY => Symbol::u16(rrtype::TKEY),
+        TSIG => Symbol::u16(rrtype::TSIG),
+        IXFR => Symbol::u16(rrtype::IXFR),
 
-    // QTYPE
-    "AXFR" => Symbol::u16(rrtype::AXFR),
-    "MAILB" => Symbol::u16(rrtype::MAILB),
-    "MAILA" => Symbol::u16(rrtype::MAILA),
+        // QTYPE
+        AXFR => Symbol::u16(rrtype::AXFR),
+        MAILB => Symbol::u16(rrtype::MAILB),
+        MAILA => Symbol::u16(rrtype::MAILA),
 
-    "ALL" => Symbol::u16(rrtype::ALL),
+        ALL => Symbol::u16(rrtype::ALL),
 
-    "URI" => Symbol::u16(rrtype::URI),
-    "CAA" => Symbol::u16(rrtype::CAA),
-    "TA" => Symbol::u16(rrtype::TA),
-    "DLV" => Symbol::u16(rrtype::DLV),
+        URI => Symbol::u16(rrtype::URI),
+        CAA => Symbol::u16(rrtype::CAA),
+        TA => Symbol::u16(rrtype::TA),
+        DLV => Symbol::u16(rrtype::DLV),
+    }
 };
 
-const CLASS: phf::Map<&'static str, Symbol> = phf_map! {
-    "IN" => Symbol::u16(class::IN),
-    "CS" => Symbol::u16(class::CS),
-    "CH" => Symbol::u16(class::CH),
-    "HS" => Symbol::u16(class::HS),
+const CLASS: Module = module! {
+    /// Class
+    module class {
+        IN => Symbol::u16(class::IN),
+        CS => Symbol::u16(class::CS),
+        CH => Symbol::u16(class::CH),
+        HS => Symbol::u16(class::HS),
 
-    // QCLASS
-    "ANY" => Symbol::u16(class::ANY),
+        // QCLASS
+        ANY => Symbol::u16(class::ANY),
+    }
 };
 
 pub(crate) const DNS_NAME: FuncDef = func_def! (
@@ -382,16 +392,20 @@ const DNS_HOST: FuncDef = func_def!(
     }
 );
 
-pub const DNS: phf::Map<&'static str, Symbol> = phf_map! {
-    "opcode" => Symbol::Module(&OPCODE),
-    "rcode" => Symbol::Module(&RCODE),
-    "type" => Symbol::Module(&TYPE),
-    "class" => Symbol::Module(&CLASS),
-    "flags" => Symbol::Func(&DNS_FLAGS),
-    "hdr" => Symbol::Func(&DNS_HDR),
-    "name" => Symbol::Func(&DNS_NAME),
-    "pointer" => Symbol::Func(&DNS_POINTER),
-    "question" => Symbol::Func(&DNS_QUESTION),
-    "answer" => Symbol::Func(&DNS_ANSWER),
-    "host" => Symbol::Func(&DNS_HOST),
+pub const DNS: Module = module! {
+    /// Domain Name System
+    module dns {
+        opcode => Symbol::Module(&OPCODE),
+        rcode => Symbol::Module(&RCODE),
+        rtype => Symbol::Module(&RTYPE),
+        qtype => Symbol::Module(&RTYPE),
+        class => Symbol::Module(&CLASS),
+        flags => Symbol::Func(&DNS_FLAGS),
+        hdr => Symbol::Func(&DNS_HDR),
+        name => Symbol::Func(&DNS_NAME),
+        pointer => Symbol::Func(&DNS_POINTER),
+        question => Symbol::Func(&DNS_QUESTION),
+        answer => Symbol::Func(&DNS_ANSWER),
+        host => Symbol::Func(&DNS_HOST),
+    }
 };

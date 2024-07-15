@@ -20,7 +20,7 @@ conn.server_message(
   smb::res::TreeConnect(
     mid: 1,
     tid: 1,
-    type: smb::sharetype::FILE_SHARE,
+    msgtype: smb::sharetype::FILE_SHARE,
   )
 );
 

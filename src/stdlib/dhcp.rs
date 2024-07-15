@@ -1,62 +1,69 @@
-use phf::phf_map;
-
 use ezpkt::Dhcp;
 use pkt::arp::hrd;
 use pkt::dhcp::{dhcp_opt, message, opcode, opt, CLIENT_PORT, MAGIC, SERVER_PORT};
 
 use crate::func_def;
-use crate::libapi::{ArgDecl, ArgDesc, FuncDef};
+use crate::libapi::{FuncDef, Module};
 use crate::str::Buf;
 use crate::sym::Symbol;
-use crate::val::{Val, ValDef, ValType};
+use crate::val::{Val, ValDef};
 
 use std::net::Ipv4Addr;
 
-const OPCODE: phf::Map<&'static str, Symbol> = phf_map! {
-    "REQUEST" => Symbol::u8(opcode::REQUEST),
-    "REPLY" => Symbol::u8(opcode::REPLY),
+const OPCODE: Module = module! {
+    /// DHCP Opcodes
+    module opcode {
+        REQUEST => Symbol::u8(opcode::REQUEST),
+        REPLY => Symbol::u8(opcode::REPLY),
+    }
 };
 
-const TYPE: phf::Map<&'static str, Symbol> = phf_map! {
-    "DISCOVER" => Symbol::u8(message::DISCOVER),
-    "OFFER" => Symbol::u8(message::OFFER),
-    "REQUEST" => Symbol::u8(message::REQUEST),
-    "DECLINE" => Symbol::u8(message::DECLINE),
-    "ACK" => Symbol::u8(message::ACK),
-    "NACK" => Symbol::u8(message::NACK),
-    "RELEASE" => Symbol::u8(message::RELEASE),
-    "INFORM" => Symbol::u8(message::INFORM),
+const TYPE: Module = module! {
+    /// DHCP Message Type
+    module msgtype {
+        DISCOVER => Symbol::u8(message::DISCOVER),
+        OFFER => Symbol::u8(message::OFFER),
+        REQUEST => Symbol::u8(message::REQUEST),
+        DECLINE => Symbol::u8(message::DECLINE),
+        ACK => Symbol::u8(message::ACK),
+        NACK => Symbol::u8(message::NACK),
+        RELEASE => Symbol::u8(message::RELEASE),
+        INFORM => Symbol::u8(message::INFORM),
 
-    "FORCERENEW" => Symbol::u8(message::FORCERENEW),
-    "LEASEQUERY" => Symbol::u8(message::LEASEQUERY),
-    "LEASEUNASSIGNED" => Symbol::u8(message::LEASEUNASSIGNED),
-    "LEASEUNKNOWN" => Symbol::u8(message::LEASEUNKNOWN),
-    "LEASEACTIVE" => Symbol::u8(message::LEASEACTIVE),
-    "BULKLEASEQUERY" => Symbol::u8(message::BULKLEASEQUERY),
-    "LEASEQUERYDONE" => Symbol::u8(message::LEASEQUERYDONE),
-    "ACTIVELEASEQUERY" => Symbol::u8(message::ACTIVELEASEQUERY),
-    "LEASEQUERYSTATUS" => Symbol::u8(message::LEASEQUERYSTATUS),
-    "TLS" => Symbol::u8(message::TLS),
+        FORCERENEW => Symbol::u8(message::FORCERENEW),
+        LEASEQUERY => Symbol::u8(message::LEASEQUERY),
+        LEASEUNASSIGNED => Symbol::u8(message::LEASEUNASSIGNED),
+        LEASEUNKNOWN => Symbol::u8(message::LEASEUNKNOWN),
+        LEASEACTIVE => Symbol::u8(message::LEASEACTIVE),
+        BULKLEASEQUERY => Symbol::u8(message::BULKLEASEQUERY),
+        LEASEQUERYDONE => Symbol::u8(message::LEASEQUERYDONE),
+        ACTIVELEASEQUERY => Symbol::u8(message::ACTIVELEASEQUERY),
+        LEASEQUERYSTATUS => Symbol::u8(message::LEASEQUERYSTATUS),
+        TLS => Symbol::u8(message::TLS),
+    }
 };
 
-const OPT: phf::Map<&'static str, Symbol> = phf_map! {
-    "PADDING" => Symbol::u8(opt::PADDING),
-    "SUBNET_MASK" => Symbol::u8(opt::SUBNET_MASK),
-    "CLIENT_HOSTNAME" => Symbol::u8(opt::CLIENT_HOSTNAME),
-    "VENDOR_SPECIFIC" => Symbol::u8(opt::VENDOR_SPECIFIC),
-    "REQUESTED_ADDRESS" => Symbol::u8(opt::REQUESTED_ADDRESS),
-    "ADDRESS_LEASE_TIME" => Symbol::u8(opt::ADDRESS_LEASE_TIME),
-    "MESSAGE_TYPE" => Symbol::u8(opt::MESSAGE_TYPE),
-    "SERVER_ID" => Symbol::u8(opt::SERVER_ID),
-    "PARAM_REQUEST_LIST" => Symbol::u8(opt::PARAM_REQUEST_LIST),
-    "MAX_MESSAGE_SIZE" => Symbol::u8(opt::MAX_MESSAGE_SIZE),
-    "RENEWAL_TIME" => Symbol::u8(opt::RENEWAL_TIME),
-    "REBINDING_TIME" => Symbol::u8(opt::REBINDING_TIME),
-    "VENDOR_CLASS_ID" => Symbol::u8(opt::VENDOR_CLASS_ID),
-    "CLIENT_ID" => Symbol::u8(opt::CLIENT_ID),
-    "CLIENT_FQDN" => Symbol::u8(opt::CLIENT_FQDN),
+const OPT: Module = module! {
+    /// DHCP Options
+    module opt {
+        PADDING => Symbol::u8(opt::PADDING),
+        SUBNET_MASK => Symbol::u8(opt::SUBNET_MASK),
+        CLIENT_HOSTNAME => Symbol::u8(opt::CLIENT_HOSTNAME),
+        VENDOR_SPECIFIC => Symbol::u8(opt::VENDOR_SPECIFIC),
+        REQUESTED_ADDRESS => Symbol::u8(opt::REQUESTED_ADDRESS),
+        ADDRESS_LEASE_TIME => Symbol::u8(opt::ADDRESS_LEASE_TIME),
+        MESSAGE_TYPE => Symbol::u8(opt::MESSAGE_TYPE),
+        SERVER_ID => Symbol::u8(opt::SERVER_ID),
+        PARAM_REQUEST_LIST => Symbol::u8(opt::PARAM_REQUEST_LIST),
+        MAX_MESSAGE_SIZE => Symbol::u8(opt::MAX_MESSAGE_SIZE),
+        RENEWAL_TIME => Symbol::u8(opt::RENEWAL_TIME),
+        REBINDING_TIME => Symbol::u8(opt::REBINDING_TIME),
+        VENDOR_CLASS_ID => Symbol::u8(opt::VENDOR_CLASS_ID),
+        CLIENT_ID => Symbol::u8(opt::CLIENT_ID),
+        CLIENT_FQDN => Symbol::u8(opt::CLIENT_FQDN),
 
-    "END" => Symbol::u8(opt::END),
+        END => Symbol::u8(opt::END),
+    }
 };
 
 const HDR: FuncDef = func_def!(
@@ -146,14 +153,17 @@ const OPTION: FuncDef = func_def!(
     }
 );
 
-pub const MODULE: phf::Map<&'static str, Symbol> = phf_map! {
-    "CLIENT_PORT" => Symbol::u16(CLIENT_PORT),
-    "SERVER_PORT" => Symbol::u16(SERVER_PORT),
+pub const MODULE: Module = module! {
+    /// DHCP / BOOTP
+    module dhcp {
+        CLIENT_PORT => Symbol::u16(CLIENT_PORT),
+        SERVER_PORT => Symbol::u16(SERVER_PORT),
 
-    "opcode" => Symbol::Module(&OPCODE),
-    "type" => Symbol::Module(&TYPE),
-    "opt" => Symbol::Module(&OPT),
+        opcode => Symbol::Module(&OPCODE),
+        msgtype => Symbol::Module(&TYPE),
+        opt => Symbol::Module(&OPT),
 
-    "hdr" => Symbol::Func(&HDR),
-    "option" => Symbol::Func(&OPTION),
+        hdr => Symbol::Func(&HDR),
+        option => Symbol::Func(&OPTION),
+    }
 };

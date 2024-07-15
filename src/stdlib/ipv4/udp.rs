@@ -6,10 +6,10 @@ use ezpkt::{UdpDgram, UdpFlow};
 use pkt::{ipv4::udp_hdr, AsBytes, Packet};
 
 use crate::func_def;
-use crate::libapi::{ArgDecl, ArgDesc, Class, FuncDef};
+use crate::libapi::{Class, FuncDef, Module};
 use crate::str::Buf;
 use crate::sym::Symbol;
-use crate::val::{Val, ValDef, ValType};
+use crate::val::{Val, ValDef};
 
 const BROADCAST: FuncDef = func_def!(
     /// Send a broadcast datagram
@@ -237,9 +237,12 @@ const FLOW: FuncDef = func_def!(
     }
 );
 
-pub const UDP4: phf::Map<&'static str, Symbol> = phf_map! {
-    "flow" => Symbol::Func(&FLOW),
-    "broadcast" => Symbol::Func(&BROADCAST),
-    "unicast" => Symbol::Func(&UNICAST),
-    "hdr" => Symbol::Func(&HDR),
+pub const UDP4: Module = module! {
+    /// User Datagram Protocol
+    module udp {
+        flow => Symbol::Func(&FLOW),
+        broadcast => Symbol::Func(&BROADCAST),
+        unicast => Symbol::Func(&UNICAST),
+        hdr => Symbol::Func(&HDR),
+    }
 };

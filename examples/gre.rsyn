@@ -11,7 +11,7 @@ let google = 8.8.8.8;
 let g = gre::session(
   172.16.0.1,
   172.16.0.2,
-  eth::type::GRETAP,
+  eth::ethertype::GRETAP,
 );
 
 let vx = vxlan::session(
@@ -44,7 +44,7 @@ let req = dns.client_dgram(
   ),
   dns::question(
     qname: dns::name("www", "google", "com"),
-    qtype: dns::type::A,
+    qtype: dns::qtype::A,
     qclass: dns::class::IN,
   )
 );
@@ -62,12 +62,12 @@ let resp = dns.server_dgram(
   ),
   dns::question(
     qname: dns::name("www", "google", "com"),
-    qtype: dns::type::A,
+    qtype: dns::qtype::A,
     qclass: dns::class::IN,
   ),
   dns::answer(
     aname: dns::name("www", "google", "com"),
-    atype: dns::type::A,
+    atype: dns::rtype::A,
     aclass: dns::class::IN,
     server,
   ),

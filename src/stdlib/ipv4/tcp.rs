@@ -1,10 +1,10 @@
 use phf::phf_map;
 
 use crate::func_def;
-use crate::libapi::{ArgDecl, ArgDesc, Class, FuncDef};
+use crate::libapi::{Class, FuncDef, Module};
 use crate::str::Buf;
 use crate::sym::Symbol;
-use crate::val::{Val, ValDef, ValType};
+use crate::val::{Val, ValDef};
 
 use ezpkt::TcpFlow;
 use pkt::Packet;
@@ -422,6 +422,9 @@ const TCP_FLOW: FuncDef = func_def!(
     }
 );
 
-pub const TCP4: phf::Map<&'static str, Symbol> = phf_map! {
-    "flow" => Symbol::Func(&TCP_FLOW),
+pub const TCP4: Module = module! {
+    /// Transmission Control Protocol
+    module tcp {
+        flow => Symbol::Func(&TCP_FLOW),
+    }
 };

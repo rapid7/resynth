@@ -5,9 +5,9 @@ use phf::phf_map;
 use pkt::Packet;
 
 use crate::func_def;
-use crate::libapi::{ArgDecl, ArgDesc, Class, FuncDef};
+use crate::libapi::{Class, FuncDef, Module};
 use crate::sym::Symbol;
-use crate::val::{Val, ValDef, ValType};
+use crate::val::{Val, ValDef};
 use ezpkt::Erspan1Flow;
 
 const ENCAP: FuncDef = func_def!(
@@ -64,6 +64,9 @@ const SESSION: FuncDef = func_def!(
     }
 );
 
-pub const MODULE: phf::Map<&'static str, Symbol> = phf_map! {
-    "session" => Symbol::Func(&SESSION),
+pub const MODULE: Module = module! {
+    /// ERSPAN Version 1
+    module erspan1 {
+        session => Symbol::Func(&SESSION),
+    }
 };

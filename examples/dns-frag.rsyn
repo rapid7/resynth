@@ -26,7 +26,7 @@ let frag = ipv4::frag(
     ),
     dns::question(
       qname: dns::name("www", "google", "com"),
-      qtype: dns::type::A,
+      qtype: dns::qtype::A,
       qclass: dns::class::IN,
     )
   )

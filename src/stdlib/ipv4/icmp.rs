@@ -1,10 +1,10 @@
 use phf::phf_map;
 
 use crate::func_def;
-use crate::libapi::{ArgDecl, ArgDesc, Class, FuncDef};
+use crate::libapi::{Class, FuncDef, Module};
 use crate::str::Buf;
 use crate::sym::Symbol;
-use crate::val::{Val, ValDef, ValType};
+use crate::val::{Val, ValDef};
 use ezpkt::IcmpFlow;
 
 const ICMP_ECHO: FuncDef = func_def!(
@@ -72,6 +72,9 @@ const ICMP_FLOW: FuncDef = func_def!(
     }
 );
 
-pub const ICMP4: phf::Map<&'static str, Symbol> = phf_map! {
-    "flow" => Symbol::Func(&ICMP_FLOW),
+pub const ICMP4: Module = module! {
+    /// ICMP
+    module icmp {
+        flow => Symbol::Func(&ICMP_FLOW),
+    }
 };

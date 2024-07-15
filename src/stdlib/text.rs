@@ -1,10 +1,8 @@
-use phf::phf_map;
-
 use crate::func_def;
-use crate::libapi::FuncDef;
+use crate::libapi::{FuncDef, Module};
 use crate::str::Buf;
 use crate::sym::Symbol;
-use crate::val::{Val, ValDef, ValType};
+use crate::val::{Val, ValDef};
 
 const CONCAT: FuncDef = func_def!(
     /// Concatenate strings
@@ -43,9 +41,12 @@ const LEN: FuncDef = func_def!(
     }
 );
 
-pub const MODULE: phf::Map<&'static str, Symbol> = phf_map! {
-    "concat" => Symbol::Func(&CONCAT),
-    "crlflines" => Symbol::Func(&CRLFLINES),
-    "len" => Symbol::Func(&LEN),
-    "CRLF" => Symbol::Val(ValDef::Str(b"\r\n")),
+pub const MODULE: Module = module! {
+    /// Text/bytestring manipulations
+    module text {
+        concat => Symbol::Func(&CONCAT),
+        crlflines => Symbol::Func(&CRLFLINES),
+        len => Symbol::Func(&LEN),
+        CRLF => Symbol::Val(ValDef::Str(b"\r\n")),
+    }
 };
