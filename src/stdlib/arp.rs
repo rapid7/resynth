@@ -1,13 +1,19 @@
-use phf::phf_map;
-
 use pkt::arp::hrd;
 
+use crate::libapi::Module;
+use crate::module;
 use crate::sym::Symbol;
 
-const HRD: phf::Map<&'static str, Symbol> = phf_map! {
-    "ETHER" => Symbol::int_val(hrd::ETHER as u64),
-};
+const HRD: Module = module!(
+    /// Hardware types
+    module hrd {
+        ETHER => Symbol::int_val(hrd::ETHER as u64),
+    }
+);
 
-pub const MODULE: phf::Map<&'static str, Symbol> = phf_map! {
-    "hrd" => Symbol::Module(&HRD),
-};
+pub const MODULE: Module = module!(
+    /// Address Resolution Protocol
+    module arp {
+        hrd => Symbol::Module(&HRD),
+    }
+);

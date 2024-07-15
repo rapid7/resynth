@@ -53,6 +53,10 @@ macro_rules! func_def {
         $exec:expr
     ) => {
         {
+            #[allow(unused)]
+            use $crate::libapi::{FuncDef, ArgDesc, ArgDecl};
+            use $crate::val::ValType;
+
             #[allow(non_camel_case_types,unused)]
             enum ArgName {
                $($arg_name,)*
@@ -78,6 +82,51 @@ macro_rules! func_def {
                 min_args: func_def!(@len $($arg_name)*),
                 collect_type: ValType::$collect_type,
                 exec: $exec,
+                doc: concat_with::concat_line!($($doc),+),
+            }
+        }
+    };
+}
+
+#[macro_export]
+macro_rules! module {
+    (
+        @sym $name:ident $sym:expr
+    ) => {
+        SymDesc {
+            name: stringify!($name),
+            sym: $sym,
+        }
+    };
+
+    (
+        $(#[doc = $doc:literal])+
+        module $modname:ident {$(
+            $name:ident => $sym:expr,
+        )*}
+    ) => {
+        {
+            #[allow(unused)]
+            use $crate::libapi::{Module, SymDesc};
+
+            #[allow(non_camel_case_types,unused)]
+            enum SymName {
+               $($name,)*
+            }
+
+            fn lookup(name: &str) -> Option<usize> {
+                match name {
+                    $(stringify!($name) => Some(SymName::$name as usize),)*
+                    _ => None,
+                }
+            }
+
+            Module {
+                name: stringify!($modname),
+                symtab: &[
+                    $(module!(@sym $name $sym),)*
+                ],
+                lookup,
                 doc: concat_with::concat_line!($($doc),+),
             }
         }

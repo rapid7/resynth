@@ -1,10 +1,8 @@
-use phf::phf_map;
-
 use crate::func_def;
-use crate::libapi::{ArgDecl, ArgDesc, FuncDef};
+use crate::libapi::{FuncDef, Module};
 use crate::str::Buf;
 use crate::sym::Symbol;
-use crate::val::{Val, ValType};
+use crate::val::Val;
 
 const BE16: FuncDef = func_def!(
     /// Encode a 16bit integer into 2 big-endian bytes
@@ -180,17 +178,20 @@ const LEN_U8: FuncDef = func_def! (
     }
 );
 
-pub const MODULE: phf::Map<&'static str, Symbol> = phf_map! {
-    "be16" => Symbol::Func(&BE16),
-    "be32" => Symbol::Func(&BE32),
-    "be64" => Symbol::Func(&BE64),
-    "le16" => Symbol::Func(&LE16),
-    "le32" => Symbol::Func(&LE32),
-    "le64" => Symbol::Func(&LE64),
-    "u8" => Symbol::Func(&U8),
+pub const MODULE: Module = module! {
+    /// Standard types
+    module std {
+        be16 => Symbol::Func(&BE16),
+        be32 => Symbol::Func(&BE32),
+        be64 => Symbol::Func(&BE64),
+        le16 => Symbol::Func(&LE16),
+        le32 => Symbol::Func(&LE32),
+        le64 => Symbol::Func(&LE64),
+        u8 => Symbol::Func(&U8),
 
-    "len_be64" => Symbol::Func(&LEN_BE64),
-    "len_be32" => Symbol::Func(&LEN_BE32),
-    "len_be16" => Symbol::Func(&LEN_BE16),
-    "len_u8" => Symbol::Func(&LEN_U8),
+        len_be64 => Symbol::Func(&LEN_BE64),
+        len_be32 => Symbol::Func(&LEN_BE32),
+        len_be16 => Symbol::Func(&LEN_BE16),
+        len_u8 => Symbol::Func(&LEN_U8),
+    }
 };

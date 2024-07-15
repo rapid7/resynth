@@ -43,8 +43,29 @@ impl PartialEq for FuncDef {
     }
 }
 
-/// A module is a mapping between names and [Symbol]
-pub type Module = phf::Map<&'static str, Symbol>;
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct SymDesc {
+    pub name: &'static str,
+    pub sym: Symbol,
+}
+
+/// Defines a module for the resynth stdlib
+#[derive(Debug)]
+pub struct Module {
+    pub name: &'static str,
+    pub symtab: &'static [SymDesc],
+    pub lookup: fn(name: &str) -> Option<usize>,
+    pub doc: &'static str,
+}
+
+impl Module {
+    pub fn get(&self, name: &str) -> Option<&'static Symbol> {
+        match (self.lookup)(name) {
+            Some(idx) => Some(&self.symtab[idx].sym),
+            None => None,
+        }
+    }
+}
 
 pub trait Class {
     fn symbols(&self) -> phf::Map<&'static str, Symbol>;

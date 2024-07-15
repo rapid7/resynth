@@ -1,8 +1,8 @@
 use crate::args::{ArgSpec, ArgVec};
 use crate::err::Error;
-use crate::libapi::{ArgDecl, ArgDesc, FuncDef};
+use crate::libapi::FuncDef;
 use crate::str::Buf;
-use crate::val::{Val, ValDef, ValType};
+use crate::val::{Val, ValDef};
 
 const PLAIN: FuncDef = func_def! {
     /// PLAIN

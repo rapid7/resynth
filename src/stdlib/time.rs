@@ -1,9 +1,7 @@
-use phf::phf_map;
-
 use crate::func_def;
-use crate::libapi::{ArgDecl, ArgDesc, FuncDef};
+use crate::libapi::{FuncDef, Module};
 use crate::sym::Symbol;
-use crate::val::{Val, ValType};
+use crate::val::Val;
 
 const HZ: u64 = 1_000_000_000;
 const KHZ: u64 = HZ / 1000;
@@ -69,9 +67,12 @@ const JUMP_NANOS: FuncDef = func_def!(
     }
 );
 
-pub const MODULE: phf::Map<&'static str, Symbol> = phf_map! {
-    "jump_seconds" => Symbol::Func(&JUMP_SECS),
-    "jump_millis" => Symbol::Func(&JUMP_MILLIS),
-    "jump_micros" => Symbol::Func(&JUMP_MICROS),
-    "jump_nanos" => Symbol::Func(&JUMP_NANOS),
+pub const MODULE: Module = module! {
+    /// Time Manipulation
+    module time {
+        jump_seconds => Symbol::Func(&JUMP_SECS),
+        jump_millis => Symbol::Func(&JUMP_MILLIS),
+        jump_micros => Symbol::Func(&JUMP_MICROS),
+        jump_nanos => Symbol::Func(&JUMP_NANOS),
+    }
 };
