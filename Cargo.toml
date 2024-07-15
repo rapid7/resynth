@@ -48,7 +48,6 @@ ezpkt = { path = "ezpkt", version = "0.3.0" }
 lazy-regex = "2.5"
 regex = "1.9.5"
 concat-with = "0.2.9"
-phf = { version = "0.11", features = ["macros"] }
 
 # For cli
 atty = { version = "0.2.14", optional = true}

@@ -1,11 +1,9 @@
 use std::rc::Rc;
 
-use phf::phf_map;
-
 use pkt::Packet;
 
 use crate::func_def;
-use crate::libapi::{Class, FuncDef, Module};
+use crate::libapi::{Class, ClassDef, FuncDef, Module};
 use crate::sym::Symbol;
 use crate::val::{Val, ValDef};
 use ezpkt::Erspan1Flow;
@@ -34,15 +32,16 @@ const ENCAP: FuncDef = func_def!(
     }
 );
 
-impl Class for Erspan1Flow {
-    fn symbols(&self) -> phf::Map<&'static str, Symbol> {
-        phf_map! {
-            "encap" => Symbol::Func(&ENCAP),
-        }
+const ERSPAN1: ClassDef = class!(
+    /// ERSPAN1 Session
+    resynth class Erspan1 {
+        encap => Symbol::Func(&ENCAP),
     }
+);
 
-    fn class_name(&self) -> &'static str {
-        "erspan1.session"
+impl Class for Erspan1Flow {
+    fn def(&self) -> &'static ClassDef {
+        &ERSPAN1
     }
 }
 
@@ -67,6 +66,7 @@ const SESSION: FuncDef = func_def!(
 pub const MODULE: Module = module! {
     /// ERSPAN Version 1
     resynth mod erspan1 {
+        Erspan1 => Symbol::Class(&ERSPAN1),
         session => Symbol::Func(&SESSION),
     }
 };

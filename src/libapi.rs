@@ -67,9 +67,42 @@ impl Module {
     }
 }
 
+/// Defines a module for the resynth stdlib
+#[derive(Debug)]
+pub struct ClassDef {
+    pub name: &'static str,
+    pub symtab: &'static [SymDesc],
+    pub lookup: fn(name: &str) -> Option<usize>,
+    pub doc: &'static str,
+}
+
+impl ClassDef {
+    pub fn get(&self, name: &str) -> Option<&'static Symbol> {
+        match (self.lookup)(name) {
+            Some(idx) => Some(&self.symtab[idx].sym),
+            None => None,
+        }
+    }
+}
+
 pub trait Class {
-    fn symbols(&self) -> phf::Map<&'static str, Symbol>;
-    fn class_name(&self) -> &'static str;
+    fn def(&self) -> &'static ClassDef;
+
+    fn get(&self, name: &str) -> Option<&'static Symbol> {
+        self.def().get(name)
+    }
+
+    fn symbols(&self) -> &'static [SymDesc] {
+        self.def().symtab
+    }
+
+    fn class_name(&self) -> &'static str {
+        self.def().name
+    }
+
+    fn doc(&self) -> &'static str {
+        self.def().doc
+    }
 }
 
 struct ArgPrep {

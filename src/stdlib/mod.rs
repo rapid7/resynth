@@ -59,7 +59,7 @@ pub fn toplevel_module(name: &str) -> Option<&'static Module> {
     match STDLIB.get(name) {
         None => None,
         Some(Symbol::Module(module)) => Some(module),
-        Some(Symbol::Func(_)) | Some(Symbol::Val(_)) => {
+        Some(Symbol::Func(_)) | Some(Symbol::Class(_)) | Some(Symbol::Val(_)) => {
             /* There shouldn't be any top level function or variable */
             unreachable!();
         }

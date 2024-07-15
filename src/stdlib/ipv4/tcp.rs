@@ -1,7 +1,5 @@
-use phf::phf_map;
-
 use crate::func_def;
-use crate::libapi::{Class, FuncDef, Module};
+use crate::libapi::{Class, ClassDef, FuncDef, Module};
 use crate::str::Buf;
 use crate::sym::Symbol;
 use crate::val::{Val, ValDef};
@@ -372,35 +370,36 @@ const TCP_SV_RESET: FuncDef = func_def!(
     }
 );
 
-impl Class for TcpFlow {
-    fn symbols(&self) -> phf::Map<&'static str, Symbol> {
-        phf_map! {
-            "open" => Symbol::Func(&TCP_OPEN),
-            "client_message" => Symbol::Func(&TCP_CL_MSG),
-            "server_message" => Symbol::Func(&TCP_SV_MSG),
-            "client_segment" => Symbol::Func(&TCP_CL_SEG),
-            "server_segment" => Symbol::Func(&TCP_SV_SEG),
-            "client_raw_segment" => Symbol::Func(&TCP_CL_RAW_SEG),
-            "server_raw_segment" => Symbol::Func(&TCP_SV_RAW_SEG),
-            "client_hdr" => Symbol::Func(&TCP_CL_HDR),
-            "server_hdr" => Symbol::Func(&TCP_SV_HDR),
-            "client_ack" => Symbol::Func(&TCP_CL_ACK),
-            "server_ack" => Symbol::Func(&TCP_SV_ACK),
-            "client_hole" => Symbol::Func(&TCP_CL_HOLE),
-            "server_hole" => Symbol::Func(&TCP_SV_HOLE),
-            "client_close" => Symbol::Func(&TCP_CL_CLOSE),
-            "server_close" => Symbol::Func(&TCP_SV_CLOSE),
-            "client_reset" => Symbol::Func(&TCP_CL_RESET),
-            "server_reset" => Symbol::Func(&TCP_SV_RESET),
-        }
+const TCP_FLOW: ClassDef = class!(
+    /// TCP Connection
+    resynth class TcpFlow {
+        open => Symbol::Func(&TCP_OPEN),
+        client_message => Symbol::Func(&TCP_CL_MSG),
+        server_message => Symbol::Func(&TCP_SV_MSG),
+        client_segment => Symbol::Func(&TCP_CL_SEG),
+        server_segment => Symbol::Func(&TCP_SV_SEG),
+        client_raw_segment => Symbol::Func(&TCP_CL_RAW_SEG),
+        server_raw_segment => Symbol::Func(&TCP_SV_RAW_SEG),
+        client_hdr => Symbol::Func(&TCP_CL_HDR),
+        server_hdr => Symbol::Func(&TCP_SV_HDR),
+        client_ack => Symbol::Func(&TCP_CL_ACK),
+        server_ack => Symbol::Func(&TCP_SV_ACK),
+        client_hole => Symbol::Func(&TCP_CL_HOLE),
+        server_hole => Symbol::Func(&TCP_SV_HOLE),
+        client_close => Symbol::Func(&TCP_CL_CLOSE),
+        server_close => Symbol::Func(&TCP_SV_CLOSE),
+        client_reset => Symbol::Func(&TCP_CL_RESET),
+        server_reset => Symbol::Func(&TCP_SV_RESET),
     }
+);
 
-    fn class_name(&self) -> &'static str {
-        "ipv4::tcp4.flow"
+impl Class for TcpFlow {
+    fn def(&self) -> &'static ClassDef {
+        &TCP_FLOW
     }
 }
 
-const TCP_FLOW: FuncDef = func_def!(
+const FLOW: FuncDef = func_def!(
     /// Create a TCP flow context, from which packets can be created
     resynth fn flow(
         cl: Sock4,
@@ -425,6 +424,7 @@ const TCP_FLOW: FuncDef = func_def!(
 pub const TCP4: Module = module! {
     /// Transmission Control Protocol
     resynth mod tcp {
-        flow => Symbol::Func(&TCP_FLOW),
+        TcpFlow => Symbol::Class(&TCP_FLOW),
+        flow => Symbol::Func(&FLOW),
     }
 };

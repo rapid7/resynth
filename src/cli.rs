@@ -10,7 +10,7 @@ use std::path::{Path, PathBuf};
 use std::{fs, io};
 
 use clap::{crate_authors, crate_description, crate_name, crate_version};
-use clap::{error::ErrorKind, value_parser, Arg, ArgAction, Command};
+use clap::{error::ErrorKind, value_parser, Arg, ArgAction, ArgGroup, Command};
 use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
 
 /// A [source code location](Loc) and an [error code](Error)
@@ -161,6 +161,11 @@ fn resynth() -> Result<(), ()> {
                 .required(true)
                 .action(ArgAction::Append)
                 .index(1),
+        )
+        .group(
+            ArgGroup::new("run_mode")
+                .args(["docs", "in"])
+                .required(true),
         );
 
     let argv = cmd.clone().get_matches();
