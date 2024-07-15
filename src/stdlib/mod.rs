@@ -36,7 +36,7 @@ mod vxlan;
 
 const STDLIB: Module = module! {
     /// Resynth Standard Library
-    module stdlib {
+    resynth mod stdlib {
         std => Symbol::Module(&std::MODULE),
         text => Symbol::Module(&text::MODULE),
         io => Symbol::Module(&io::MODULE),

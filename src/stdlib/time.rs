@@ -9,7 +9,7 @@ const MHZ: u64 = KHZ / 1000;
 
 const JUMP_SECS: FuncDef = func_def!(
     /// Advance the pcap timestamp clock by some number of seconds
-    resynth jump_seconds(
+    resynth fn jump_seconds(
         seconds: U32,
         =>
         =>
@@ -24,7 +24,7 @@ const JUMP_SECS: FuncDef = func_def!(
 
 const JUMP_MILLIS: FuncDef = func_def!(
     /// Advance the pcap timestamp clock by some number of milliseconds
-    resynth jump_millis(
+    resynth fn jump_millis(
         ms: U64,
         =>
         =>
@@ -39,7 +39,7 @@ const JUMP_MILLIS: FuncDef = func_def!(
 
 const JUMP_MICROS: FuncDef = func_def!(
     /// Advance the pcap timestamp clock by some number of microseconds
-    resynth jump_micros(
+    resynth fn jump_micros(
         us: U64,
         =>
         =>
@@ -54,7 +54,7 @@ const JUMP_MICROS: FuncDef = func_def!(
 
 const JUMP_NANOS: FuncDef = func_def!(
     /// Advance the pcap timestamp clock by some number of nanoseconds
-    resynth jump_nanos(
+    resynth fn jump_nanos(
         ns: U64,
         =>
         =>
@@ -69,7 +69,7 @@ const JUMP_NANOS: FuncDef = func_def!(
 
 pub const MODULE: Module = module! {
     /// Time Manipulation
-    module time {
+    resynth mod time {
         jump_seconds => Symbol::Func(&JUMP_SECS),
         jump_millis => Symbol::Func(&JUMP_MILLIS),
         jump_micros => Symbol::Func(&JUMP_MICROS),

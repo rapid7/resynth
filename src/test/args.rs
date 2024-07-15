@@ -6,7 +6,7 @@ use crate::val::{Val, ValDef};
 
 const PLAIN: FuncDef = func_def! {
     /// PLAIN
-    resynth PLAIN(
+    resynth fn PLAIN(
         a: U64,
         b: Str,
         =>
@@ -183,7 +183,7 @@ fn argvec_multiple_named_optional() {
 
 const COLLECT: FuncDef = func_def! {
     /// COLLECT
-    resynth COLLECT(
+    resynth fn COLLECT(
         a: U64,
         =>
         b: ValDef::U64(123),
@@ -256,7 +256,7 @@ fn collect_bad_type() {
 
 const EMPTY: FuncDef = func_def! {
     /// EMPTY
-    resynth EMPTY(
+    resynth fn EMPTY(
         =>
         =>
         Str
@@ -294,7 +294,7 @@ fn argvec_empty_extra() {
 
 const NAMED: FuncDef = func_def! {
     /// NAMED
-    resynth NAMED(
+    resynth fn NAMED(
         =>
         a: ValDef::U64(123),
         b: ValDef::Str(b"hello"),
@@ -324,7 +324,7 @@ fn argvec_optional_anonymous() {
 
 const OPTIONAL_COLLECT_STR: FuncDef = func_def! {
     /// OPTIONAL_COLLECT_STR
-    resynth OPTIONAL_COLLECT_STR(
+    resynth fn OPTIONAL_COLLECT_STR(
         =>
         a: ValDef::Bool(true),
         b: ValDef::U64(123),
@@ -355,7 +355,7 @@ fn argvec_optional_collect_str() {
 
 const OPTIONAL_COLLECT_U64: FuncDef = func_def! {
     /// OPTIONAL_COLLECT_U64
-    resynth OPTIONAL_COLLECT_U64(
+    resynth fn OPTIONAL_COLLECT_U64(
         =>
         a: ValDef::U64(123),
         b: ValDef::Str(b"hello"),

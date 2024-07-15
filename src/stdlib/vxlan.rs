@@ -12,7 +12,7 @@ use ezpkt::VxlanFlow;
 
 const ENCAP: FuncDef = func_def!(
     /// Encapsulate a series of packets
-    resynth encap(
+    resynth fn encap(
         gen: PktGen
         =>
         =>
@@ -36,7 +36,7 @@ const ENCAP: FuncDef = func_def!(
 
 const DGRAM: FuncDef = func_def!(
     /// Encapsulate a single packet
-    resynth dgram(
+    resynth fn dgram(
         pkt: Pkt
         =>
         =>
@@ -67,7 +67,7 @@ impl Class for VxlanFlow {
 
 const SESSION: FuncDef = func_def!(
     /// Create a VXLAN session
-    resynth session(
+    resynth fn session(
         cl: Sock4,
         sv: Sock4,
         =>
@@ -89,7 +89,7 @@ pub const MODULE: Module = module! {
     /// VXLAN Encapsulation
     ///
     /// Encapsulates ethernet frames in UDP datagrams.
-    module vxlan {
+    resynth mod vxlan {
         session => Symbol::Func(&SESSION),
         DEFAULT_PORT => Symbol::u16(vxlan::DEFAULT_PORT),
     }

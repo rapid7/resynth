@@ -23,7 +23,7 @@ use udp::UDP4;
 
 const PROTO: Module = module! {
     /// IP Protocols
-    module proto {
+    resynth mod proto {
         ICMP => Symbol::u8(proto::ICMP),
         TCP => Symbol::u8(proto::TCP),
         UDP => Symbol::u8(proto::UDP),
@@ -35,7 +35,7 @@ const IPV4_DGRAM_OVERHEAD: usize = std::mem::size_of::<eth_hdr>() + std::mem::si
 
 const DGRAM: FuncDef = func_def!(
     /// Create a raw IPv4 header or datagram
-    resynth datagram(
+    resynth fn datagram(
         src: Ip4,
         dst: Ip4,
         =>
@@ -100,7 +100,7 @@ const FRAG_FRAGMENT: FuncDef = func_def!(
     /// # Arguments
     /// * `frag_off` Offset in 8-byte blocks
     /// * `len` Length in bytes
-    resynth fragment(
+    resynth fn fragment(
         frag_off: U16,
         len: U16,
         =>
@@ -125,7 +125,7 @@ const FRAG_TAIL: FuncDef = func_def!(
     ///
     /// # Arguments
     /// * `frag_off` Offset in 8-byte blocks
-    resynth tail(
+    resynth fn tail(
         frag_off: U16,
         =>
         =>
@@ -144,7 +144,7 @@ const FRAG_TAIL: FuncDef = func_def!(
 
 const FRAG_DATAGRAM: FuncDef = func_def!(
     /// Return the entire datagram without fragmenting it
-    resynth datagram(
+    resynth fn datagram(
         =>
         =>
         Str
@@ -174,7 +174,7 @@ impl Class for IpFrag {
 
 const FRAG: FuncDef = func_def!(
     /// Create a context for a packet which can be arbitrarily fragmented
-    resynth frag(
+    resynth fn frag(
         src: Ip4,
         dst: Ip4,
         =>
@@ -214,7 +214,7 @@ const FRAG: FuncDef = func_def!(
 
 pub const IPV4: Module = module! {
     /// Internet Protocol Version 4
-    module ipv4 {
+    resynth mod ipv4 {
         tcp => Symbol::Module(&TCP4),
         udp => Symbol::Module(&UDP4),
         icmp => Symbol::Module(&ICMP4),
