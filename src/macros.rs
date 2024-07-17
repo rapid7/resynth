@@ -17,9 +17,9 @@ macro_rules! func_def {
     };
 
     (
-        @ndecl $type:expr
+        @odecl $type:expr
     ) => {
-        ArgDecl::Named($type)
+        ArgDecl::Optional($type)
     };
 
     (
@@ -32,11 +32,11 @@ macro_rules! func_def {
     };
 
     (
-        @named $name:ident $type:expr
+        @opt $name:ident $type:expr
     ) => {
         ArgDesc {
             name: stringify!($name),
-            typ: func_def!(@ndecl $type),
+            typ: func_def!(@odecl $type),
         }
     };
 
@@ -76,7 +76,7 @@ macro_rules! func_def {
                 return_type: ValType::$return_type,
                 args: &[
                     $(func_def!(@pos $arg_name $arg_type),)*
-                    $(func_def!(@named $dfl_name $dfl_type),)*
+                    $(func_def!(@opt $dfl_name $dfl_type),)*
                 ],
                 arg_pos,
                 min_args: func_def!(@len $($arg_name)*),
