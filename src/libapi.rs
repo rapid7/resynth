@@ -12,7 +12,7 @@ use std::fmt::Debug;
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ArgDecl {
     Positional(ValType),
-    Named(ValDef),
+    Optional(ValDef),
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -26,7 +26,7 @@ pub struct ArgDesc {
 pub struct FuncDef {
     pub name: &'static str,
     pub return_type: ValType,
-    /// Invariant: All Positionals must come first, then all Named
+    /// Invariant: All Positionals must come first, then all Optional
     pub args: &'static [ArgDesc],
     pub arg_pos: fn(name: &str) -> Option<usize>,
     /// minimum number of args: ie. number of positionals
@@ -129,7 +129,7 @@ impl FuncDef {
     fn split_args(&self, args: Vec<ArgSpec>) -> Result<ArgPrep, Error> {
         enum State {
             Anon,
-            Named,
+            Optional,
             CollectOnly,
         }
         let mut positional: Vec<Val> = Vec::new();
@@ -142,7 +142,7 @@ impl FuncDef {
                 match state {
                     State::Anon => {
                         if !arg.is_anon() {
-                            state = State::Named;
+                            state = State::Optional;
                             continue;
                         } else if self.is_collect() && positional.len() >= self.min_args {
                             // If we have collect args, then any optionals must be named
@@ -165,7 +165,7 @@ impl FuncDef {
                             break;
                         }
                     }
-                    State::Named => {
+                    State::Optional => {
                         if arg.is_anon() {
                             state = State::CollectOnly;
                             continue;
@@ -198,7 +198,7 @@ impl FuncDef {
                         // b) if we've named the same arg twice then that's also not allowed.
                         if named.contains_key(&name) {
                             println!(
-                                "ERR: {}: Named argument \"{}\" multiply specified",
+                                "ERR: {}: Optional argument \"{}\" multiply specified",
                                 self.name, &name
                             );
                             return Err(TypeError);
@@ -273,7 +273,7 @@ impl FuncDef {
             if let Some(val) = named.remove(*name) {
                 // positional or optional specified by name, push it
                 args.push(val);
-            } else if let ArgDecl::Named(dfl) = typ {
+            } else if let ArgDecl::Optional(dfl) = typ {
                 // not specified, but we're optional, so take the default
                 args.push((*dfl).into());
             } else {
@@ -292,7 +292,7 @@ impl FuncDef {
         for (ArgDesc { name, typ }, arg) in self.args.iter().zip(args.iter()) {
             if !match typ {
                 ArgDecl::Positional(typ) => typ.compatible_with(arg),
-                ArgDecl::Named(dfl) => dfl.arg_compatible(arg),
+                ArgDecl::Optional(dfl) => dfl.arg_compatible(arg),
             } {
                 println!(
                     "ERR: {}: Argument type-check failed for {:?}",
