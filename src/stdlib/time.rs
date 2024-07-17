@@ -1,4 +1,4 @@
-use crate::func_def;
+use crate::func;
 use crate::libapi::{FuncDef, Module};
 use crate::sym::Symbol;
 use crate::val::Val;
@@ -7,7 +7,7 @@ const HZ: u64 = 1_000_000_000;
 const KHZ: u64 = HZ / 1000;
 const MHZ: u64 = KHZ / 1000;
 
-const JUMP_SECS: FuncDef = func_def!(
+const JUMP_SECS: FuncDef = func!(
     /// Advance the pcap timestamp clock by some number of seconds
     resynth fn jump_seconds(
         seconds: U32,
@@ -22,7 +22,7 @@ const JUMP_SECS: FuncDef = func_def!(
     }
 );
 
-const JUMP_MILLIS: FuncDef = func_def!(
+const JUMP_MILLIS: FuncDef = func!(
     /// Advance the pcap timestamp clock by some number of milliseconds
     resynth fn jump_millis(
         ms: U64,
@@ -37,7 +37,7 @@ const JUMP_MILLIS: FuncDef = func_def!(
     }
 );
 
-const JUMP_MICROS: FuncDef = func_def!(
+const JUMP_MICROS: FuncDef = func!(
     /// Advance the pcap timestamp clock by some number of microseconds
     resynth fn jump_micros(
         us: U64,
@@ -52,7 +52,7 @@ const JUMP_MICROS: FuncDef = func_def!(
     }
 );
 
-const JUMP_NANOS: FuncDef = func_def!(
+const JUMP_NANOS: FuncDef = func!(
     /// Advance the pcap timestamp clock by some number of nanoseconds
     resynth fn jump_nanos(
         ns: U64,

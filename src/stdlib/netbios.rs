@@ -2,7 +2,7 @@ use pkt::dns::{rcode, DnsFlags};
 use pkt::netbios::{name, ns};
 
 use crate::err::Error::RuntimeError;
-use crate::func_def;
+use crate::func;
 use crate::libapi::{FuncDef, Module};
 use crate::str::Buf;
 use crate::sym::Symbol;
@@ -38,20 +38,20 @@ const RCODE: Module = module! {
     }
 };
 
-const NBNS_FLAGS: FuncDef = func_def!(
+const NBNS_FLAGS: FuncDef = func!(
     /// Returns netbios-ns flags
     resynth fn flags(
         opcode: U8,
         =>
-        response: ValDef::Bool(false),
-        aa: ValDef::Bool(false),
-        tc: ValDef::Bool(false),
-        rd: ValDef::Bool(false),
-        ra: ValDef::Bool(false),
-        z: ValDef::Bool(false),
-        ad: ValDef::Bool(false), // must be zero
-        b: ValDef::Bool(false),
-        rcode: ValDef::U8(rcode::NOERROR),
+        response: Bool = false,
+        aa: Bool = false,
+        tc: Bool = false,
+        rd: Bool = false,
+        ra: Bool = false,
+        z: Bool = false,
+        ad: Bool = false, // must be zero
+        b: Bool = false,
+        rcode: U8 = rcode::NOERROR,
         =>
         Void
     ) -> U16
@@ -94,11 +94,11 @@ pub const NS: Module = module! {
     }
 };
 
-const NAME_ENCODE: FuncDef = func_def! (
+const NAME_ENCODE: FuncDef = func! (
     /// Encode a netbios name, including the one-byte suffix field
     resynth fn encode(
         =>
-        suffix: ValDef::U8(0),
+        suffix: U8 = 0,
         =>
         Str
     ) -> Str

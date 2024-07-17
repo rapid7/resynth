@@ -1,10 +1,10 @@
-use crate::func_def;
+use crate::func;
 use crate::libapi::{FuncDef, Module};
 use crate::str::Buf;
 use crate::sym::Symbol;
 use crate::val::{Val, ValDef};
 
-const CONCAT: FuncDef = func_def!(
+const CONCAT: FuncDef = func!(
     /// Concatenate strings
     resynth fn concat(
         =>
@@ -16,7 +16,7 @@ const CONCAT: FuncDef = func_def!(
     }
 );
 
-const CRLFLINES: FuncDef = func_def!(
+const CRLFLINES: FuncDef = func!(
     /// join strings with CRLF line-endings
     resynth fn crlflines(
         =>
@@ -28,7 +28,7 @@ const CRLFLINES: FuncDef = func_def!(
     }
 );
 
-const LEN: FuncDef = func_def!(
+const LEN: FuncDef = func!(
     /// Return the length of a string (or strings)
     resynth fn len(
         =>

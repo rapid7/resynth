@@ -2,13 +2,13 @@ use std::rc::Rc;
 
 use pkt::{vxlan, Packet};
 
-use crate::func_def;
+use crate::func;
 use crate::libapi::{Class, ClassDef, FuncDef, Module};
 use crate::sym::Symbol;
 use crate::val::{Val, ValDef};
 use ezpkt::VxlanFlow;
 
-const ENCAP: FuncDef = func_def!(
+const ENCAP: FuncDef = func!(
     /// Encapsulate a series of packets
     resynth fn encap(
         gen: PktGen
@@ -32,7 +32,7 @@ const ENCAP: FuncDef = func_def!(
     }
 );
 
-const DGRAM: FuncDef = func_def!(
+const DGRAM: FuncDef = func!(
     /// Encapsulate a single packet
     resynth fn dgram(
         pkt: Pkt
@@ -64,14 +64,14 @@ impl Class for VxlanFlow {
     }
 }
 
-const SESSION: FuncDef = func_def!(
+const SESSION: FuncDef = func!(
     /// Create a VXLAN session
     resynth fn session(
         cl: Sock4,
         sv: Sock4,
         =>
-        sessionid: ValDef::U32(0), // TODO: Make it optional
-        raw: ValDef::Bool(false),
+        sessionid: U32 = 0, // TODO: Make it optional
+        raw: Bool = false,
         =>
         Void
     ) -> Obj

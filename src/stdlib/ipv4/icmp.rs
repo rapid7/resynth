@@ -1,11 +1,11 @@
-use crate::func_def;
+use crate::func;
 use crate::libapi::{Class, ClassDef, FuncDef, Module};
 use crate::str::Buf;
 use crate::sym::Symbol;
 use crate::val::{Val, ValDef};
 use ezpkt::IcmpFlow;
 
-const ICMP_ECHO: FuncDef = func_def!(
+const ICMP_ECHO: FuncDef = func!(
     /// ICMP Ping
     resynth fn echo(
         payload: Str,
@@ -22,7 +22,7 @@ const ICMP_ECHO: FuncDef = func_def!(
     }
 );
 
-const ICMP_ECHO_REPLY: FuncDef = func_def!(
+const ICMP_ECHO_REPLY: FuncDef = func!(
     /// ICMP Ping reply
     resynth fn echo_reply(
         payload: Str,
@@ -53,13 +53,13 @@ impl Class for IcmpFlow {
     }
 }
 
-const ICMP_FLOW: FuncDef = func_def!(
+const ICMP_FLOW: FuncDef = func!(
     /// Create an ICMP flow
     resynth fn flow(
         cl: Ip4,
         sv: Ip4,
         =>
-        raw: ValDef::Bool(false),
+        raw: Bool = false,
         =>
         Void
     ) -> Obj

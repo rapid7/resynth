@@ -1,10 +1,10 @@
-use crate::func_def;
+use crate::func;
 use crate::libapi::{FuncDef, Module};
 use crate::str::Buf;
 use crate::sym::Symbol;
 use crate::val::Val;
 
-const BE16: FuncDef = func_def!(
+const BE16: FuncDef = func!(
     /// Encode a 16bit integer into 2 big-endian bytes
     resynth fn be16(
         val: U64,
@@ -18,7 +18,7 @@ const BE16: FuncDef = func_def!(
     }
 );
 
-const BE32: FuncDef = func_def!(
+const BE32: FuncDef = func!(
     /// Encode a 32bit integer into 4 big-endian bytes
     resynth fn be32(
         val: U64,
@@ -32,7 +32,7 @@ const BE32: FuncDef = func_def!(
     }
 );
 
-const BE64: FuncDef = func_def!(
+const BE64: FuncDef = func!(
     /// Encode a 64bit integer into 8 big-endian bytes
     resynth fn be64(
         val: U64,
@@ -46,7 +46,7 @@ const BE64: FuncDef = func_def!(
     }
 );
 
-const LE16: FuncDef = func_def!(
+const LE16: FuncDef = func!(
     /// Encode a 16bit integer into 2 little-endian bytes
     resynth fn le16(
         val: U64,
@@ -60,7 +60,7 @@ const LE16: FuncDef = func_def!(
     }
 );
 
-const LE32: FuncDef = func_def!(
+const LE32: FuncDef = func!(
     /// Encode a 32bit integer into 4 little-endian bytes
     resynth fn le32(
         val: U64,
@@ -74,7 +74,7 @@ const LE32: FuncDef = func_def!(
     }
 );
 
-const LE64: FuncDef = func_def!(
+const LE64: FuncDef = func!(
     /// Encode a 64bit integer into 8 little-endian bytes
     resynth fn le64(
         val: U64,
@@ -88,7 +88,7 @@ const LE64: FuncDef = func_def!(
     }
 );
 
-const U8: FuncDef = func_def!(
+const U8: FuncDef = func!(
     /// Convert an integer into a one-byte string
     resynth fn u8(
         val: U8,
@@ -102,7 +102,7 @@ const U8: FuncDef = func_def!(
     }
 );
 
-const LEN_BE64: FuncDef = func_def! (
+const LEN_BE64: FuncDef = func! (
     /// Prefix a buffer with a 64-bit big-endian length field
     resynth fn len_be64(
         =>
@@ -121,7 +121,7 @@ const LEN_BE64: FuncDef = func_def! (
     }
 );
 
-const LEN_BE32: FuncDef = func_def! (
+const LEN_BE32: FuncDef = func! (
     /// Prefix a buffer with a 32-bit big-endian length field
     resynth fn len_be32(
         =>
@@ -140,7 +140,7 @@ const LEN_BE32: FuncDef = func_def! (
     }
 );
 
-const LEN_BE16: FuncDef = func_def! (
+const LEN_BE16: FuncDef = func! (
     /// Prefix a buffer with a 16-bit big-endian length field
     resynth fn len_be16(
         =>
@@ -159,7 +159,7 @@ const LEN_BE16: FuncDef = func_def! (
     }
 );
 
-const LEN_U8: FuncDef = func_def! (
+const LEN_U8: FuncDef = func! (
     /// Prefix a buffer with a 8-bit byte length field
     resynth fn len_u8(
         =>

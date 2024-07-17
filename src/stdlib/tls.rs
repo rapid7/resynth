@@ -4,7 +4,7 @@ use crate::libapi::{FuncDef, Module};
 use crate::str::Buf;
 use crate::sym::Symbol;
 use crate::val::{Val, ValDef};
-use crate::{func_def, module};
+use crate::{func, module};
 
 const VERSION: Module = module!(
     /// TLS Versions
@@ -837,12 +837,12 @@ const CIPHER: Module = module! {
     }
 };
 
-const TLS_MESSAGE: FuncDef = func_def! (
+const TLS_MESSAGE: FuncDef = func! (
     /// Returns a TLS record
     resynth fn message(
         =>
-        version: ValDef::U16(version::TLS_1_2),
-        content: ValDef::U8(content::HANDSHAKE),
+        version: U16 = version::TLS_1_2,
+        content: U8 = content::HANDSHAKE,
         =>
         Str
     ) -> Str
@@ -863,7 +863,7 @@ const TLS_MESSAGE: FuncDef = func_def! (
     }
 );
 
-const TLS_EXTENSION: FuncDef = func_def! (
+const TLS_EXTENSION: FuncDef = func! (
     /// Returns a TLS extension
     resynth fn extension(
         ext: U16,
@@ -890,7 +890,7 @@ fn len24(len: usize) -> [u8; 3] {
     [b[1], b[2], b[3]]
 }
 
-const TLS_CIPHERS: FuncDef = func_def! (
+const TLS_CIPHERS: FuncDef = func! (
     /// Returns a TLS ciphers list
     resynth fn ciphers(
         =>
@@ -913,14 +913,14 @@ const TLS_CIPHERS: FuncDef = func_def! (
     }
 );
 
-const TLS_CLIENT_HELLO: FuncDef = func_def! (
+const TLS_CLIENT_HELLO: FuncDef = func! (
     /// Returns a TLS client hello
     resynth fn client_hello(
         =>
-        version: ValDef::U16(version::TLS_1_2),
-        sessionid: ValDef::Str(b"\x00"),
-        ciphers: ValDef::Str(b"\x00\x02\x00\x00"), // null cipher
-        compression: ValDef::Str(b"\x01\x00"), // null compression
+        version: U16 = version::TLS_1_2,
+        sessionid: Str = b"\x00",
+        ciphers: Str = b"\x00\x02\x00\x00", // null cipher
+        compression: Str = b"\x01\x00", // null compression
         =>
         Str
     ) -> Str
@@ -961,14 +961,14 @@ const TLS_CLIENT_HELLO: FuncDef = func_def! (
     }
 );
 
-const TLS_SERVER_HELLO: FuncDef = func_def! (
+const TLS_SERVER_HELLO: FuncDef = func! (
     /// Returns a TLS server hello
     resynth fn server_hello(
         =>
-        version: ValDef::U16(version::TLS_1_2),
-        sessionid: ValDef::Str(b"\x00"),
-        cipher: ValDef::U16(ciphers::NULL_WITH_NULL_NULL),
-        compression: ValDef::U8(0),
+        version: U16 = version::TLS_1_2,
+        sessionid: Str = b"\x00",
+        cipher: U16 = ciphers::NULL_WITH_NULL_NULL,
+        compression: U8 = 0,
         =>
         Str
     ) -> Str
@@ -1010,7 +1010,7 @@ const TLS_SERVER_HELLO: FuncDef = func_def! (
     }
 );
 
-const TLS_SNI: FuncDef = func_def! (
+const TLS_SNI: FuncDef = func! (
     /// Returns a TLS SNI extension
     resynth fn sni(
         =>
@@ -1039,7 +1039,7 @@ const TLS_SNI: FuncDef = func_def! (
     }
 );
 
-const TLS_CERTIFICATES: FuncDef = func_def! (
+const TLS_CERTIFICATES: FuncDef = func! (
     /// Returns a chain of X.509 certificates
     resynth fn certificates(
         =>

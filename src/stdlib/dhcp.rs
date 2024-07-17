@@ -2,7 +2,7 @@ use ezpkt::Dhcp;
 use pkt::arp::hrd;
 use pkt::dhcp::{dhcp_opt, message, opcode, opt, CLIENT_PORT, MAGIC, SERVER_PORT};
 
-use crate::func_def;
+use crate::func;
 use crate::libapi::{FuncDef, Module};
 use crate::str::Buf;
 use crate::sym::Symbol;
@@ -66,28 +66,28 @@ const OPT: Module = module! {
     }
 };
 
-const HDR: FuncDef = func_def!(
+const HDR: FuncDef = func!(
     /// DHCP header
     resynth fn hdr(
         =>
-        opcode: ValDef::U8(opcode::REQUEST),
-        htype: ValDef::U8(hrd::ETHER),
-        hlen: ValDef::U8(6),
-        hops: ValDef::U8(0),
+        opcode: U8 = opcode::REQUEST,
+        htype: U8 = hrd::ETHER,
+        hlen: U8 = 6,
+        hops: U8 = 0,
 
-        xid: ValDef::U32(0),
+        xid: U32 = 0,
 
-        ciaddr: ValDef::Ip4(Ipv4Addr::new(0, 0, 0, 0)),
-        yiaddr: ValDef::Ip4(Ipv4Addr::new(0, 0, 0, 0)),
-        siaddr: ValDef::Ip4(Ipv4Addr::new(0, 0, 0, 0)),
-        giaddr: ValDef::Ip4(Ipv4Addr::new(0, 0, 0, 0)),
+        ciaddr: Ip4 = Ipv4Addr::new(0, 0, 0, 0),
+        yiaddr: Ip4 = Ipv4Addr::new(0, 0, 0, 0),
+        siaddr: Ip4 = Ipv4Addr::new(0, 0, 0, 0),
+        giaddr: Ip4 = Ipv4Addr::new(0, 0, 0, 0),
 
-        chaddr: ValDef::Type(ValType::Str),
+        chaddr: Type = ValType::Str,
 
-        sname: ValDef::Type(ValType::Str),
-        file: ValDef::Type(ValType::Str),
+        sname: Type = ValType::Str,
+        file: Type = ValType::Str,
 
-        magic: ValDef::U32(MAGIC),
+        magic: U32 = MAGIC,
         =>
         Void
     ) -> Str
@@ -137,7 +137,7 @@ const HDR: FuncDef = func_def!(
     }
 );
 
-const OPTION: FuncDef = func_def!(
+const OPTION: FuncDef = func!(
     /// DHCP Option
     resynth fn option(
         opt: U8,

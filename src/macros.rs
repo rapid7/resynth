@@ -1,14 +1,10 @@
 extern crate concat_with;
 
 #[macro_export]
-macro_rules! func_def {
-    (@replace $_t:tt $sub:expr) => {
-        $sub
-    };
-
-    (@len $($tt:tt)*) => {
-        {<[()]>::len(&[$(func_def!(@replace $tt ())),*])}
-    };
+macro_rules! func {
+    (@as_expr $e:expr) => {$e};
+    (@replace $_t:tt $sub:expr) => {$sub};
+    (@len $($tt:tt)*) => {{<[()]>::len(&[$(func!(@replace $tt ())),*])}};
 
     (
         @pdecl $type:ident
@@ -17,9 +13,9 @@ macro_rules! func_def {
     };
 
     (
-        @odecl $type:expr
+        @odecl $type:ident $init:expr
     ) => {
-        ArgDecl::Optional($type)
+        ArgDecl::Optional(func!(@as_expr ValDef::$type($init)))
     };
 
     (
@@ -27,16 +23,16 @@ macro_rules! func_def {
     ) => {
         ArgDesc {
             name: stringify!($name),
-            typ: func_def!(@pdecl $type),
+            typ: func!(@pdecl $type),
         }
     };
 
     (
-        @opt $name:ident $type:expr
+        @opt $name:ident $type:ident $init:expr
     ) => {
         ArgDesc {
             name: stringify!($name),
-            typ: func_def!(@odecl $type),
+            typ: func!(@odecl $type $init),
         }
     };
 
@@ -46,7 +42,7 @@ macro_rules! func_def {
         (
             $($arg_name:ident : $arg_type:ident),* $(,)*
             =>
-            $($dfl_name:ident : $dfl_type:expr),* $(,)*
+            $($dfl_name:ident : $dfl_type:ident = $dfl_init:expr),* $(,)*
             =>
             $collect_type:ident
         ) -> $return_type:ident
@@ -75,11 +71,11 @@ macro_rules! func_def {
                 name: stringify!($name),
                 return_type: ValType::$return_type,
                 args: &[
-                    $(func_def!(@pos $arg_name $arg_type),)*
-                    $(func_def!(@opt $dfl_name $dfl_type),)*
+                    $(func!(@pos $arg_name $arg_type),)*
+                    $(func!(@opt $dfl_name $dfl_type $dfl_init),)*
                 ],
                 arg_pos,
-                min_args: func_def!(@len $($arg_name)*),
+                min_args: func!(@len $($arg_name)*),
                 collect_type: ValType::$collect_type,
                 exec: $exec,
                 doc: concat_with::concat_line!($($doc),+),

@@ -3,20 +3,20 @@ use std::net::Ipv4Addr;
 use ezpkt::{UdpDgram, UdpFlow};
 use pkt::{ipv4::udp_hdr, AsBytes, Packet};
 
-use crate::func_def;
+use crate::func;
 use crate::libapi::{Class, ClassDef, FuncDef, Module};
 use crate::str::Buf;
 use crate::sym::Symbol;
 use crate::val::{Val, ValDef};
 
-const BROADCAST: FuncDef = func_def!(
+const BROADCAST: FuncDef = func!(
     /// Send a broadcast datagram
     resynth fn broadcast(
         src: Sock4,
         dst: Sock4,
         =>
-        srcip: ValDef::Type(ValType::Ip4),
-        raw: ValDef::Bool(false),
+        srcip: Type = ValType::Ip4,
+        raw: Bool = false,
         =>
         Str
     ) -> Pkt
@@ -42,13 +42,13 @@ const BROADCAST: FuncDef = func_def!(
     }
 );
 
-const UNICAST: FuncDef = func_def!(
+const UNICAST: FuncDef = func!(
     /// Send a unicast datagram
     resynth fn unicast(
         src: Sock4,
         dst: Sock4,
         =>
-        raw: ValDef::Bool(false),
+        raw: Bool = false,
         =>
         Str
     ) -> Pkt
@@ -66,14 +66,14 @@ const UNICAST: FuncDef = func_def!(
     }
 );
 
-const HDR: FuncDef = func_def!(
+const HDR: FuncDef = func!(
     /// Returns a UDP header (with no IP header)
     resynth fn hdr(
         src: U16,
         dst: U16,
         =>
-        len: ValDef::U16(0),
-        csum: ValDef::U16(0),
+        len: U16 = 0,
+        csum: U16 = 0,
         =>
         Void
     ) -> Str
@@ -94,12 +94,12 @@ const HDR: FuncDef = func_def!(
     }
 );
 
-const CL_DGRAM: FuncDef = func_def!(
+const CL_DGRAM: FuncDef = func!(
     /// Send a datagram from client to server
     resynth fn client_dgram(
         =>
-        frag_off: ValDef::U16(0),
-        csum: ValDef::Bool(true),
+        frag_off: U16 = 0,
+        csum: Bool = true,
         =>
         Str
     ) -> Pkt
@@ -122,12 +122,12 @@ const CL_DGRAM: FuncDef = func_def!(
     }
 );
 
-const SV_DGRAM: FuncDef = func_def!(
+const SV_DGRAM: FuncDef = func!(
     /// Send a datagram from server to client
     resynth fn server_dgram(
         =>
-        frag_off: ValDef::U16(0),
-        csum: ValDef::Bool(true),
+        frag_off: U16 = 0,
+        csum: Bool = true,
         =>
         Str
     ) -> Pkt
@@ -150,11 +150,11 @@ const SV_DGRAM: FuncDef = func_def!(
     }
 );
 
-const CL_RAW_DGRAM: FuncDef = func_def!(
+const CL_RAW_DGRAM: FuncDef = func!(
     /// Return a datagram from client to server (minus IP header)
     resynth fn client_raw_dgram(
         =>
-        csum: ValDef::Bool(true),
+        csum: Bool = true,
         =>
         Str
     ) -> Str
@@ -176,11 +176,11 @@ const CL_RAW_DGRAM: FuncDef = func_def!(
     }
 );
 
-const SV_RAW_DGRAM: FuncDef = func_def!(
+const SV_RAW_DGRAM: FuncDef = func!(
     /// Return a datagram from server to client (minus IP header)
     resynth fn server_raw_dgram(
         =>
-        csum: ValDef::Bool(true),
+        csum: Bool = true,
         =>
         Str
     ) -> Str
@@ -218,13 +218,13 @@ impl Class for UdpFlow {
     }
 }
 
-const FLOW: FuncDef = func_def!(
+const FLOW: FuncDef = func!(
     /// Create a UDP flow context, from which other packets can be created
     resynth fn flow(
         cl: Sock4,
         sv: Sock4,
         =>
-        raw: ValDef::Bool(false),
+        raw: Bool = false,
         =>
         Void
     ) -> Obj
