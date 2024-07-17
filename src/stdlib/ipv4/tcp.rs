@@ -1,4 +1,4 @@
-use crate::func_def;
+use crate::func;
 use crate::libapi::{Class, ClassDef, FuncDef, Module};
 use crate::str::Buf;
 use crate::sym::Symbol;
@@ -7,7 +7,7 @@ use crate::val::{Val, ValDef};
 use ezpkt::TcpFlow;
 use pkt::Packet;
 
-const TCP_OPEN: FuncDef = func_def!(
+const TCP_OPEN: FuncDef = func!(
     /// Performs a TCP 3-way handshake
     resynth fn open(
         =>
@@ -22,14 +22,14 @@ const TCP_OPEN: FuncDef = func_def!(
         }
 );
 
-const TCP_CL_MSG: FuncDef = func_def!(
+const TCP_CL_MSG: FuncDef = func!(
     /// Sends a message from client to server, may also send an ACK in response
     resynth fn client_message(
         =>
-        send_ack: ValDef::Bool(true),
-        seq: ValDef::Type(ValType::U32),
-        ack: ValDef::Type(ValType::U32),
-        frag_off: ValDef::U16(0),
+        send_ack: Bool = true,
+        seq: Type = ValType::U32,
+        ack: Type = ValType::U32,
+        frag_off: U16 = 0,
         =>
         Str
     ) -> PktGen
@@ -52,14 +52,14 @@ const TCP_CL_MSG: FuncDef = func_def!(
     }
 );
 
-const TCP_SV_MSG: FuncDef = func_def!(
+const TCP_SV_MSG: FuncDef = func!(
     /// Sends a message from server to client, may also send an ACK in response
     resynth fn server_message(
         =>
-        send_ack: ValDef::Bool(true),
-        seq: ValDef::Type(ValType::U32),
-        ack: ValDef::Type(ValType::U32),
-        frag_off: ValDef::U16(0),
+        send_ack: Bool = true,
+        seq: Type = ValType::U32,
+        ack: Type = ValType::U32,
+        frag_off: U16 = 0,
         =>
         Str
     ) -> PktGen
@@ -82,12 +82,12 @@ const TCP_SV_MSG: FuncDef = func_def!(
     }
 );
 
-const TCP_CL_SEG: FuncDef = func_def!(
+const TCP_CL_SEG: FuncDef = func!(
     /// Returns a single segment from client to server
     resynth fn client_segment(
         =>
-        seq: ValDef::Type(ValType::U32),
-        ack: ValDef::Type(ValType::U32),
+        seq: Type = ValType::U32,
+        ack: Type = ValType::U32,
         =>
         Str
     ) -> Pkt
@@ -108,12 +108,12 @@ const TCP_CL_SEG: FuncDef = func_def!(
     }
 );
 
-const TCP_SV_SEG: FuncDef = func_def!(
+const TCP_SV_SEG: FuncDef = func!(
     /// Returns a single segment from server to client
     resynth fn server_segment(
         =>
-        seq: ValDef::Type(ValType::U32),
-        ack: ValDef::Type(ValType::U32),
+        seq: Type = ValType::U32,
+        ack: Type = ValType::U32,
         =>
         Str
     ) -> Pkt
@@ -134,12 +134,12 @@ const TCP_SV_SEG: FuncDef = func_def!(
     }
 );
 
-const TCP_CL_RAW_SEG: FuncDef = func_def!(
+const TCP_CL_RAW_SEG: FuncDef = func!(
     /// Returns a single segment, minus the IP header, from client to server
     resynth fn client_raw_segment(
         =>
-        seq: ValDef::Type(ValType::U32),
-        ack: ValDef::Type(ValType::U32),
+        seq: Type = ValType::U32,
+        ack: Type = ValType::U32,
         =>
         Str
     ) -> Str
@@ -160,12 +160,12 @@ const TCP_CL_RAW_SEG: FuncDef = func_def!(
     }
 );
 
-const TCP_SV_RAW_SEG: FuncDef = func_def!(
+const TCP_SV_RAW_SEG: FuncDef = func!(
     /// Returns a single segment, minus the IP header, from server to client
     resynth fn server_raw_segment(
         =>
-        seq: ValDef::Type(ValType::U32),
-        ack: ValDef::Type(ValType::U32),
+        seq: Type = ValType::U32,
+        ack: Type = ValType::U32,
         =>
         Str
     ) -> Str
@@ -186,11 +186,11 @@ const TCP_SV_RAW_SEG: FuncDef = func_def!(
     }
 );
 
-const TCP_CL_HDR: FuncDef = func_def!(
+const TCP_CL_HDR: FuncDef = func!(
     /// Returns only the TCP header, from client to server
     resynth fn client_hdr(
         =>
-        bytes: ValDef::U32(0),
+        bytes: U32 = 0,
         =>
         Void
     ) -> Str
@@ -204,11 +204,11 @@ const TCP_CL_HDR: FuncDef = func_def!(
     }
 );
 
-const TCP_SV_HDR: FuncDef = func_def!(
+const TCP_SV_HDR: FuncDef = func!(
     /// Returns only the TCP header, from server to client
     resynth fn server_hdr(
         =>
-        bytes: ValDef::U32(0),
+        bytes: U32 = 0,
         =>
         Void
     ) -> Str
@@ -222,12 +222,12 @@ const TCP_SV_HDR: FuncDef = func_def!(
     }
 );
 
-const TCP_CL_ACK: FuncDef = func_def!(
+const TCP_CL_ACK: FuncDef = func!(
     /// Sends an ACK from the client
     resynth fn client_ack(
         =>
-        seq: ValDef::Type(ValType::U32),
-        ack: ValDef::Type(ValType::U32),
+        seq: Type = ValType::U32,
+        ack: Type = ValType::U32,
         =>
         Void
     ) -> Pkt
@@ -246,12 +246,12 @@ const TCP_CL_ACK: FuncDef = func_def!(
     }
 );
 
-const TCP_SV_ACK: FuncDef = func_def!(
+const TCP_SV_ACK: FuncDef = func!(
     /// Sends an ACK from the server
     resynth fn server_ack(
         =>
-        seq: ValDef::Type(ValType::U32),
-        ack: ValDef::Type(ValType::U32),
+        seq: Type = ValType::U32,
+        ack: Type = ValType::U32,
         =>
         Void
     ) -> Pkt
@@ -270,7 +270,7 @@ const TCP_SV_ACK: FuncDef = func_def!(
     }
 );
 
-const TCP_CL_HOLE: FuncDef = func_def!(
+const TCP_CL_HOLE: FuncDef = func!(
     /// Creates a hole in the sever's Tx sequence space, making it look like we missed a packet
     /// from the client
     resynth fn client_hole(
@@ -290,7 +290,7 @@ const TCP_CL_HOLE: FuncDef = func_def!(
     }
 );
 
-const TCP_SV_HOLE: FuncDef = func_def!(
+const TCP_SV_HOLE: FuncDef = func!(
     /// Creates a hole in the sever's Tx sequence space, making it look like we missed a packet
     /// from the server
     resynth fn server_hole(
@@ -310,7 +310,7 @@ const TCP_SV_HOLE: FuncDef = func_def!(
     }
 );
 
-const TCP_CL_CLOSE: FuncDef = func_def!(
+const TCP_CL_CLOSE: FuncDef = func!(
     /// Shutdown both sides of the TCP connection, with the client sending the first FIN
     resynth fn client_close(
         =>
@@ -325,7 +325,7 @@ const TCP_CL_CLOSE: FuncDef = func_def!(
     }
 );
 
-const TCP_SV_CLOSE: FuncDef = func_def!(
+const TCP_SV_CLOSE: FuncDef = func!(
     /// Shutdown both sides of the TCP connection, with the server sending the first FIN
     resynth fn server_close(
         =>
@@ -340,7 +340,7 @@ const TCP_SV_CLOSE: FuncDef = func_def!(
     }
 );
 
-const TCP_CL_RESET: FuncDef = func_def!(
+const TCP_CL_RESET: FuncDef = func!(
     /// Send a RST packet from the client
     resynth fn client_reset(
         =>
@@ -355,7 +355,7 @@ const TCP_CL_RESET: FuncDef = func_def!(
     }
 );
 
-const TCP_SV_RESET: FuncDef = func_def!(
+const TCP_SV_RESET: FuncDef = func!(
     /// Send a RST packet from the server
     resynth fn server_reset(
         =>
@@ -399,15 +399,15 @@ impl Class for TcpFlow {
     }
 }
 
-const FLOW: FuncDef = func_def!(
+const FLOW: FuncDef = func!(
     /// Create a TCP flow context, from which packets can be created
     resynth fn flow(
         cl: Sock4,
         sv: Sock4,
         =>
-        cl_seq: ValDef::U32(1),
-        sv_seq: ValDef::U32(1),
-        raw: ValDef::Bool(false),
+        cl_seq: U32 = 1,
+        sv_seq: U32 = 1,
+        raw: Bool = false,
         =>
         Void
     ) -> Obj

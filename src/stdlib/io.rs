@@ -4,13 +4,13 @@ use std::io::Read;
 use std::os::unix::ffi::OsStrExt;
 use std::path::Path;
 
-use crate::func_def;
+use crate::func;
 use crate::libapi::{Class, ClassDef, FuncDef, Module};
 use crate::str::Buf;
 use crate::sym::Symbol;
 use crate::val::Val;
 
-const IO_FILE: FuncDef = func_def!(
+const IO_FILE: FuncDef = func!(
     /// Load the contents of a file into a string
     resynth fn file(
         filename: Str,
@@ -69,7 +69,7 @@ where
     }
 }
 
-const BUFIO_READ: FuncDef = func_def!(
+const BUFIO_READ: FuncDef = func!(
     /// Read some bytes out of a buffer
     resynth fn read(
         bytes: U64,
@@ -86,7 +86,7 @@ const BUFIO_READ: FuncDef = func_def!(
     }
 );
 
-const BUFIO_READ_ALL: FuncDef = func_def!(
+const BUFIO_READ_ALL: FuncDef = func!(
     /// Read all remaining bytes out of a buffer
     resynth fn read_all(
         =>
@@ -115,7 +115,7 @@ impl Class for BufIo {
     }
 }
 
-const BUFIO: FuncDef = func_def!(
+const BUFIO: FuncDef = func!(
     /// Create a buffer from a string, from which you can read parts in sequence
     resynth fn bufio(
         =>

@@ -6,7 +6,7 @@ use pkt::Packet;
 
 use ezpkt::IpFrag;
 
-use crate::func_def;
+use crate::func;
 use crate::libapi::{Class, ClassDef, FuncDef, Module};
 use crate::str::Buf;
 use crate::sym::Symbol;
@@ -32,19 +32,19 @@ const PROTO: Module = module! {
 
 const IPV4_DGRAM_OVERHEAD: usize = std::mem::size_of::<eth_hdr>() + std::mem::size_of::<ip_hdr>();
 
-const DGRAM: FuncDef = func_def!(
+const DGRAM: FuncDef = func!(
     /// Create a raw IPv4 header or datagram
     resynth fn datagram(
         src: Ip4,
         dst: Ip4,
         =>
-        id: ValDef::U16(0),
-        evil: ValDef::Bool(false),
-        df: ValDef::Bool(false),
-        mf: ValDef::Bool(false),
-        ttl: ValDef::U8(64),
-        frag_off: ValDef::U16(0),
-        proto: ValDef::U8(proto::UDP),
+        id: U16 = 0,
+        evil: Bool = false,
+        df: Bool = false,
+        mf: Bool = false,
+        ttl: U8 = 64,
+        frag_off: U16 = 0,
+        proto: U8 = proto::UDP,
         =>
         Str
     ) -> Pkt
@@ -93,7 +93,7 @@ const DGRAM: FuncDef = func_def!(
     }
 );
 
-const FRAG_FRAGMENT: FuncDef = func_def!(
+const FRAG_FRAGMENT: FuncDef = func!(
     /// Returns an IPv4 packet fragment
     ///
     /// # Arguments
@@ -118,7 +118,7 @@ const FRAG_FRAGMENT: FuncDef = func_def!(
     }
 );
 
-const FRAG_TAIL: FuncDef = func_def!(
+const FRAG_TAIL: FuncDef = func!(
     /// Returns an IPv4 tail-fragment, ie. with MF (more-fragments) bit set to zero.
     /// This is just a convenience function which omits the len parameter.
     ///
@@ -141,7 +141,7 @@ const FRAG_TAIL: FuncDef = func_def!(
     }
 );
 
-const FRAG_DATAGRAM: FuncDef = func_def!(
+const FRAG_DATAGRAM: FuncDef = func!(
     /// Return the entire datagram without fragmenting it
     resynth fn datagram(
         =>
@@ -172,17 +172,17 @@ impl Class for IpFrag {
     }
 }
 
-const FRAG: FuncDef = func_def!(
+const FRAG: FuncDef = func!(
     /// Create a context for a packet which can be arbitrarily fragmented
     resynth fn frag(
         src: Ip4,
         dst: Ip4,
         =>
-        id: ValDef::U16(0),
-        evil: ValDef::Bool(false),
-        df: ValDef::Bool(false),
-        ttl: ValDef::U8(64),
-        proto: ValDef::U8(proto::UDP),
+        id: U16 = 0,
+        evil: Bool = false,
+        df: Bool = false,
+        ttl: U8 = 64,
+        proto: U8 = proto::UDP,
         =>
         Str
     ) -> Obj

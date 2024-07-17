@@ -2,13 +2,13 @@ use std::rc::Rc;
 
 use pkt::Packet;
 
-use crate::func_def;
+use crate::func;
 use crate::libapi::{Class, ClassDef, FuncDef, Module};
 use crate::sym::Symbol;
 use crate::val::{Val, ValDef};
 use ezpkt::Erspan1Flow;
 
-const ENCAP: FuncDef = func_def!(
+const ENCAP: FuncDef = func!(
     /// Encapsulate a sequence of packets
     resynth fn encap(
         gen: PktGen
@@ -45,13 +45,13 @@ impl Class for Erspan1Flow {
     }
 }
 
-const SESSION: FuncDef = func_def!(
+const SESSION: FuncDef = func!(
     /// Create an ERSPAN session
     resynth fn session(
         cl: Ip4,
         sv: Ip4,
         =>
-        raw: ValDef::Bool(false),
+        raw: Bool = false,
         =>
         Void
     ) -> Obj

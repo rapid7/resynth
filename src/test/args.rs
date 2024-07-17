@@ -4,15 +4,15 @@ use crate::libapi::FuncDef;
 use crate::str::Buf;
 use crate::val::{Val, ValDef};
 
-const PLAIN: FuncDef = func_def! {
+const PLAIN: FuncDef = func! {
     /// PLAIN
     resynth fn PLAIN(
         a: U64,
         b: Str,
         =>
-        c: ValDef::U64(123),
-        d: ValDef::Str(b"hello"),
-        e: ValDef::Type(ValType::Bool),
+        c: U64 = 123,
+        d: Str = b"hello",
+        e: Type = ValType::Bool,
         =>
         Void
     ) -> Void
@@ -181,12 +181,12 @@ fn argvec_multiple_named_optional() {
     assert_eq!(Err(Error::TypeError), PLAIN.argvec(None, args),)
 }
 
-const COLLECT: FuncDef = func_def! {
+const COLLECT: FuncDef = func! {
     /// COLLECT
     resynth fn COLLECT(
         a: U64,
         =>
-        b: ValDef::U64(123),
+        b: U64 = 123,
         =>
         Str
     ) -> Void
@@ -254,7 +254,7 @@ fn collect_bad_type() {
     assert_eq!(Err(Error::TypeError), COLLECT.argvec(None, args),)
 }
 
-const EMPTY: FuncDef = func_def! {
+const EMPTY: FuncDef = func! {
     /// EMPTY
     resynth fn EMPTY(
         =>
@@ -292,13 +292,13 @@ fn argvec_empty_extra() {
     )
 }
 
-const NAMED: FuncDef = func_def! {
+const NAMED: FuncDef = func! {
     /// NAMED
     resynth fn NAMED(
         =>
-        a: ValDef::U64(123),
-        b: ValDef::Str(b"hello"),
-        c: ValDef::Bool(true),
+        a: U64 = 123,
+        b: Str = b"hello",
+        c: Bool = true,
         =>
         Void
     ) -> Void
@@ -322,13 +322,13 @@ fn argvec_optional_anonymous() {
     )
 }
 
-const OPTIONAL_COLLECT_STR: FuncDef = func_def! {
+const OPTIONAL_COLLECT_STR: FuncDef = func! {
     /// OPTIONAL_COLLECT_STR
     resynth fn OPTIONAL_COLLECT_STR(
         =>
-        a: ValDef::Bool(true),
-        b: ValDef::U64(123),
-        c: ValDef::Str(b"hello"),
+        a: Bool = true,
+        b: U64 = 123,
+        c: Str = b"hello",
         =>
         Str
     ) -> Void
@@ -353,13 +353,13 @@ fn argvec_optional_collect_str() {
     )
 }
 
-const OPTIONAL_COLLECT_U64: FuncDef = func_def! {
+const OPTIONAL_COLLECT_U64: FuncDef = func! {
     /// OPTIONAL_COLLECT_U64
     resynth fn OPTIONAL_COLLECT_U64(
         =>
-        a: ValDef::U64(123),
-        b: ValDef::Str(b"hello"),
-        c: ValDef::Bool(true),
+        a: U64 = 123,
+        b: Str = b"hello",
+        c: Bool = true,
         =>
         U64
     ) -> Void

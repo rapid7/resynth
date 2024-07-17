@@ -4,7 +4,7 @@ use pkt::Packet;
 
 use ezpkt::UdpFlow;
 
-use crate::func_def;
+use crate::func;
 use crate::libapi::{FuncDef, Module};
 use crate::str::Buf;
 use crate::sym::Symbol;
@@ -125,11 +125,11 @@ const CLASS: Module = module! {
     }
 };
 
-pub(crate) const DNS_NAME: FuncDef = func_def! (
+pub(crate) const DNS_NAME: FuncDef = func! (
     /// A DNS name encoded with length prefixes
     resynth fn name(
         =>
-        complete: ValDef::Bool(true),
+        complete: Bool = true,
         =>
         Str
     ) -> Str
@@ -162,11 +162,11 @@ pub(crate) const DNS_NAME: FuncDef = func_def! (
     }
 );
 
-const DNS_POINTER: FuncDef = func_def! (
+const DNS_POINTER: FuncDef = func! (
     /// A DNS compression pointer
     resynth fn pointer(
         =>
-        offset: ValDef::U16(0x0c),
+        offset: U16 = 0x0c,
         =>
         Void
     ) -> Str
@@ -179,20 +179,20 @@ const DNS_POINTER: FuncDef = func_def! (
     }
 );
 
-const DNS_FLAGS: FuncDef = func_def!(
+const DNS_FLAGS: FuncDef = func!(
     /// a DNS flags field
     resynth fn flags(
         opcode: U8,
         =>
-        response: ValDef::Bool(false),
-        aa: ValDef::Bool(false),
-        tc: ValDef::Bool(false),
-        rd: ValDef::Bool(false),
-        ra: ValDef::Bool(false),
-        z: ValDef::Bool(false),
-        ad: ValDef::Bool(false),
-        cd: ValDef::Bool(false),
-        rcode: ValDef::U8(rcode::NOERROR),
+        response: Bool = false,
+        aa: Bool = false,
+        tc: Bool = false,
+        rd: Bool = false,
+        ra: Bool = false,
+        z: Bool = false,
+        ad: Bool = false,
+        cd: Bool = false,
+        rcode: U8 = rcode::NOERROR,
         =>
         Void
     ) -> U16
@@ -225,16 +225,16 @@ const DNS_FLAGS: FuncDef = func_def!(
     }
 );
 
-const DNS_HDR: FuncDef = func_def!(
+const DNS_HDR: FuncDef = func!(
     /// A DNS header
     resynth fn hdr(
         id: U16,
         flags: U16,
         =>
-        qdcount: ValDef::U16(0),
-        ancount: ValDef::U16(0),
-        nscount: ValDef::U16(0),
-        arcount: ValDef::U16(0),
+        qdcount: U16 = 0,
+        ancount: U16 = 0,
+        nscount: U16 = 0,
+        arcount: U16 = 0,
         =>
         Void
     ) -> Str
@@ -259,13 +259,13 @@ const DNS_HDR: FuncDef = func_def!(
     }
 );
 
-const DNS_QUESTION: FuncDef = func_def!(
+const DNS_QUESTION: FuncDef = func!(
     /// A DNS question
     resynth fn question(
         qname: Str,
         =>
-        qtype: ValDef::U16(1),
-        qclass: ValDef::U16(1),
+        qtype: U16 = 1,
+        qclass: U16 = 1,
         =>
         Void
     ) -> Str
@@ -284,14 +284,14 @@ const DNS_QUESTION: FuncDef = func_def!(
     }
 );
 
-const DNS_ANSWER: FuncDef = func_def!(
+const DNS_ANSWER: FuncDef = func!(
     /// A DNS answer (RR)
     resynth fn answer(
         aname: Str,
         =>
-        atype: ValDef::U16(1),
-        aclass: ValDef::U16(1),
-        ttl: ValDef::U32(229),
+        atype: U16 = 1,
+        aclass: U16 = 1,
+        ttl: U32 = 229,
         =>
         Str
     ) -> Str
@@ -315,15 +315,15 @@ const DNS_ANSWER: FuncDef = func_def!(
     }
 );
 
-const DNS_HOST: FuncDef = func_def!(
+const DNS_HOST: FuncDef = func!(
     /// Perform a DNS lookup, with response
     resynth fn host(
         client: Ip4,
         qname: Str,
         =>
-        ttl: ValDef::U32(229),
-        ns: ValDef::Ip4(Ipv4Addr::new(1, 1, 1, 1)),
-        raw: ValDef::Bool(false),
+        ttl: U32 = 229,
+        ns: Ip4 = Ipv4Addr::new(1, 1, 1, 1),
+        raw: Bool = false,
         =>
         Ip4
     ) -> PktGen
