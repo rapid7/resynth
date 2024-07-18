@@ -42,7 +42,7 @@ const LEN: FuncDef = func!(
 );
 
 pub const MODULE: Module = module! {
-    /// Text/bytestring manipulations
+    /// # Text / Byte-String Functions
     resynth mod text {
         concat => Symbol::Func(&CONCAT),
         crlflines => Symbol::Func(&CRLFLINES),

@@ -11,7 +11,7 @@ use crate::val::{Val, ValDef};
 use std::net::Ipv4Addr;
 
 const OPCODE: Module = module! {
-    /// DHCP Opcodes
+    /// # DHCP Opcodes
     resynth mod opcode {
         REQUEST => Symbol::u8(opcode::REQUEST),
         REPLY => Symbol::u8(opcode::REPLY),
@@ -19,7 +19,7 @@ const OPCODE: Module = module! {
 };
 
 const TYPE: Module = module! {
-    /// DHCP Message Type
+    /// # DHCP Message Type
     resynth mod msgtype {
         DISCOVER => Symbol::u8(message::DISCOVER),
         OFFER => Symbol::u8(message::OFFER),
@@ -44,7 +44,7 @@ const TYPE: Module = module! {
 };
 
 const OPT: Module = module! {
-    /// DHCP Options
+    /// # DHCP Options
     resynth mod opt {
         PADDING => Symbol::u8(opt::PADDING),
         SUBNET_MASK => Symbol::u8(opt::SUBNET_MASK),
@@ -154,7 +154,7 @@ const OPTION: FuncDef = func!(
 );
 
 pub const MODULE: Module = module! {
-    /// DHCP / BOOTP
+    /// # DHCP / BOOTP
     resynth mod dhcp {
         CLIENT_PORT => Symbol::u16(CLIENT_PORT),
         SERVER_PORT => Symbol::u16(SERVER_PORT),

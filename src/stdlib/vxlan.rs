@@ -51,7 +51,7 @@ const DGRAM: FuncDef = func!(
 );
 
 const VXLAN: ClassDef = class!(
-    /// VXLAN Session
+    /// # VXLAN Session
     resynth class Vxlan {
         dgram => Symbol::Func(&DGRAM),
         encap => Symbol::Func(&ENCAP),
@@ -85,9 +85,9 @@ const SESSION: FuncDef = func!(
 );
 
 pub const MODULE: Module = module! {
-    /// VXLAN Encapsulation
+    /// # VXLAN Encapsulation
     ///
-    /// Encapsulates ethernet frames in UDP datagrams.
+    /// Encapsulates ethernet frames in [UDP](../ipv4/udp/README.md) datagrams.
     resynth mod vxlan {
         Vxlan => Symbol::Class(&VXLAN),
         session => Symbol::Func(&SESSION),

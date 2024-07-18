@@ -13,7 +13,7 @@ use crate::val::{Val, ValDef};
 use std::net::{Ipv4Addr, SocketAddrV4};
 
 const OPCODE: Module = module! {
-    /// DNS Opcode
+    /// # DNS Opcode
     resynth mod opcode {
         QUERY => Symbol::u8(opcode::QUERY),
         IQUERY => Symbol::u8(opcode::IQUERY),
@@ -25,7 +25,7 @@ const OPCODE: Module = module! {
 };
 
 const RCODE: Module = module! {
-    /// DNS Response Codes (Errors)
+    /// # DNS Response Codes (Errors)
     resynth mod rcode {
         NOERROR => Symbol::u8(rcode::NOERROR),
         FORMERR => Symbol::u8(rcode::FORMERR),
@@ -42,7 +42,7 @@ const RCODE: Module = module! {
 };
 
 const RTYPE: Module = module! {
-    /// DNS Record Type
+    /// # DNS Record Type
     resynth mod rtype {
         A => Symbol::u16(rrtype::A),
         NS => Symbol::u16(rrtype::NS),
@@ -113,7 +113,7 @@ const RTYPE: Module = module! {
 };
 
 const CLASS: Module = module! {
-    /// Class
+    /// # DNS Record Class
     resynth mod class {
         IN => Symbol::u16(class::IN),
         CS => Symbol::u16(class::CS),
@@ -393,7 +393,11 @@ const DNS_HOST: FuncDef = func!(
 );
 
 pub const DNS: Module = module! {
-    /// Domain Name System
+    /// # Domain Name System
+    ///
+    /// You can use [host](#host) to do simple DNS requests
+    ///
+    /// Or you can use the other functions to build custom DNS messages
     resynth mod dns {
         opcode => Symbol::Module(&OPCODE),
         rcode => Symbol::Module(&RCODE),

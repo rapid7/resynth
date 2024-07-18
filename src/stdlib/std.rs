@@ -179,7 +179,7 @@ const LEN_U8: FuncDef = func! (
 );
 
 pub const MODULE: Module = module! {
-    /// Standard types
+    /// # Standard types
     resynth mod std {
         be16 => Symbol::Func(&BE16),
         be32 => Symbol::Func(&BE32),

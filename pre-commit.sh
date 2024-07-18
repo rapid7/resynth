@@ -7,4 +7,5 @@ exec 1>&2
 cargo clippy
 cargo test --all
 cargo doc
-cargo fmt
+cargo run -- --output-docs docs
+git add docs

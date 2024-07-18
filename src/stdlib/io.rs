@@ -102,7 +102,7 @@ const BUFIO_READ_ALL: FuncDef = func!(
 );
 
 const BUFIO_CLASS: ClassDef = class!(
-    /// Buffered I/O
+    /// # Buffered I/O
     resynth class BufIO {
         read => Symbol::Func(&BUFIO_READ),
         read_all => Symbol::Func(&BUFIO_READ_ALL),
@@ -129,7 +129,7 @@ const BUFIO: FuncDef = func!(
 );
 
 pub const MODULE: Module = module!(
-    /// Buffers and File I/O
+    /// # Buffers and File I/O
     resynth mod io {
         BufIO => Symbol::Class(&BUFIO_CLASS),
         file => Symbol::Func(&IO_FILE),

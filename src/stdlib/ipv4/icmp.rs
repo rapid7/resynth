@@ -40,7 +40,7 @@ const ICMP_ECHO_REPLY: FuncDef = func!(
 );
 
 const ICMP: ClassDef = class!(
-    /// ICMP Session
+    /// # ICMP Session
     resynth class Icmp {
         echo => Symbol::Func(&ICMP_ECHO),
         echo_reply => Symbol::Func(&ICMP_ECHO_REPLY),
@@ -72,7 +72,7 @@ const ICMP_FLOW: FuncDef = func!(
 );
 
 pub const ICMP4: Module = module! {
-    /// ICMP
+    /// # Internet Control Message Protocol (ICMP)
     resynth mod icmp {
         Icmp => Symbol::Class(&ICMP),
         flow => Symbol::Func(&ICMP_FLOW),

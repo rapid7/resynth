@@ -9,7 +9,7 @@ use crate::sym::Symbol;
 use crate::val::{Val, ValDef};
 
 const OPCODE: Module = module! {
-    /// Netbios Name-Service Opcodes
+    /// # NetBIOS Name Service Opcodes
     resynth mod opcode {
         QUERY => Symbol::u8(ns::opcode::QUERY),
         REGISTRATION => Symbol::u8(ns::opcode::REGISTRATION),
@@ -22,7 +22,7 @@ const OPCODE: Module = module! {
 };
 
 const RRTYPE: Module = module! {
-    /// RR types
+    /// # NetBIOS Name Service RR types
     resynth mod rrtype {
         NULL => Symbol::u16(ns::rrtype::NULL),
         NB => Symbol::u16(ns::rrtype::NB),
@@ -31,7 +31,7 @@ const RRTYPE: Module = module! {
 };
 
 const RCODE: Module = module! {
-    /// Response codes
+    /// # NetBIOS Name Service Response codes
     resynth mod rcode {
         ACT_ERR => Symbol::u8(ns::rcode::ACT_ERR),
         CFT_ERR => Symbol::u8(ns::rcode::CFT_ERR),
@@ -85,7 +85,7 @@ const NBNS_FLAGS: FuncDef = func!(
 );
 
 pub const NS: Module = module! {
-    /// Netbios Name Service
+    /// # NetBIOS Name Service
     resynth mod ns {
         opcode => Symbol::Module(&OPCODE),
         rrtype => Symbol::Module(&RRTYPE),
@@ -112,14 +112,14 @@ const NAME_ENCODE: FuncDef = func! (
 );
 
 pub const NAME: Module = module! {
-    /// netbios names
+    /// # NetBIOS names
     resynth mod name {
         encode => Symbol::Func(&NAME_ENCODE),
     }
 };
 
 pub const NETBIOS: Module = module! {
-    /// Microsoft NetBIOS
+    /// # Microsoft NetBIOS
     resynth mod netbios {
         ns => Symbol::Module(&NS),
         name => Symbol::Module(&NAME),
