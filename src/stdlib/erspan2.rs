@@ -35,7 +35,7 @@ const ENCAP: FuncDef = func!(
 );
 
 const ERSPAN2: ClassDef = class!(
-    /// ERSPAN2 Session
+    /// # ERSPAN2 Session
     resynth class Erspan2 {
         encap => Symbol::Func(&ENCAP),
     }
@@ -66,7 +66,7 @@ const SESSION: FuncDef = func!(
 );
 
 pub const MODULE: Module = module! {
-    /// ERSPAN version 2
+    /// # ERSPAN version 2
     resynth mod erspan2 {
         Erspan2 => Symbol::Class(&ERSPAN2),
         session => Symbol::Func(&SESSION),

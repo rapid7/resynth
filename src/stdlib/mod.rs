@@ -4,12 +4,12 @@
 use crate::args::Args;
 use crate::err::Error;
 use crate::err::Error::RuntimeError;
-use crate::libapi::{Module, SymDesc};
+use crate::libapi::{Documented, Module, SymDesc};
 use crate::sym::Symbol;
 use crate::val::Val;
 
 use ::std::fs::{create_dir_all, File};
-use ::std::io::{BufWriter, Write};
+use ::std::io::BufWriter;
 use ::std::path::{Path, PathBuf};
 
 pub fn unimplemented(mut args: Args) -> Result<Val, Error> {
@@ -35,7 +35,9 @@ mod tls;
 mod vxlan;
 
 const STDLIB: Module = module! {
-    /// Resynth Standard Library
+    /// # Resynth Standard Library
+    ///
+    /// These are all the basic functions included in resynth
     resynth mod stdlib {
         std => Symbol::Module(&std::MODULE),
         text => Symbol::Module(&text::MODULE),
@@ -70,43 +72,42 @@ pub fn toplevel_module(name: &str) -> Option<&'static Module> {
 pub fn recurse(out_dir: &Path, stk: &mut Vec<&'static str>, m: &'static Module) {
     let mut mod_path = PathBuf::from(out_dir);
 
-    if stk.is_empty() {
-        mod_path.push("README.md");
-    } else {
-        for item in &stk[..stk.len() - 1] {
-            mod_path.push(item);
-        }
-        create_dir_all(&mod_path).expect("mkdir");
-        mod_path.push(format!("{}.md", &stk[stk.len() - 1]));
+    for item in stk.iter() {
+        mod_path.push(item);
     }
 
-    println!("mod path: {}", mod_path.display());
+    create_dir_all(&mod_path).expect("mkdir");
+    mod_path.push("README.md");
 
-    let f = File::create(mod_path).expect("Unable to create file");
+    println!("module -> {}", mod_path.display());
+
+    let f = File::create(mod_path.clone()).expect("Unable to create file");
     let mut wr = BufWriter::new(f);
+
+    mod_path.pop();
+
+    m.write_docs(&mut wr).expect("Write module docs");
 
     for SymDesc { name, sym } in m.symtab.iter() {
         stk.push(name);
         match sym {
-            Symbol::Module(child) => {
-                recurse(out_dir, stk, child);
-            }
-            Symbol::Func(func) => {
-                // let qname = stk.join("::");
+            Symbol::Module(child) => recurse(out_dir, stk, child),
+            Symbol::Class(cls) => {
+                mod_path.push(format!("{}.md", name));
+                println!("class -> {}", mod_path.display());
 
-                wr.write_all(format!("# {}\n", func.name).as_bytes())
-                    .expect("write func name");
-                wr.write_all(func.doc.as_bytes()).expect("write body");
-                wr.write_all(b"\n\n").expect("write LF");
+                let f = File::create(mod_path.clone()).expect("Unable to create file");
+                let mut wr = BufWriter::new(f);
+
+                cls.write_docs(&mut wr).expect("class doc");
             }
-            _ => (),
+            _ => {}
         }
         stk.pop();
     }
 }
 
 pub fn write_docs(out_dir: &Path) {
-    println!("Write docs to {}", out_dir.display());
     create_dir_all(out_dir).expect("mkdir");
 
     let mut stk: Vec<&'static str> = Vec::new();

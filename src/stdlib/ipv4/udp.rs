@@ -203,7 +203,7 @@ const SV_RAW_DGRAM: FuncDef = func!(
 );
 
 const UDP_FLOW: ClassDef = class!(
-    /// UDP Flow
+    /// # UDP Flow
     resynth class UdpFlow {
         client_dgram => Symbol::Func(&CL_DGRAM),
         server_dgram => Symbol::Func(&SV_DGRAM),
@@ -237,7 +237,7 @@ const FLOW: FuncDef = func!(
 );
 
 pub const UDP4: Module = module! {
-    /// User Datagram Protocol
+    /// # User Datagram Protocol (UDP)
     resynth mod udp {
         UdpFlow => Symbol::Class(&UDP_FLOW),
         flow => Symbol::Func(&FLOW),

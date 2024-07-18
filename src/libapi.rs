@@ -5,8 +5,10 @@ use crate::object::ObjRef;
 use crate::sym::Symbol;
 use crate::val::{Typed, Val, ValDef, ValType};
 
+use std::cmp::Ordering;
 use std::collections::HashMap;
-use std::fmt::Debug;
+use std::fmt::{Debug, Display, Formatter};
+use std::io::Write;
 
 /// Argument declarator
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -15,10 +17,27 @@ pub enum ArgDecl {
     Optional(ValDef),
 }
 
+impl Display for ArgDecl {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), std::fmt::Error> {
+        match self {
+            Self::Positional(typ) => write!(f, "{}", typ),
+            Self::Optional(dfl) => {
+                write!(f, "{} = {}", dfl.val_type(), dfl)
+            }
+        }
+    }
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct ArgDesc {
     pub name: &'static str,
     pub typ: ArgDecl,
+}
+
+impl Display for ArgDesc {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), std::fmt::Error> {
+        write!(f, "{}: {}", self.name, self.typ)
+    }
 }
 
 /// Defines a function or method for the resynth stdlib
@@ -49,6 +68,108 @@ pub struct SymDesc {
     pub sym: Symbol,
 }
 
+/// Applies to anything with a symbol table which is documented into a documentation page
+/// ie. classes and modules
+pub trait Documented {
+    fn symtab(&self) -> &'static [SymDesc];
+    fn front_matter(&self) -> &'static str;
+
+    fn symbol_set<F>(&self, flt: F) -> Vec<SymDesc>
+    where
+        F: FnMut(&SymDesc) -> bool,
+    {
+        let mut ret: Vec<SymDesc> = self.symtab().iter().cloned().filter(flt).collect();
+        ret.sort();
+        ret.shrink_to_fit();
+        ret
+    }
+
+    fn modules(&self) -> Vec<SymDesc> {
+        self.symbol_set(|&x| matches!(x.sym, Symbol::Module(_)))
+    }
+
+    fn functions(&self) -> Vec<SymDesc> {
+        self.symbol_set(|&x| matches!(x.sym, Symbol::Func(_)))
+    }
+
+    fn classes(&self) -> Vec<SymDesc> {
+        self.symbol_set(|&x| matches!(x.sym, Symbol::Class(_)))
+    }
+
+    fn constants(&self) -> Vec<SymDesc> {
+        self.symbol_set(|&x| matches!(x.sym, Symbol::Val(_)))
+    }
+
+    fn write_docs<W: Write>(&self, wr: &mut W) -> Result<(), std::io::Error> {
+        wr.write_all(self.front_matter().as_bytes())?;
+
+        let submods = self.modules();
+        let funcs = self.functions();
+        let classes = self.classes();
+        let consts = self.constants();
+
+        wr.write_all(b"\n## Index\n\n")?;
+
+        if !submods.is_empty() {
+            wr.write_all(b"\n### Modules\n\n")?;
+            for SymDesc { name, sym: _ } in &submods {
+                wr.write_all(format!("- [{}]({}/README.md)\n", name, name,).as_bytes())?;
+            }
+        }
+
+        if !classes.is_empty() {
+            wr.write_all(b"\n### Classes\n\n")?;
+            for SymDesc { name, sym: _ } in &classes {
+                wr.write_all(format!("- [{}]({}.md)\n", name, name,).as_bytes())?;
+            }
+        }
+
+        if !funcs.is_empty() {
+            wr.write_all(b"\n### Functions\n\n")?;
+            for SymDesc { name, sym: _ } in &funcs {
+                wr.write_all(format!("- [{}](#{})\n", name, name,).as_bytes())?;
+            }
+        }
+
+        if !consts.is_empty() {
+            wr.write_all(b"\n### Constants\n\n")?;
+            wr.write_all(b"| Name | Value |\n")?;
+            wr.write_all(b"| ---- | ----- |\n")?;
+            for SymDesc { name, sym } in &consts {
+                if let Symbol::Val(val) = sym {
+                    wr.write_all(
+                        format!("| {} | `({}){}` |\n", name, val.val_type(), val,).as_bytes(),
+                    )?;
+                }
+            }
+        }
+
+        if !funcs.is_empty() {
+            wr.write_all(b"\n\n")?;
+            for SymDesc { name, sym } in &funcs {
+                if let Symbol::Func(func) = sym {
+                    assert_eq!(*name, func.name);
+                    func.write_docs(wr)?;
+                }
+            }
+        }
+
+        Ok(())
+    }
+}
+
+impl PartialOrd for SymDesc {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Ord for SymDesc {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.name.cmp(other.name)
+    }
+}
+
 /// Defines a module for the resynth stdlib
 #[derive(Debug)]
 pub struct Module {
@@ -56,6 +177,16 @@ pub struct Module {
     pub symtab: &'static [SymDesc],
     pub lookup: fn(name: &str) -> Option<usize>,
     pub doc: &'static str,
+}
+
+impl Documented for Module {
+    fn symtab(&self) -> &'static [SymDesc] {
+        self.symtab
+    }
+
+    fn front_matter(&self) -> &'static str {
+        self.doc
+    }
 }
 
 impl Module {
@@ -74,6 +205,16 @@ pub struct ClassDef {
     pub symtab: &'static [SymDesc],
     pub lookup: fn(name: &str) -> Option<usize>,
     pub doc: &'static str,
+}
+
+impl Documented for ClassDef {
+    fn symtab(&self) -> &'static [SymDesc] {
+        self.symtab
+    }
+
+    fn front_matter(&self) -> &'static str {
+        self.doc
+    }
 }
 
 impl ClassDef {
@@ -313,5 +454,31 @@ impl FuncDef {
 
     pub fn args(&self, this: Option<ObjRef>, args: Vec<ArgSpec>) -> Result<Args, Error> {
         Ok(self.argvec(this, args)?.into())
+    }
+
+    pub fn write_docs<W: Write>(&self, wr: &mut W) -> Result<(), std::io::Error> {
+        wr.write_all(format!("\n## {}\n", self.name).as_bytes())?;
+        wr.write_all(b"```resynth\n")?;
+        wr.write_all(format!("{}\n", self).as_bytes())?;
+        wr.write_all(b"```\n")?;
+        wr.write_all(self.doc.as_bytes())?;
+        wr.write_all(b"\n")?;
+        Ok(())
+    }
+}
+
+impl Display for FuncDef {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), std::fmt::Error> {
+        writeln!(f, "resynth fn {} (", self.name)?;
+
+        for arg in self.args.iter() {
+            writeln!(f, "    {},", arg)?;
+        }
+
+        if !self.collect_type.is_nil() {
+            writeln!(f, "    =>\n    *collect_args: {},", self.collect_type)?;
+        }
+
+        write!(f, ") -> {};", self.return_type)
     }
 }

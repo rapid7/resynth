@@ -68,7 +68,7 @@ const JUMP_NANOS: FuncDef = func!(
 );
 
 pub const MODULE: Module = module! {
-    /// Time Manipulation
+    /// # Time Manipulation
     resynth mod time {
         jump_seconds => Symbol::Func(&JUMP_SECS),
         jump_millis => Symbol::Func(&JUMP_MILLIS),

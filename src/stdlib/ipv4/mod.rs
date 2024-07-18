@@ -21,7 +21,7 @@ use tcp::TCP4;
 use udp::UDP4;
 
 const PROTO: Module = module! {
-    /// IP Protocols
+    /// # IP Protocols
     resynth mod proto {
         ICMP => Symbol::u8(proto::ICMP),
         TCP => Symbol::u8(proto::TCP),
@@ -96,7 +96,7 @@ const DGRAM: FuncDef = func!(
 const FRAG_FRAGMENT: FuncDef = func!(
     /// Returns an IPv4 packet fragment
     ///
-    /// # Arguments
+    /// ### Arguments
     /// * `frag_off` Offset in 8-byte blocks
     /// * `len` Length in bytes
     resynth fn fragment(
@@ -122,7 +122,7 @@ const FRAG_TAIL: FuncDef = func!(
     /// Returns an IPv4 tail-fragment, ie. with MF (more-fragments) bit set to zero.
     /// This is just a convenience function which omits the len parameter.
     ///
-    /// # Arguments
+    /// ### Arguments
     /// * `frag_off` Offset in 8-byte blocks
     resynth fn tail(
         frag_off: U16,
@@ -158,7 +158,7 @@ const FRAG_DATAGRAM: FuncDef = func!(
 );
 
 const IPFRAG: ClassDef = class!(
-    /// IP Packet Fragment Builder
+    /// # IP Packet Fragment Builder
     resynth class IpFrag {
         fragment => Symbol::Func(&FRAG_FRAGMENT),
         tail => Symbol::Func(&FRAG_TAIL),
@@ -213,7 +213,7 @@ const FRAG: FuncDef = func!(
 );
 
 pub const IPV4: Module = module! {
-    /// Internet Protocol Version 4
+    /// # Internet Protocol Version 4
     resynth mod ipv4 {
         IpFrag => Symbol::Class(&IPFRAG),
         tcp => Symbol::Module(&TCP4),

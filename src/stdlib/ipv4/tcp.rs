@@ -371,7 +371,7 @@ const TCP_SV_RESET: FuncDef = func!(
 );
 
 const TCP_FLOW: ClassDef = class!(
-    /// TCP Connection
+    /// # TCP Connection
     resynth class TcpFlow {
         open => Symbol::Func(&TCP_OPEN),
         client_message => Symbol::Func(&TCP_CL_MSG),
@@ -400,7 +400,7 @@ impl Class for TcpFlow {
 }
 
 const FLOW: FuncDef = func!(
-    /// Create a TCP flow context, from which packets can be created
+    /// Create a [TCP flow context](TcpFlow.md), from which packets can be created
     resynth fn flow(
         cl: Sock4,
         sv: Sock4,
@@ -422,7 +422,7 @@ const FLOW: FuncDef = func!(
 );
 
 pub const TCP4: Module = module! {
-    /// Transmission Control Protocol
+    /// # Transmission Control Protocol (TCP)
     resynth mod tcp {
         TcpFlow => Symbol::Class(&TCP_FLOW),
         flow => Symbol::Func(&FLOW),

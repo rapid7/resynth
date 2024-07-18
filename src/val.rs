@@ -9,6 +9,7 @@ use crate::traits::Dispatchable;
 
 use pkt::Packet;
 
+use std::fmt::{Debug, Display, Formatter};
 use std::net::{Ipv4Addr, SocketAddrV4};
 use std::rc::Rc;
 
@@ -33,6 +34,24 @@ pub enum ValType {
     PktGen,
 
     TimeJump,
+}
+
+impl Display for ValType {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), std::fmt::Error> {
+        match self {
+            ValType::Void => write!(f, "void"),
+            ValType::Bool => write!(f, "bool"),
+            ValType::U8 => write!(f, "u8"),
+            ValType::U16 => write!(f, "u16"),
+            ValType::U32 => write!(f, "u32"),
+            ValType::U64 => write!(f, "u64"),
+            ValType::Ip4 => write!(f, "Ip4"),
+            ValType::Sock4 => write!(f, "Sock4"),
+            ValType::Str => write!(f, "bytes"),
+            ValType::Type => write!(f, "type"),
+            _ => write!(f, "{:?}", self),
+        }
+    }
 }
 
 /// Both [Val] and [ValDef] have types which corrsepond to each other. In fact [Val] is a subset of
@@ -134,6 +153,30 @@ impl Typed for ValDef {
             ValDef::Sock4(..) => Sock4,
             ValDef::Str(..) => Str,
             ValDef::Type(..) => Type,
+        }
+    }
+}
+
+impl Display for ValDef {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), std::fmt::Error> {
+        match self {
+            ValDef::Nil => write!(f, "Nil"),
+            ValDef::Bool(val) => write!(f, "{}", val),
+            ValDef::U8(val) => write!(f, "{:#04x}", val),
+            ValDef::U16(val) => write!(f, "{:#06x}", val),
+            ValDef::U32(val) => write!(f, "{:#010x}", val),
+            ValDef::U64(val) => write!(f, "{:#018x}", val),
+            ValDef::Ip4(val) => write!(f, "{}", val),
+            ValDef::Sock4(val) => write!(f, "{}", val),
+            ValDef::Str(val) => {
+                let s: String = val
+                    .iter()
+                    .copied()
+                    .map(|x| std::ascii::escape_default(x).to_string())
+                    .collect();
+                write!(f, "\"{}\"", s)
+            }
+            ValDef::Type(val) => write!(f, "{:?}", val),
         }
     }
 }

@@ -34,7 +34,7 @@ const ENCAP: FuncDef = func!(
 );
 
 const GRE: ClassDef = class!(
-    /// GRE Session
+    /// # GRE Session
     resynth class Gre {
         encap => Symbol::Func(&ENCAP),
     }
@@ -69,7 +69,9 @@ const SESSION: FuncDef = func!(
 );
 
 pub const MODULE: Module = module! {
-    /// Genneric Routing Encapsulation (GRE)
+    /// # Generic Routing Encapsulation (GRE)
+    ///
+    /// Right now this exists only for GRETAP [sessions](#session)
     resynth mod gre {
         Gre => Symbol::Class(&GRE),
         session => Symbol::Func(&SESSION),
