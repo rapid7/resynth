@@ -99,10 +99,12 @@ const FRAG_FRAGMENT: FuncDef = func!(
     /// ### Arguments
     /// * `frag_off` Offset in 8-byte blocks
     /// * `len` Length in bytes
+    /// * 'raw' If true, then omit ethernet header
     resynth fn fragment(
         frag_off: U16,
         len: U16,
         =>
+        raw: Bool = false,
         =>
         Str
     ) -> Pkt
@@ -113,8 +115,9 @@ const FRAG_FRAGMENT: FuncDef = func!(
 
         let frag_off: u16 = args.next().into();
         let len: u16 = args.next().into();
+        let raw: bool = args.next().into();
 
-        Ok(this.fragment(frag_off, len).into())
+        Ok(this.fragment(frag_off, len, raw).into())
     }
 );
 
@@ -124,9 +127,11 @@ const FRAG_TAIL: FuncDef = func!(
     ///
     /// ### Arguments
     /// * `frag_off` Offset in 8-byte blocks
+    /// * 'raw' If true, then omit ethernet header
     resynth fn tail(
         frag_off: U16,
         =>
+        raw: Bool = false,
         =>
         Str
     ) -> Pkt
@@ -136,15 +141,20 @@ const FRAG_TAIL: FuncDef = func!(
         let this: &mut IpFrag = r.as_mut_any().downcast_mut().unwrap();
 
         let frag_off: u16 = args.next().into();
+        let raw: bool = args.next().into();
 
-        Ok(this.tail(frag_off).into())
+        Ok(this.tail(frag_off, raw).into())
     }
 );
 
 const FRAG_DATAGRAM: FuncDef = func!(
     /// Return the entire datagram without fragmenting it
+    ///
+    /// ### Arguments
+    /// * 'raw' If true, then omit ethernet header
     resynth fn datagram(
         =>
+        raw: Bool = false,
         =>
         Str
     ) -> Pkt
@@ -152,8 +162,9 @@ const FRAG_DATAGRAM: FuncDef = func!(
         let obj = args.take_this();
         let mut r = obj.borrow_mut();
         let this: &mut IpFrag = r.as_mut_any().downcast_mut().unwrap();
+        let raw: bool = args.next().into();
 
-        Ok(this.datagram().into())
+        Ok(this.datagram(raw).into())
     }
 );
 
