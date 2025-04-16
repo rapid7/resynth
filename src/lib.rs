@@ -8,13 +8,13 @@
 //! ## Structure of the Codebase
 //! The codebase is split in to several major components
 //! - [pkt] A low-level packet generation library which mostly contains structs and consts
-//! to do with various network protocols.
+//!   to do with various network protocols.
 //! - [ezpkt] A more high-level packet generation library which provides abstractions around
-//! concepts such as flows
+//!   concepts such as flows
 //! - [crate] The language compiler and interpreter itself is the root of the crate. In future we
-//! will probably move in to its own module at some point in future.
+//!   will probably move in to its own module at some point in future.
 //! - [stdlib] Contains the resynth standard library which is mostly glue to allow
-//! resynth programs to use the functionality in [pkt] and [ezpkt]
+//!   resynth programs to use the functionality in [pkt] and [ezpkt]
 //!
 //! ## Compiler Phases
 //! 1. [Lexer] uses a static regex to parse each line in to a stream of tokens
