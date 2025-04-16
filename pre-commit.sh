@@ -4,6 +4,7 @@ set -euo pipefail
 
 exec 1>&2
 
+cargo fmt --check
 cargo clippy
 cargo test --all
 cargo doc
