@@ -13,17 +13,22 @@
 ## datagram
 ```resynth
 resynth fn datagram (
+    raw: bool = false,
     =>
     *collect_args: bytes,
 ) -> Pkt;
 ```
  Return the entire datagram without fragmenting it
 
+ ### Arguments
+ * 'raw' If true, then omit ethernet header
+
 ## fragment
 ```resynth
 resynth fn fragment (
     frag_off: u16,
     len: u16,
+    raw: bool = false,
     =>
     *collect_args: bytes,
 ) -> Pkt;
@@ -33,11 +38,13 @@ resynth fn fragment (
  ### Arguments
  * `frag_off` Offset in 8-byte blocks
  * `len` Length in bytes
+ * 'raw' If true, then omit ethernet header
 
 ## tail
 ```resynth
 resynth fn tail (
     frag_off: u16,
+    raw: bool = false,
     =>
     *collect_args: bytes,
 ) -> Pkt;
@@ -47,3 +54,4 @@ resynth fn tail (
 
  ### Arguments
  * `frag_off` Offset in 8-byte blocks
+ * 'raw' If true, then omit ethernet header

@@ -15,14 +15,16 @@ pub struct IpDgram {
 
 impl IpDgram {
     #[must_use]
-    pub fn new(mut iph: ip_hdr, payload: &[u8]) -> Self {
+    pub fn new(mut iph: ip_hdr, payload: &[u8], raw: bool) -> Self {
         let pkt = Packet::with_capacity(IP_DGRAM_OVERHEAD + payload.len());
 
-        pkt.push(eth_hdr::new(
-            iph.get_saddr().into(),
-            iph.get_saddr().into(),
-            ethertype::IPV4,
-        ));
+        if !raw {
+            pkt.push(eth_hdr::new(
+                iph.get_saddr().into(),
+                iph.get_saddr().into(),
+                ethertype::IPV4,
+            ));
+        }
 
         iph.set_tot_len(payload.len() as u16 + IPH_LEN as u16);
 
@@ -64,26 +66,26 @@ impl IpFrag {
     }
 
     /// Offset is in 8-byte blocks, len is in bytes
-    pub fn fragment(&self, off: u16, len: u16) -> Packet {
+    pub fn fragment(&self, off: u16, len: u16, raw: bool) -> Packet {
         let byte_off = (off as usize) << 3;
         let byte_len = (len as usize) << 3;
         let byte_end = byte_off + byte_len;
         let end = min(byte_end, self.payload.len());
         let content = &self.payload[byte_off..end];
 
-        IpDgram::new(self.hdr, content)
+        IpDgram::new(self.hdr, content, raw)
             .frag(off, end != self.payload.len())
             .into()
     }
 
     /// Offset is in 8-byte blocks, include all bytes until the end
-    pub fn tail(&self, off: u16) -> Packet {
-        self.fragment(off, self.payload.len() as u16)
+    pub fn tail(&self, off: u16, raw: bool) -> Packet {
+        self.fragment(off, self.payload.len() as u16, raw)
     }
 
     /// The whole payload in one unfragmented datagram
-    pub fn datagram(&self) -> Packet {
-        IpDgram::new(self.hdr, &self.payload[..])
+    pub fn datagram(&self, raw: bool) -> Packet {
+        IpDgram::new(self.hdr, &self.payload[..], raw)
             .frag(0, false)
             .into()
     }
