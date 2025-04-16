@@ -359,7 +359,7 @@ impl Packet {
     pub fn len(&self) -> usize {
         let buf = self.buf.borrow();
 
-        assert!(buf.len() > self.headroom);
+        assert!(buf.len() >= self.headroom);
 
         buf.len() - self.headroom
     }
