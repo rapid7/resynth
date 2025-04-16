@@ -92,7 +92,13 @@ pub trait Typed {
     fn is_string_coercible(&self) -> bool {
         matches!(
             self.val_type(),
-            ValType::Str | ValType::U8 | ValType::U16 | ValType::U32 | ValType::U64 | ValType::Ip4
+            ValType::Pkt
+                | ValType::Str
+                | ValType::U8
+                | ValType::U16
+                | ValType::U32
+                | ValType::U64
+                | ValType::Ip4
         )
     }
 
@@ -400,6 +406,7 @@ impl From<Val> for Buf {
     fn from(v: Val) -> Self {
         /* Must be implemented for all types which are Typed::is_string_coercible() */
         match v {
+            Val::Pkt(s) => Buf::from(s.to_vec()),
             Val::Str(s) => s,
             Val::U8(u) => Buf::from(&u.to_be_bytes()),
             Val::U16(u) => Buf::from(&u.to_be_bytes()),
