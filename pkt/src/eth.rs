@@ -21,6 +21,12 @@ pub struct eth_addr {
     octets: [u8; 6],
 }
 
+impl eth_addr {
+    pub fn new(octets: [u8; 6]) -> Self {
+        Self { octets }
+    }
+}
+
 impl Serialize for eth_addr {}
 
 impl From<Ipv4Addr> for eth_addr {
@@ -30,6 +36,12 @@ impl From<Ipv4Addr> for eth_addr {
         Self {
             octets: [0x00, 0x02, ip[0], ip[1], ip[2], ip[3]],
         }
+    }
+}
+
+impl<'a> AsRef<[u8]> for &'a eth_addr {
+    fn as_ref(&self) -> &'a [u8] {
+        &self.octets[..]
     }
 }
 

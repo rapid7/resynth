@@ -9,6 +9,13 @@ pub struct Buf {
 
 impl Buf {
     #[inline]
+    pub fn from_slice<T: AsRef<[u8]>>(s: T) -> Self {
+        Self {
+            inner: Rc::new(s.as_ref().to_owned()),
+        }
+    }
+
+    #[inline]
     pub fn len(&self) -> usize {
         self.inner.len()
     }
@@ -42,7 +49,7 @@ impl From<Vec<u8>> for Buf {
     }
 }
 
-// Must take reference here because otherwise trait can be implented for self
+// Must take reference here because otherwise trait can be implemented for self
 impl<T> From<&T> for Buf
 where
     T: AsRef<[u8]> + ?Sized,
