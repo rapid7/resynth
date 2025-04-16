@@ -568,15 +568,6 @@ impl Packet {
 
 impl From<Packet> for Vec<u8> {
     fn from(p: Packet) -> Self {
-        let headroom = p.headroom();
-        let buf = p.buf.into_inner();
-
-        if headroom == 0 {
-            buf
-        } else {
-            let s = &buf[headroom..buf.len()];
-
-            s.to_owned()
-        }
+        p.to_vec()
     }
 }
