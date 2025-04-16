@@ -56,7 +56,7 @@ const DGRAM: FuncDef = func!(
         let evil: bool = args.next().into();
         let df: bool = args.next().into();
         let mf: bool = args.next().into();
-        let ttl: u8= args.next().into();
+        let ttl: u8 = args.next().into();
         let frag_off: u16 = args.next().into();
         let proto: u8 = args.next().into();
 
@@ -193,7 +193,7 @@ const FRAG: FuncDef = func!(
         let id: u16 = args.next().into();
         let evil: bool = args.next().into();
         let df: bool = args.next().into();
-        let ttl: u8= args.next().into();
+        let ttl: u8 = args.next().into();
         let proto: u8 = args.next().into();
 
         let payload: Buf = args.join_extra(b"").into();
