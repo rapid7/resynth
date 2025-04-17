@@ -1,0 +1,53 @@
+import text;
+import ipv4;
+import dns;
+import eth;
+import std;
+
+let client = 192.168.238.112;
+let server = 142.250.207.36;
+let google = 8.8.8.8;
+
+let dns = ipv4::udp::flow(
+  client/13749,
+  google/54,
+);
+
+let frag = ipv4::frag(
+  client,
+  google,
+  id: 0x2345,
+  proto: ipv4::proto::UDP,
+  dns.client_raw_dgram(
+    dns::hdr(
+      id: 0x1234,
+      flags: dns::flags(
+        opcode: dns::opcode::QUERY,
+        rd: 1,
+      ),
+      qdcount: 1,
+    ),
+    dns::question(
+      qname: dns::name("www", "google", "com"),
+      qtype: dns::qtype::A,
+      qclass: dns::class::IN,
+    )
+  )
+);
+
+eth::frame(
+  eth::from_ip(client),
+  eth::from_ip(google),
+  ethertype: eth::ethertype::VLAN,
+  std::be16(0),
+  std::be16(eth::ethertype::IPV4),
+  frag.fragment(0, 1, raw: true),
+);
+eth::frame(
+  eth::from_ip(client),
+  eth::from_ip(google),
+  ethertype: eth::ethertype::VLAN,
+  std::be16(0),
+  std::be16(eth::ethertype::IPV4),
+  frag.tail(1, raw: true),
+);
