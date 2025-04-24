@@ -1,12 +1,12 @@
 [package]
 edition = "2018"
 name = "resynth"
-version = "0.3.0"
+version = "0.4.0-dev"
 description = "A packet synthesis language"
 authors = ["Gianni Tedesco <gianni@scaramanga.co.uk>"]
 license = "MIT"
-homepage = "https://github.com/giannitedesco/resynth"
-repository = "https://github.com/giannitedesco/resynth"
+homepage = "https://github.com/rapid7/resynth"
+repository = "https://github.com/rapid7/resynth"
 readme = "README.md"
 keywords = [
  "packets",
@@ -42,8 +42,8 @@ lto = true
 [workspace]
 
 [dependencies]
-pkt = { path = "pkt", version = "0.3.0" }
-ezpkt = { path = "ezpkt", version = "0.3.0" }
+pkt = { path = "pkt", version = "0.4.0-dev" }
+ezpkt = { path = "ezpkt", version = "0.4.0-dev" }
 
 lazy-regex = "2.5"
 regex = "1.9.5"
