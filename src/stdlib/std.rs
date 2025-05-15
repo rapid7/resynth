@@ -2,7 +2,7 @@ use crate::func;
 use crate::libapi::{FuncDef, Module};
 use crate::str::Buf;
 use crate::sym::Symbol;
-use crate::val::Val;
+use crate::val::{Val, ValDef};
 
 const BE16: FuncDef = func!(
     /// Encode a 16bit integer into 2 big-endian bytes
@@ -104,16 +104,21 @@ const U8: FuncDef = func!(
 
 const LEN_BE64: FuncDef = func! (
     /// Prefix a buffer with a 64-bit big-endian length field
+    ///
+    /// ### Arguments
+    /// * `adjust: u64` An adjustment value to add to the prefixed length
     resynth fn len_be64(
         =>
+        adjust: U64 = 0,
         =>
         Str
     ) -> Str
     |mut args| {
+        let adjust: u64 = args.next().into();
         let bytes: Buf = args.join_extra(b"").into();
         let mut msg: Vec<u8> = Vec::with_capacity(bytes.len() + 5);
 
-        msg.extend((bytes.len() as u64).to_be_bytes());
+        msg.extend((bytes.len() as u64 + adjust).to_be_bytes());
 
         msg.extend(bytes.as_ref());
 
@@ -123,16 +128,21 @@ const LEN_BE64: FuncDef = func! (
 
 const LEN_BE32: FuncDef = func! (
     /// Prefix a buffer with a 32-bit big-endian length field
+    ///
+    /// ### Arguments
+    /// * `adjust: u32` An adjustment value to add to the prefixed length
     resynth fn len_be32(
         =>
+        adjust: U32 = 0,
         =>
         Str
     ) -> Str
     |mut args| {
+        let adjust: u32 = args.next().into();
         let bytes: Buf = args.join_extra(b"").into();
         let mut msg: Vec<u8> = Vec::with_capacity(bytes.len() + 5);
 
-        msg.extend((bytes.len() as u32).to_be_bytes());
+        msg.extend((bytes.len() as u32 + adjust).to_be_bytes());
 
         msg.extend(bytes.as_ref());
 
@@ -142,16 +152,21 @@ const LEN_BE32: FuncDef = func! (
 
 const LEN_BE16: FuncDef = func! (
     /// Prefix a buffer with a 16-bit big-endian length field
+    ///
+    /// ### Arguments
+    /// * `adjust: u16` An adjustment value to add to the prefixed length
     resynth fn len_be16(
         =>
+        adjust: U16 = 0,
         =>
         Str
     ) -> Str
     |mut args| {
+        let adjust: u16 = args.next().into();
         let bytes: Buf = args.join_extra(b"").into();
         let mut msg: Vec<u8> = Vec::with_capacity(bytes.len() + 5);
 
-        msg.extend((bytes.len() as u16).to_be_bytes());
+        msg.extend((bytes.len() as u16 + adjust).to_be_bytes());
 
         msg.extend(bytes.as_ref());
 
@@ -161,16 +176,21 @@ const LEN_BE16: FuncDef = func! (
 
 const LEN_U8: FuncDef = func! (
     /// Prefix a buffer with a 8-bit byte length field
+    ///
+    /// ### Arguments
+    /// * `adjust: u8` An adjustment value to add to the prefixed length
     resynth fn len_u8(
         =>
+        adjust: U8 = 0,
         =>
         Str
     ) -> Str
     |mut args| {
+        let adjust: u8 = args.next().into();
         let bytes: Buf = args.join_extra(b"").into();
         let mut msg: Vec<u8> = Vec::with_capacity(bytes.len() + 5);
 
-        msg.push(bytes.len() as u8);
+        msg.push(bytes.len() as u8 + adjust);
 
         msg.extend(bytes.as_ref());
 
