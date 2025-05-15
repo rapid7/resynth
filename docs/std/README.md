@@ -69,38 +69,54 @@ resynth fn le64 (
 ## len_be16
 ```resynth
 resynth fn len_be16 (
+    adjust: u16 = 0x0000,
     =>
     *collect_args: bytes,
 ) -> bytes;
 ```
  Prefix a buffer with a 16-bit big-endian length field
 
+ ### Arguments
+ * `adjust: u16` An adjustment value to add to the prefixed length
+
 ## len_be32
 ```resynth
 resynth fn len_be32 (
+    adjust: u32 = 0x00000000,
     =>
     *collect_args: bytes,
 ) -> bytes;
 ```
  Prefix a buffer with a 32-bit big-endian length field
 
+ ### Arguments
+ * `adjust: u32` An adjustment value to add to the prefixed length
+
 ## len_be64
 ```resynth
 resynth fn len_be64 (
+    adjust: u64 = 0x0000000000000000,
     =>
     *collect_args: bytes,
 ) -> bytes;
 ```
  Prefix a buffer with a 64-bit big-endian length field
 
+ ### Arguments
+ * `adjust: u64` An adjustment value to add to the prefixed length
+
 ## len_u8
 ```resynth
 resynth fn len_u8 (
+    adjust: u8 = 0x00,
     =>
     *collect_args: bytes,
 ) -> bytes;
 ```
  Prefix a buffer with a 8-bit byte length field
+
+ ### Arguments
+ * `adjust: u8` An adjustment value to add to the prefixed length
 
 ## u8
 ```resynth
