@@ -24,10 +24,7 @@ impl<T: 'static + PartialEq + Eq + Class + Debug> Obj for T {
     }
 
     fn equals_obj(&self, other: &dyn Obj) -> bool {
-        other
-            .as_any()
-            .downcast_ref::<T>()
-            .map_or(false, |a| self == a)
+        other.as_any().downcast_ref::<T>() == Some(self)
     }
 }
 
