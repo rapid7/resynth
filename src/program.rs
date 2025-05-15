@@ -152,9 +152,9 @@ impl<'a> Program<'a> {
     }
 
     pub fn eval_obj_ref(&self, obj: ObjectRef) -> Result<Val, Error> {
-        if obj.modules.len() > 0 {
+        if !obj.modules.is_empty() {
             self.eval_extern_ref(obj)
-        } else if obj.components.len() > 0 {
+        } else if !obj.components.is_empty() {
             self.eval_local_ref(obj)
         } else {
             unreachable!();

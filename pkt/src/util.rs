@@ -13,6 +13,7 @@ where
     #[inline(always)]
     fn as_bytes(&self) -> &[u8] {
         let size = std::mem::size_of::<T>();
-        return unsafe { std::slice::from_raw_parts(&*(self as *const T as *const u8), size) };
+
+        unsafe { std::slice::from_raw_parts(&*(self as *const T as *const u8), size) }
     }
 }
