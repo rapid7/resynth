@@ -45,7 +45,7 @@ lto = true
 pkt = { path = "pkt", version = "0.4.0-dev" }
 ezpkt = { path = "ezpkt", version = "0.4.0-dev" }
 
-lazy-regex = "2.5"
+lazy-regex = "3.4"
 regex = "1.9.5"
 concat-with = "0.2.9"
 
