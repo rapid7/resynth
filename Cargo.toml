@@ -1,5 +1,5 @@
 [package]
-edition = "2018"
+edition = "2024"
 name = "resynth"
 version = "0.4.0-dev"
 description = "A packet synthesis language"

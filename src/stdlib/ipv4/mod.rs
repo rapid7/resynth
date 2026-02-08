@@ -1,8 +1,8 @@
 use std::net::Ipv4Addr;
 
+use pkt::Packet;
 use pkt::eth::{eth_hdr, ethertype};
 use pkt::ipv4::{ip_hdr, proto};
-use pkt::Packet;
 
 use ezpkt::IpFrag;
 

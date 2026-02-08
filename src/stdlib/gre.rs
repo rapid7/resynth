@@ -1,7 +1,7 @@
 use std::rc::Rc;
 
-use pkt::gre::GreFlags;
 use pkt::Packet;
+use pkt::gre::GreFlags;
 
 use crate::libapi::{Class, ClassDef, FuncDef, Module};
 use crate::sym::Symbol;
@@ -11,7 +11,7 @@ use ezpkt::GreFlow;
 const ENCAP: FuncDef = func!(
     /// Encapsulate packets in GRETAP
     resynth fn encap(
-        gen: PktGen
+        it: PktGen
         =>
         =>
         Void
@@ -20,11 +20,11 @@ const ENCAP: FuncDef = func!(
         let obj = args.take_this();
         let mut r = obj.borrow_mut();
         let this: &mut GreFlow = r.as_mut_any().downcast_mut().unwrap();
-        let gen: Rc<Vec<Packet>> = args.next().into();
+        let it: Rc<Vec<Packet>> = args.next().into();
 
-        let mut ret: Vec<Packet> = Vec::with_capacity(gen.len());
+        let mut ret: Vec<Packet> = Vec::with_capacity(it.len());
 
-        for pkt in gen.iter() {
+        for pkt in it.iter() {
             ret.push(this.encap(&pkt.as_slice().get(pkt)));
         }
 

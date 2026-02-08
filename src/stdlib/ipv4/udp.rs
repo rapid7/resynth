@@ -1,7 +1,7 @@
 use std::net::Ipv4Addr;
 
 use ezpkt::{UdpDgram, UdpFlow};
-use pkt::{ipv4::udp_hdr, AsBytes, Packet};
+use pkt::{AsBytes, Packet, ipv4::udp_hdr};
 
 use crate::libapi::{Class, ClassDef, FuncDef, Module};
 use crate::str::Buf;

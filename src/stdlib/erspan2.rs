@@ -10,7 +10,7 @@ use ezpkt::Erspan2Flow;
 const ENCAP: FuncDef = func!(
     /// Encapsulate packets in ERSPAN2
     resynth fn encap(
-        gen: PktGen
+        it: PktGen
         =>
         port_index: U32 = 0,
         =>
@@ -20,12 +20,12 @@ const ENCAP: FuncDef = func!(
         let obj = args.take_this();
         let mut r = obj.borrow_mut();
         let this: &mut Erspan2Flow = r.as_mut_any().downcast_mut().unwrap();
-        let gen: Rc<Vec<Packet>> = args.next().into();
+        let it: Rc<Vec<Packet>> = args.next().into();
         let port_index: u32 = args.next().into();
 
-        let mut ret: Vec<Packet> = Vec::with_capacity(gen.len());
+        let mut ret: Vec<Packet> = Vec::with_capacity(it.len());
 
-        for pkt in gen.iter() {
+        for pkt in it.iter() {
             ret.push(this.encap(&pkt.as_slice().get(pkt), port_index));
         }
 
