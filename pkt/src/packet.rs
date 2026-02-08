@@ -2,7 +2,7 @@ use std::cell::RefCell;
 use std::fmt;
 use std::ops::{Deref, DerefMut};
 
-use crate::AsBytes;
+use bytemuck::Pod;
 
 pub struct RefMut<'a, T> {
     buf: std::cell::RefMut<'a, Vec<u8>>,
@@ -129,7 +129,7 @@ pub struct Hdr<T> {
     phantom: std::marker::PhantomData<T>,
 }
 
-impl<T: AsBytes> Hdr<T> {
+impl<T: Pod> Hdr<T> {
     fn new(off: usize) -> Self {
         Self {
             off,
@@ -388,14 +388,14 @@ impl Packet {
     }
 
     /// Append a new header to the packet
-    pub fn push_hdr<T: AsBytes>(&self) -> Hdr<T> {
+    pub fn push_hdr<T: Pod>(&self) -> Hdr<T> {
         let off = self.expand(std::mem::size_of::<T>());
 
         Hdr::new(off)
     }
 
     /// Append a new header to the packet and initialize it
-    pub fn push<T: AsBytes>(&self, item: T) -> Hdr<T> {
+    pub fn push<T: Pod>(&self, item: T) -> Hdr<T> {
         let hdr: Hdr<T> = self.push_hdr();
         let mut buf = hdr.get_mut(self);
 
@@ -428,7 +428,7 @@ impl Packet {
     }
 
     /// Prepend a new header into the packet headroom
-    pub fn lower_headroom<T: AsBytes>(&mut self) -> Hdr<T> {
+    pub fn lower_headroom<T: Pod>(&mut self) -> Hdr<T> {
         let sz = std::mem::size_of::<T>();
 
         assert!(sz <= self.headroom);
@@ -439,7 +439,7 @@ impl Packet {
     }
 
     /// Prepend a new header into the packet headroom
-    pub fn lower_headroom_for<T: AsBytes>(&mut self, item: T) -> Hdr<T> {
+    pub fn lower_headroom_for<T: Pod>(&mut self, item: T) -> Hdr<T> {
         let hdr: Hdr<T> = self.lower_headroom();
         let mut buf = hdr.get_mut(self);
 
@@ -449,7 +449,7 @@ impl Packet {
     }
 
     /// Return headroom to the packet. Header must start at the first byte of packet buffer
-    pub fn return_headroom<T: AsBytes>(&mut self, hdr: Hdr<T>) {
+    pub fn return_headroom<T: Pod>(&mut self, hdr: Hdr<T>) {
         assert!(hdr.off() == self.headroom);
         assert!(Hdr::<T>::size_of() <= self.len());
 

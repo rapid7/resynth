@@ -3,17 +3,16 @@ use std::io;
 use std::io::Write;
 use std::path::Path;
 
-use super::Packet;
-use super::Serialize;
+use bytemuck::{bytes_of, Pod, Zeroable};
 
-use crate::util::AsBytes;
+use super::Packet;
 
 pub enum LinkType {
     Null = 0,
     Ethernet = 1,
 }
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Pod, Zeroable, Debug, Copy, Clone)]
 #[repr(C)]
 struct pcap_hdr {
     magic: u32,
@@ -25,9 +24,7 @@ struct pcap_hdr {
     linktype: u32,
 }
 
-impl Serialize for pcap_hdr {}
-
-#[derive(Debug, Copy, Clone)]
+#[derive(Pod, Zeroable, Debug, Copy, Clone)]
 #[repr(C)]
 struct pcap_pkt {
     sec: u32,
@@ -35,8 +32,6 @@ struct pcap_pkt {
     caplen: u32,
     len: u32,
 }
-
-impl Serialize for pcap_pkt {}
 
 impl pcap_hdr {
     pub fn new() -> Self {
@@ -90,7 +85,7 @@ impl PcapWriter {
 
     fn write_header(&mut self) -> Result<(), io::Error> {
         let hdr = pcap_hdr::new();
-        self.wr.write_all(hdr.as_bytes())
+        self.wr.write_all(bytes_of(&hdr))
     }
 
     #[inline(always)]

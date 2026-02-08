@@ -9,9 +9,6 @@ pub mod netbios;
 pub mod tls;
 pub mod vxlan;
 
-mod util;
-pub use util::{AsBytes, Serialize};
-
 mod pcap;
 pub use pcap::{LinkType, PcapWriter};
 

@@ -1,5 +1,7 @@
 use pkt::dhcp::{dhcp_hdr, dhcp_opt, MAGIC};
-use pkt::{AsBytes, Hdr, Packet};
+use pkt::{Hdr, Packet};
+
+use bytemuck::bytes_of;
 
 const MIN_CAPACITY: usize = std::mem::size_of::<dhcp_hdr>();
 const DEFAULT_CAPACITY: usize = 3 + 3 + 6;
@@ -135,7 +137,7 @@ impl Dhcp {
     #[must_use]
     pub fn opt<T: AsRef<[u8]>>(self, opt: u8, buf: T) -> Self {
         self.pkt
-            .push_bytes(dhcp_opt::from_buf(opt, &buf).as_bytes());
+            .push_bytes(bytes_of(&dhcp_opt::from_buf(opt, &buf)));
         self.pkt.push_bytes(buf);
         self
     }

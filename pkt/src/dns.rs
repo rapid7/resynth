@@ -1,4 +1,4 @@
-use super::Serialize;
+use bytemuck::{Pod, Zeroable};
 
 pub mod opcode {
     pub const QUERY: u8 = 0;
@@ -130,7 +130,7 @@ pub mod class {
 }
 
 #[repr(C, packed(1))]
-#[derive(Debug, Copy, Clone, Default)]
+#[derive(Pod, Zeroable, Debug, Copy, Clone, Default)]
 pub struct dns_hdr {
     id: u16,
     flags: u16,
@@ -139,7 +139,6 @@ pub struct dns_hdr {
     nscount: u16,
     arcount: u16,
 }
-impl Serialize for dns_hdr {}
 
 impl dns_hdr {
     pub fn builder() -> DnsHdrBuilder {

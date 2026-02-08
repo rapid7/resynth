@@ -1,4 +1,4 @@
-use crate::Serialize;
+use bytemuck::{Pod, Zeroable};
 
 /*
                     ERSPAN Type II header (8 octets [42:49])
@@ -158,7 +158,7 @@ impl Erspan2 {
 }
 
 #[repr(C, packed(1))]
-#[derive(Default, Debug, Copy, Clone)]
+#[derive(Pod, Zeroable, Default, Debug, Copy, Clone)]
 pub struct erspan2_hdr {
     pub flags: u32,
     pub index: u32,
@@ -201,5 +201,3 @@ impl erspan2_hdr {
         u32::from_be(self.index)
     }
 }
-
-impl Serialize for erspan2_hdr {}
