@@ -1,9 +1,11 @@
 use std::net::Ipv4Addr;
 
+use bytemuck::Pod;
+
 use pkt::eth::{eth_hdr, ethertype};
 use pkt::gre::{gre_hdr, gre_hdr_seq, GreFlags};
 use pkt::ipv4::{ip_hdr, proto};
-use pkt::{Hdr, Packet, Serialize};
+use pkt::{Hdr, Packet};
 
 /// Helper for creating GRE frames
 pub struct GreFrame {
@@ -67,7 +69,7 @@ impl GreFrame {
         self.ip.get_mut(&self.pkt).add_tot_len(more).calc_csum();
     }
 
-    pub fn push_hdr<T: Serialize>(&mut self) -> Hdr<T> {
+    pub fn push_hdr<T: Pod>(&mut self) -> Hdr<T> {
         let ret: Hdr<T> = self.pkt.push_hdr();
 
         self.update_tot_len(Hdr::<T>::size_of() as u16);
@@ -75,7 +77,7 @@ impl GreFrame {
         ret
     }
 
-    pub fn set_hdr<T: Serialize>(mut self, item: T) -> Self {
+    pub fn set_hdr<T: Pod>(mut self, item: T) -> Self {
         let hdr = self.pkt.push(item);
         self.update_tot_len(hdr.len() as u16);
 

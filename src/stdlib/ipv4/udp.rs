@@ -1,7 +1,9 @@
 use std::net::Ipv4Addr;
 
 use ezpkt::{UdpDgram, UdpFlow};
-use pkt::{AsBytes, Packet, ipv4::udp_hdr};
+use pkt::{Packet, ipv4::udp_hdr};
+
+use bytemuck::bytes_of;
 
 use crate::libapi::{Class, ClassDef, FuncDef, Module};
 use crate::str::Buf;
@@ -89,7 +91,7 @@ const HDR: FuncDef = func!(
             csum: csum.to_be(),
         };
 
-        Ok(Val::Str(Buf::from(hdr.as_bytes())))
+        Ok(Val::Str(Buf::from(bytes_of(&hdr))))
     }
 );
 

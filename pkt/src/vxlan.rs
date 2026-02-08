@@ -1,4 +1,4 @@
-use super::Serialize;
+use bytemuck::{Pod, Zeroable};
 
 pub mod flags {
     pub const I: u8 = 8;
@@ -7,14 +7,12 @@ pub mod flags {
 pub const DEFAULT_PORT: u16 = 4789;
 
 #[repr(C, packed(1))]
-#[derive(Debug, Copy, Clone, Default)]
+#[derive(Pod, Zeroable, Debug, Copy, Clone, Default)]
 pub struct vxlan_hdr {
     pub flags: u8,
     pub reserved: [u8; 3],
     pub vni: u32,
 }
-
-impl Serialize for vxlan_hdr {}
 
 impl vxlan_hdr {
     #[must_use]

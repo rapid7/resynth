@@ -1,6 +1,8 @@
 use std::net::SocketAddrV4;
 
-use pkt::{vxlan::vxlan_hdr, AsBytes, Packet};
+use pkt::{vxlan::vxlan_hdr, Packet};
+
+use bytemuck::bytes_of;
 
 use super::UdpDgram;
 
@@ -22,7 +24,7 @@ impl VxlanDgram {
             outer: UdpDgram::with_capacity(std::mem::size_of::<vxlan_hdr>(), raw)
                 .src(src)
                 .dst(dst)
-                .push(vxlan_hdr::with_vni(vni).as_bytes()),
+                .push(bytes_of(&vxlan_hdr::with_vni(vni))),
         }
     }
 

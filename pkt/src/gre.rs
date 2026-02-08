@@ -1,4 +1,4 @@
-use crate::Serialize;
+use bytemuck::{Pod, Zeroable};
 
 pub mod version {
     pub const GRE: u8 = 0;
@@ -109,7 +109,7 @@ impl From<GreFlags> for u16 {
 }
 
 #[repr(C, packed(1))]
-#[derive(Default, Debug, Copy, Clone)]
+#[derive(Pod, Zeroable, Default, Debug, Copy, Clone)]
 pub struct gre_hdr {
     pub flags: u16,
     pub proto: u16,
@@ -165,10 +165,8 @@ impl gre_hdr {
     }
 }
 
-impl Serialize for gre_hdr {}
-
 #[repr(C, packed(1))]
-#[derive(Debug, Copy, Clone)]
+#[derive(Pod, Zeroable, Debug, Copy, Clone)]
 pub struct gre_hdr_sum {
     pub csum: u16,
     pub rsvd: u16,
@@ -186,10 +184,8 @@ impl gre_hdr_sum {
     }
 }
 
-impl Serialize for gre_hdr_sum {}
-
 #[repr(C, packed(1))]
-#[derive(Debug, Copy, Clone)]
+#[derive(Pod, Zeroable, Debug, Copy, Clone)]
 pub struct gre_hdr_key {
     pub key: u32,
 }
@@ -201,10 +197,8 @@ impl gre_hdr_key {
     }
 }
 
-impl Serialize for gre_hdr_key {}
-
 #[repr(C, packed(1))]
-#[derive(Debug, Copy, Clone)]
+#[derive(Pod, Zeroable, Debug, Copy, Clone)]
 pub struct gre_hdr_seq {
     pub seq: u32,
 }
@@ -215,5 +209,3 @@ impl gre_hdr_seq {
         self
     }
 }
-
-impl Serialize for gre_hdr_seq {}

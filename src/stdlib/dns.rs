@@ -1,8 +1,9 @@
-use pkt::AsBytes;
 use pkt::Packet;
 use pkt::dns::{DnsFlags, DnsName, class, dns_hdr, opcode, rcode, rrtype};
 
 use ezpkt::UdpFlow;
+
+use bytemuck::bytes_of;
 
 use crate::libapi::{FuncDef, Module};
 use crate::str::Buf;
@@ -254,7 +255,7 @@ const DNS_HDR: FuncDef = func!(
             .arcount(arcount)
             .build();
 
-        Ok(Val::str(hdr.as_bytes()))
+        Ok(Val::str(bytes_of(&hdr)))
     }
 );
 
@@ -351,7 +352,7 @@ const DNS_HOST: FuncDef = func!(
                    .build())
             .qdcount(1)
             .build();
-        msg.extend(hdr.as_bytes());
+        msg.extend(bytes_of(&hdr));
         msg.extend(qname.as_ref());
         msg.extend(rrtype::A.to_be_bytes());
         msg.extend(class::IN.to_be_bytes());
@@ -369,7 +370,7 @@ const DNS_HOST: FuncDef = func!(
             .qdcount(1)
             .ancount(args.extra_len() as u16)
             .build();
-        msg.extend(hdr.as_bytes());
+        msg.extend(bytes_of(&hdr));
 
         msg.extend(qname.as_ref());
         msg.extend(rrtype::A.to_be_bytes());

@@ -1,5 +1,4 @@
-use super::Serialize;
-use crate::AsBytes;
+use bytemuck::{bytes_of, Pod, Zeroable};
 
 pub mod opcode {
     pub const REQUEST: u8 = 1;
@@ -51,12 +50,11 @@ pub const SERVER_PORT: u16 = 67;
 pub const MAGIC: u32 = 0x63825363u32;
 
 #[repr(C, packed(1))]
-#[derive(Debug, Copy, Clone, Default)]
+#[derive(Pod, Zeroable, Debug, Copy, Clone, Default)]
 pub struct dhcp_opt {
     opt: u8,
     len: u8,
 }
-impl Serialize for dhcp_opt {}
 
 impl dhcp_opt {
     pub fn new(opt: u8, len: u8) -> Self {
@@ -73,7 +71,7 @@ impl dhcp_opt {
         let hdr = Self::new(opt, buf.len() as u8);
         let mut ret = Vec::with_capacity(std::mem::size_of::<dhcp_opt>() + buf.len());
 
-        ret.extend(hdr.as_bytes());
+        ret.extend(bytes_of(&hdr));
         ret.extend(buf);
 
         ret
@@ -81,7 +79,7 @@ impl dhcp_opt {
 }
 
 #[repr(C, packed(1))]
-#[derive(Debug, Copy, Clone)]
+#[derive(Pod, Zeroable, Debug, Copy, Clone)]
 pub struct dhcp_hdr {
     pub op: u8,
     pub htype: u8,
@@ -99,7 +97,6 @@ pub struct dhcp_hdr {
     pub file: [u8; 128],
     pub magic: u32,
 }
-impl Serialize for dhcp_hdr {}
 
 impl dhcp_hdr {
     /// Set client hardware address, silently truncates

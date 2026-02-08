@@ -1,7 +1,6 @@
 use std::net::Ipv4Addr;
 
-use crate::util::AsBytes;
-use crate::Serialize;
+use bytemuck::{bytes_of, Pod, Zeroable};
 
 pub mod proto {
     pub const ICMP: u8 = 1;
@@ -17,7 +16,7 @@ pub mod flags {
 }
 
 #[repr(C, packed(1))]
-#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+#[derive(Pod, Zeroable, Debug, Copy, Clone, PartialEq, Eq)]
 pub struct ip_hdr {
     pub ihl_version: u8,
     pub tos: u8,
@@ -30,8 +29,6 @@ pub struct ip_hdr {
     pub saddr: u32,
     pub daddr: u32,
 }
-
-impl Serialize for ip_hdr {}
 
 impl Default for ip_hdr {
     fn default() -> Self {
@@ -170,12 +167,12 @@ impl ip_hdr {
 
     pub fn calc_csum(&mut self) -> &mut Self {
         self.csum = 0;
-        self.set_csum(ip_csum(self.as_bytes()))
+        self.set_csum(ip_csum(bytes_of(self)))
     }
 }
 
 #[repr(C, packed(1))]
-#[derive(Debug, Copy, Clone)]
+#[derive(Pod, Zeroable, Debug, Copy, Clone)]
 pub struct tcp_hdr {
     pub sport: u16,
     pub dport: u16,
@@ -187,8 +184,6 @@ pub struct tcp_hdr {
     pub csum: u16,
     pub urp: u16,
 }
-
-impl Serialize for tcp_hdr {}
 
 pub const TCP_FIN: u8 = 0x01;
 pub const TCP_SYN: u8 = 0x02;
@@ -295,15 +290,13 @@ impl tcp_hdr {
 }
 
 #[repr(C, packed(1))]
-#[derive(Debug, Copy, Clone)]
+#[derive(Pod, Zeroable, Debug, Copy, Clone)]
 pub struct udp_hdr {
     pub sport: u16,
     pub dport: u16,
     pub len: u16,
     pub csum: u16,
 }
-
-impl Serialize for udp_hdr {}
 
 impl Default for udp_hdr {
     fn default() -> Self {
@@ -378,7 +371,7 @@ pub const ICMP_PREC_VIOLATION: u8 = 14;
 pub const ICMP_PREC_CUTOFF: u8 = 15;
 
 #[repr(C, packed(1))]
-#[derive(Debug, Copy, Clone)]
+#[derive(Pod, Zeroable, Debug, Copy, Clone)]
 pub struct icmp_hdr {
     pub typ: u8,
     pub code: u8,
@@ -403,7 +396,7 @@ impl icmp_hdr {
 }
 
 #[repr(C, packed(1))]
-#[derive(Debug, Copy, Clone)]
+#[derive(Pod, Zeroable, Debug, Copy, Clone)]
 pub struct icmp_echo_hdr {
     pub id: u16,
     pub seq: u16,
@@ -420,9 +413,6 @@ impl icmp_echo_hdr {
         self
     }
 }
-
-impl Serialize for icmp_hdr {}
-impl Serialize for icmp_echo_hdr {}
 
 pub fn ip_csum_fold(running: u32) -> u16 {
     let mut sum = running;
@@ -464,7 +454,7 @@ pub fn ip_csum(buf: &[u8]) -> u16 {
 }
 
 #[repr(C, packed(1))]
-#[derive(Debug, Copy, Clone)]
+#[derive(Pod, Zeroable, Debug, Copy, Clone)]
 pub struct ip_pseudo_hdr {
     src: u32,
     dst: u32,
@@ -492,9 +482,7 @@ impl ip_pseudo_hdr {
         Self::new(src, dst, proto::UDP, len)
     }
 
-    pub fn csum_partial(self) -> u32 {
-        ip_csum_partial(self.as_bytes())
+    pub fn csum_partial(&self) -> u32 {
+        ip_csum_partial(bytes_of(self))
     }
 }
-
-impl Serialize for ip_pseudo_hdr {}

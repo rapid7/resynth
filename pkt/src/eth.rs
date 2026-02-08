@@ -1,6 +1,6 @@
 use std::net::Ipv4Addr;
 
-use crate::Serialize;
+use bytemuck::{Pod, Zeroable};
 
 pub mod ethertype {
     pub const VLAN: u16 = 0x8100;
@@ -16,7 +16,7 @@ pub mod ethertype {
 }
 
 #[repr(C, packed(1))]
-#[derive(Debug, Copy, Clone, Default)]
+#[derive(Pod, Zeroable, Debug, Copy, Clone, Default)]
 pub struct eth_addr {
     octets: [u8; 6],
 }
@@ -26,8 +26,6 @@ impl eth_addr {
         Self { octets }
     }
 }
-
-impl Serialize for eth_addr {}
 
 impl From<Ipv4Addr> for eth_addr {
     fn from(addr: Ipv4Addr) -> Self {
@@ -46,14 +44,12 @@ impl<'a> AsRef<[u8]> for &'a eth_addr {
 }
 
 #[repr(C, packed(1))]
-#[derive(Debug, Copy, Clone, Default)]
+#[derive(Pod, Zeroable, Debug, Copy, Clone, Default)]
 pub struct eth_hdr {
     pub dst: eth_addr,
     pub src: eth_addr,
     pub proto: u16,
 }
-
-impl Serialize for eth_hdr {}
 
 pub const BROADCAST: [u8; 6] = [0xff, 0xff, 0xff, 0xff, 0xff, 0xff];
 
