@@ -1,3 +1,11 @@
+use std::fmt::{Debug, Display, Formatter};
+use std::net::{Ipv4Addr, SocketAddrV4};
+use std::rc::Rc;
+
+use derive_more::Display;
+
+use pkt::Packet;
+
 use crate::err::Error;
 use crate::err::Error::{NameError, ParseError, TypeError};
 use crate::lex::{TokType, Token};
@@ -7,24 +15,37 @@ use crate::str::Buf;
 use crate::sym::Symbol;
 use crate::traits::Dispatchable;
 
-use pkt::Packet;
-
-use std::fmt::{Debug, Display, Formatter};
-use std::net::{Ipv4Addr, SocketAddrV4};
-use std::rc::Rc;
-
 /// All resynth values must be one of the following types
-#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Display)]
 pub enum ValType {
+    #[display("void")]
     Void,
+
+    #[display("bool")]
     Bool,
+
+    #[display("u8")]
     U8,
+
+    #[display("u16")]
     U16,
+
+    #[display("u32")]
     U32,
+
+    #[display("u64")]
     U64,
+
+    #[display("Ip4")]
     Ip4,
+
+    #[display("Sock4")]
     Sock4,
+
+    #[display("bytes")]
     Str,
+
+    #[display("type")]
     Type,
 
     Obj,
@@ -32,26 +53,7 @@ pub enum ValType {
     Method,
     Pkt,
     PktGen,
-
     TimeJump,
-}
-
-impl Display for ValType {
-    fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), std::fmt::Error> {
-        match self {
-            ValType::Void => write!(f, "void"),
-            ValType::Bool => write!(f, "bool"),
-            ValType::U8 => write!(f, "u8"),
-            ValType::U16 => write!(f, "u16"),
-            ValType::U32 => write!(f, "u32"),
-            ValType::U64 => write!(f, "u64"),
-            ValType::Ip4 => write!(f, "Ip4"),
-            ValType::Sock4 => write!(f, "Sock4"),
-            ValType::Str => write!(f, "bytes"),
-            ValType::Type => write!(f, "type"),
-            _ => write!(f, "{:?}", self),
-        }
-    }
 }
 
 /// Both [Val] and [ValDef] have types which corrsepond to each other. In fact [Val] is a subset of
