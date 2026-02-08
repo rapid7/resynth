@@ -267,7 +267,7 @@ impl<'a> Program<'a> {
     }
 
     pub fn add_import(&mut self, import: Import) -> Result<(), Error> {
-        let name = &import.module;
+        let name = import.module.as_str();
 
         self.loc = import.loc;
 
@@ -278,7 +278,7 @@ impl<'a> Program<'a> {
 
         match toplevel_module(name) {
             None => {
-                return Err(ImportError(name.to_owned()));
+                return Err(ImportError(name.into()));
             }
             Some(module) => {
                 self.import(name, module)?;
@@ -289,12 +289,12 @@ impl<'a> Program<'a> {
     }
 
     pub fn add_assign(&mut self, assign: Assign) -> Result<(), Error> {
-        let name = &assign.target;
+        let name = assign.target.as_str();
 
         self.loc = assign.loc;
 
         if self.regs.contains_key(name) {
-            return Err(MultipleAssignError(name.to_owned()));
+            return Err(MultipleAssignError(name.into()));
         }
 
         let val = self.eval(assign.rvalue)?;

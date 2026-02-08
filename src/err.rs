@@ -21,7 +21,7 @@ pub enum Error {
 
     #[display("Import Error: Unknown Module {:?}", _0)]
     #[error(ignore)]
-    ImportError(String),
+    ImportError(Box<str>),
 
     #[display("Name Error")]
     NameError,
@@ -34,7 +34,7 @@ pub enum Error {
 
     #[display("Variable {:?} reassigned", _0)]
     #[error(ignore)]
-    MultipleAssignError(String),
+    MultipleAssignError(Box<str>),
 }
 
 impl Eq for Error {}
