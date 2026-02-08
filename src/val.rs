@@ -258,7 +258,7 @@ pub enum Val {
     Func(&'static FuncDef),
     Method(ObjRef, &'static FuncDef),
     Pkt(Rc<Packet>),
-    PktGen(Rc<Vec<Packet>>),
+    PktGen(Rc<Box<[Packet]>>),
     TimeJump(u64),
 }
 
@@ -418,15 +418,17 @@ impl From<Val> for Buf {
     }
 }
 
-impl From<Val> for Rc<Vec<Packet>> {
+impl From<Val> for Rc<Box<[Packet]>> {
     fn from(v: Val) -> Self {
         match v {
             Val::PktGen(g) => g,
-            Val::Pkt(pkt) => vec![
-                // unstable(feature = "arc_unwrap_or_clone")
-                Rc::try_unwrap(pkt).unwrap_or_else(|rc| (*rc).clone()),
-            ]
-            .into(),
+            Val::Pkt(pkt) => Rc::new(
+                [
+                    // unstable(feature = "arc_unwrap_or_clone")
+                    Rc::try_unwrap(pkt).unwrap_or_else(|rc| (*rc).clone()),
+                ]
+                .into(),
+            ),
             _ => unreachable!(),
         }
     }
@@ -609,6 +611,12 @@ impl From<Packet> for Val {
 
 impl From<Vec<Packet>> for Val {
     fn from(pkts: Vec<Packet>) -> Self {
+        Self::PktGen(pkts.into_boxed_slice().into())
+    }
+}
+
+impl From<Box<[Packet]>> for Val {
+    fn from(pkts: Box<[Packet]>) -> Self {
         Self::PktGen(pkts.into())
     }
 }

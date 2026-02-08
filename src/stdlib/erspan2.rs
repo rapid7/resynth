@@ -20,7 +20,7 @@ const ENCAP: FuncDef = func!(
         let obj = args.take_this();
         let mut r = obj.borrow_mut();
         let this: &mut Erspan2Flow = r.as_mut_any().downcast_mut().unwrap();
-        let it: Rc<Vec<Packet>> = args.next().into();
+        let it: Rc<Box<[Packet]>> = args.next().into();
         let port_index: u32 = args.next().into();
 
         let mut ret: Vec<Packet> = Vec::with_capacity(it.len());
