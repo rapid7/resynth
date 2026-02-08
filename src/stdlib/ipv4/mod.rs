@@ -6,7 +6,6 @@ use pkt::Packet;
 
 use ezpkt::IpFrag;
 
-use crate::func;
 use crate::libapi::{Class, ClassDef, FuncDef, Module};
 use crate::str::Buf;
 use crate::sym::Symbol;

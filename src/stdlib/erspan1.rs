@@ -2,7 +2,6 @@ use std::rc::Rc;
 
 use pkt::Packet;
 
-use crate::func;
 use crate::libapi::{Class, ClassDef, FuncDef, Module};
 use crate::sym::Symbol;
 use crate::val::{Val, ValDef};

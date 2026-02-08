@@ -2,7 +2,6 @@ use ezpkt::Dhcp;
 use pkt::arp::hrd;
 use pkt::dhcp::{dhcp_opt, message, opcode, opt, CLIENT_PORT, MAGIC, SERVER_PORT};
 
-use crate::func;
 use crate::libapi::{FuncDef, Module};
 use crate::str::Buf;
 use crate::sym::Symbol;

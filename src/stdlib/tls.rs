@@ -4,7 +4,6 @@ use crate::libapi::{FuncDef, Module};
 use crate::str::Buf;
 use crate::sym::Symbol;
 use crate::val::{Val, ValDef};
-use crate::{func, module};
 
 const VERSION: Module = module!(
     /// # TLS Versions

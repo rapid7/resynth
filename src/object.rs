@@ -67,11 +67,11 @@ impl Dispatchable for ObjRef {
 }
 
 impl ObjRef {
-    pub fn borrow(&self) -> Ref<dyn Obj> {
+    pub fn borrow(&self) -> Ref<'_, dyn Obj> {
         self.inner.borrow()
     }
 
-    pub fn borrow_mut(&self) -> RefMut<dyn Obj> {
+    pub fn borrow_mut(&self) -> RefMut<'_, dyn Obj> {
         self.inner.borrow_mut()
     }
 }

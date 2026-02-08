@@ -1,8 +1,6 @@
 use pkt::arp::hrd;
 
-use crate::libapi::Module;
-use crate::module;
-use crate::sym::Symbol;
+use crate::{libapi::Module, sym::Symbol};
 
 const HRD: Module = module!(
     /// # ARP Hardware types
