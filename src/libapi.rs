@@ -1,3 +1,10 @@
+use std::cmp::Ordering;
+use std::collections::HashMap;
+use std::fmt::{Debug, Display, Formatter};
+use std::io::Write;
+
+use derive_more::Display;
+
 use crate::args::{ArgSpec, ArgVec, Args};
 use crate::err::Error;
 use crate::err::Error::TypeError;
@@ -5,39 +12,20 @@ use crate::object::ObjRef;
 use crate::sym::Symbol;
 use crate::val::{Typed, Val, ValDef, ValType};
 
-use std::cmp::Ordering;
-use std::collections::HashMap;
-use std::fmt::{Debug, Display, Formatter};
-use std::io::Write;
-
 /// Argument declarator
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Display)]
 pub enum ArgDecl {
+    #[display("{}", _0)]
     Positional(ValType),
+    #[display("{} = {}", _0.val_type(), _0)]
     Optional(ValDef),
 }
 
-impl Display for ArgDecl {
-    fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), std::fmt::Error> {
-        match self {
-            Self::Positional(typ) => write!(f, "{}", typ),
-            Self::Optional(dfl) => {
-                write!(f, "{} = {}", dfl.val_type(), dfl)
-            }
-        }
-    }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Display)]
+#[display("{}: {}", name, typ)]
 pub struct ArgDesc {
     pub name: &'static str,
     pub typ: ArgDecl,
-}
-
-impl Display for ArgDesc {
-    fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), std::fmt::Error> {
-        write!(f, "{}: {}", self.name, self.typ)
-    }
 }
 
 /// Defines a function or method for the resynth stdlib

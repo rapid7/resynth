@@ -54,6 +54,7 @@ atty = { version = "0.2.14", optional = true}
 termcolor = {version = "1.2", optional = true}
 clap = {version = "4.1", optional = true, features = ["cargo"]}
 bytemuck = { version = "1.25.0", features = ["derive"] }
+derive_more = { version = "2.1.1", features = ["display", "error", "from"] }
 
 [[bin]]
 name = "resynth"
