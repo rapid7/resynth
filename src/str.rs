@@ -2,16 +2,16 @@ use std::fmt;
 use std::rc::Rc;
 use std::str::FromStr;
 
-#[derive(Clone, PartialEq, Eq)]
+#[derive(Default, Clone, PartialEq, Eq)]
 pub struct Buf {
-    inner: Rc<Vec<u8>>,
+    inner: Rc<Box<[u8]>>,
 }
 
 impl Buf {
     #[inline]
     pub fn from_slice<T: AsRef<[u8]>>(s: T) -> Self {
         Self {
-            inner: Rc::new(s.as_ref().to_owned()),
+            inner: Rc::new(s.as_ref().into()),
         }
     }
 
@@ -20,7 +20,7 @@ impl Buf {
         self.inner.len()
     }
 
-    pub fn cow_buffer(self) -> Vec<u8> {
+    pub fn cow_buffer(self) -> Box<[u8]> {
         Rc::try_unwrap(self.inner).unwrap_or_else(|rc| (*rc).clone())
     }
 }
@@ -32,19 +32,19 @@ impl AsRef<[u8]> for Buf {
     }
 }
 
-impl Default for Buf {
-    #[inline]
-    fn default() -> Self {
-        Self {
-            inner: Rc::new(vec![]),
-        }
-    }
-}
-
 impl From<Vec<u8>> for Buf {
     #[inline]
     fn from(mut s: Vec<u8>) -> Self {
         s.shrink_to_fit();
+        Self {
+            inner: Rc::new(s.into()),
+        }
+    }
+}
+
+impl From<Box<[u8]>> for Buf {
+    #[inline]
+    fn from(s: Box<[u8]>) -> Self {
         Self { inner: Rc::new(s) }
     }
 }
@@ -57,7 +57,7 @@ where
     #[inline]
     fn from(s: &T) -> Self {
         Self {
-            inner: Rc::new(s.as_ref().to_owned()),
+            inner: Rc::new(s.as_ref().into()),
         }
     }
 }

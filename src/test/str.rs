@@ -25,7 +25,8 @@ fn str_nohex() {
             "abcdefghijklmnopqrstuvwxyz",
             "{}~",
         )
-        .as_bytes(),
+        .as_bytes()
+        .into()
     )
 }
 
@@ -33,12 +34,12 @@ fn str_nohex() {
 fn str_backslash() {
     let s = Buf::from_str("\\").expect("parse failed");
 
-    assert_eq!(s.cow_buffer(), "\\".as_bytes(),)
+    assert_eq!(s.cow_buffer().as_ref(), "\\".as_bytes())
 }
 
 #[test]
 fn str_bin() {
     let s = Buf::from_str("|00 01 02|").expect("parse failed");
 
-    assert_eq!(s.cow_buffer(), b"\x00\x01\x02",)
+    assert_eq!(s.cow_buffer().as_ref(), &b"\x00\x01\x02"[..])
 }
