@@ -422,13 +422,7 @@ impl From<Val> for Rc<Box<[Packet]>> {
     fn from(v: Val) -> Self {
         match v {
             Val::PktGen(g) => g,
-            Val::Pkt(pkt) => Rc::new(
-                [
-                    // unstable(feature = "arc_unwrap_or_clone")
-                    Rc::try_unwrap(pkt).unwrap_or_else(|rc| (*rc).clone()),
-                ]
-                .into(),
-            ),
+            Val::Pkt(pkt) => Rc::new([Rc::unwrap_or_clone(pkt)].into()),
             _ => unreachable!(),
         }
     }

@@ -21,7 +21,7 @@ impl Buf {
     }
 
     pub fn cow_buffer(self) -> Box<[u8]> {
-        Rc::try_unwrap(self.inner).unwrap_or_else(|rc| (*rc).clone())
+        Rc::unwrap_or_clone(self.inner)
     }
 }
 
