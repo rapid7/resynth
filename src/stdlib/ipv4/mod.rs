@@ -218,7 +218,7 @@ const FRAG: FuncDef = func!(
             .set_saddr(src)
             .set_daddr(dst);
 
-        Ok(Val::from(IpFrag::new(iph, payload.cow_buffer())))
+        Ok(Val::from(IpFrag::new(iph, payload.cow_buffer().into())))
     }
 );
 
