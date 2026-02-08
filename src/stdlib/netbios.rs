@@ -1,4 +1,4 @@
-use pkt::dns::{rcode, DnsFlags};
+use pkt::dns::{DnsFlags, rcode};
 use pkt::netbios::{name, ns};
 
 use crate::err::Error::RuntimeError;

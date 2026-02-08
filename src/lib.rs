@@ -47,7 +47,7 @@ pub mod stdlib;
 mod test;
 
 pub use err::Error;
-pub use lex::{Lexer, Token, EOF};
+pub use lex::{EOF, Lexer, Token};
 pub use loc::Loc;
 pub use parse::{Parser, Stmt};
 pub use program::Program;

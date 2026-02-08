@@ -11,7 +11,7 @@
 ## encap
 ```resynth
 resynth fn encap (
-    gen: PktGen,
+    it: PktGen,
     port_index: u32 = 0x00000000,
 ) -> PktGen;
 ```

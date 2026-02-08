@@ -1,6 +1,6 @@
 use ezpkt::Dhcp;
 use pkt::arp::hrd;
-use pkt::dhcp::{dhcp_opt, message, opcode, opt, CLIENT_PORT, MAGIC, SERVER_PORT};
+use pkt::dhcp::{CLIENT_PORT, MAGIC, SERVER_PORT, dhcp_opt, message, opcode, opt};
 
 use crate::libapi::{FuncDef, Module};
 use crate::str::Buf;

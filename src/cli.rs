@@ -1,16 +1,16 @@
 use pkt::PcapWriter;
 
 use resynth::stdlib::write_docs;
+use resynth::{EOF, Error, Lexer, Loc, Parser, Program};
 use resynth::{error, ok, warn};
-use resynth::{Error, Lexer, Loc, Parser, Program, EOF};
 
 use std::borrow::Cow;
 use std::io::BufRead;
 use std::path::{Path, PathBuf};
 use std::{fs, io};
 
+use clap::{Arg, ArgAction, ArgGroup, Command, error::ErrorKind, value_parser};
 use clap::{crate_authors, crate_description, crate_name, crate_version};
-use clap::{error::ErrorKind, value_parser, Arg, ArgAction, ArgGroup, Command};
 use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
 
 /// A [source code location](Loc) and an [error code](Error)
@@ -48,11 +48,7 @@ pub fn process_file(
     let rd = io::BufReader::new(file);
     let wr = {
         let wr = PcapWriter::create(out)?;
-        if verbose {
-            wr.debug()
-        } else {
-            wr
-        }
+        if verbose { wr.debug() } else { wr }
     };
     let mut prog = Program::with_pcap_writer(wr)?;
     let mut parse = Parser::default();
@@ -242,12 +238,10 @@ fn resynth() -> Result<(), ()> {
             error!(stdout, "error");
             println!(": process_file: {}", err);
 
-            if !keep {
-                if let Err(rm_err) = fs::remove_file(out.as_ref()) {
-                    print!("{}: ", p.display());
-                    error!(stdout, "error");
-                    println!(": delete: {}", rm_err);
-                }
+            if !keep && let Err(rm_err) = fs::remove_file(out.as_ref()) {
+                print!("{}: ", p.display());
+                error!(stdout, "error");
+                println!(": delete: {}", rm_err);
             }
 
             ret = Err(());

@@ -325,14 +325,14 @@ impl<'a> Program<'a> {
                         .expect("failed to write packet");
                 };
             }
-            Val::PktGen(mut gen) => {
-                for pkt in gen.iter() {
+            Val::PktGen(mut it) => {
+                for pkt in it.iter() {
                     self.update_time(pkt.bit_time());
                 }
 
                 /* XXX: cloning the packets here is wasteful */
                 if let Some(ref mut wr) = self.wr {
-                    let inner = Rc::make_mut(&mut gen);
+                    let inner = Rc::make_mut(&mut it);
 
                     for pkt in inner {
                         wr.write_packet(self.now, pkt)

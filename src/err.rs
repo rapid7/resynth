@@ -64,7 +64,7 @@ impl fmt::Display for Error {
         use Error::*;
 
         match self {
-            IoError(ref io) => io.fmt(fmt),
+            IoError(io) => io.fmt(fmt),
             LexError => write!(fmt, "Lex Error"),
             ParseError => write!(fmt, "Parse Error"),
             MemoryError => write!(fmt, "Memory Error"),

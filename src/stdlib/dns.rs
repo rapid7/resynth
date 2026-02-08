@@ -1,6 +1,6 @@
-use pkt::dns::{class, dns_hdr, opcode, rcode, rrtype, DnsFlags, DnsName};
 use pkt::AsBytes;
 use pkt::Packet;
+use pkt::dns::{DnsFlags, DnsName, class, dns_hdr, opcode, rcode, rrtype};
 
 use ezpkt::UdpFlow;
 

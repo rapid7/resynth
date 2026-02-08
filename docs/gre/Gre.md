@@ -11,7 +11,7 @@
 ## encap
 ```resynth
 resynth fn encap (
-    gen: PktGen,
+    it: PktGen,
 ) -> PktGen;
 ```
  Encapsulate packets in GRETAP

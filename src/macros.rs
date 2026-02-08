@@ -51,6 +51,7 @@ macro_rules! func {
         {
             #[allow(unused)]
             use $crate::libapi::{FuncDef, ArgDesc, ArgDecl};
+            #[allow(unused)]
             use $crate::val::ValType;
 
             #[allow(non_camel_case_types,unused)]

@@ -1,7 +1,7 @@
 use std::net::Ipv4Addr;
 
-use pkt::eth::{eth_addr, eth_hdr, ethertype, BROADCAST};
 use pkt::Packet;
+use pkt::eth::{BROADCAST, eth_addr, eth_hdr, ethertype};
 
 use crate::err::Error;
 use crate::libapi::{FuncDef, Module};

@@ -1,6 +1,6 @@
 use std::rc::Rc;
 
-use pkt::{vxlan, Packet};
+use pkt::{Packet, vxlan};
 
 use crate::libapi::{Class, ClassDef, FuncDef, Module};
 use crate::sym::Symbol;
@@ -10,7 +10,7 @@ use ezpkt::VxlanFlow;
 const ENCAP: FuncDef = func!(
     /// Encapsulate a series of packets
     resynth fn encap(
-        gen: PktGen
+        it: PktGen
         =>
         =>
         Void
@@ -19,11 +19,11 @@ const ENCAP: FuncDef = func!(
         let obj = args.take_this();
         let mut r = obj.borrow_mut();
         let this: &mut VxlanFlow = r.as_mut_any().downcast_mut().unwrap();
-        let gen: Rc<Vec<Packet>> = args.next().into();
+        let it: Rc<Vec<Packet>> = args.next().into();
 
-        let mut ret: Vec<Packet> = Vec::with_capacity(gen.len());
+        let mut ret: Vec<Packet> = Vec::with_capacity(it.len());
 
-        for pkt in gen.iter() {
+        for pkt in it.iter() {
             ret.push(this.encap(pkt.as_slice().get(pkt)));
         }
 
@@ -44,8 +44,7 @@ const DGRAM: FuncDef = func!(
         let mut r = obj.borrow_mut();
         let this: &mut VxlanFlow = r.as_mut_any().downcast_mut().unwrap();
         let pkt: Rc<Packet> = args.next().into();
-        let ret = Ok(this.encap(pkt.as_slice().get(&pkt)).into());
-        ret
+        Ok(this.encap(pkt.as_slice().get(&pkt)).into())
     }
 );
 

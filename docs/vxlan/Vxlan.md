@@ -20,7 +20,7 @@ resynth fn dgram (
 ## encap
 ```resynth
 resynth fn encap (
-    gen: PktGen,
+    it: PktGen,
 ) -> PktGen;
 ```
  Encapsulate a series of packets

@@ -8,7 +8,7 @@ use crate::libapi::{Documented, Module, SymDesc};
 use crate::sym::Symbol;
 use crate::val::Val;
 
-use ::std::fs::{create_dir_all, File};
+use ::std::fs::{File, create_dir_all};
 use ::std::io::BufWriter;
 use ::std::path::{Path, PathBuf};
 
