@@ -1,4 +1,3 @@
-use crate::func;
 use crate::libapi::{FuncDef, Module};
 use crate::sym::Symbol;
 use crate::val::Val;

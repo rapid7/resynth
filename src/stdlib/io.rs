@@ -4,7 +4,6 @@ use std::io::Read;
 use std::os::unix::ffi::OsStrExt;
 use std::path::Path;
 
-use crate::func;
 use crate::libapi::{Class, ClassDef, FuncDef, Module};
 use crate::str::Buf;
 use crate::sym::Symbol;

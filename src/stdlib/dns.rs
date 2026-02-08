@@ -4,7 +4,6 @@ use pkt::Packet;
 
 use ezpkt::UdpFlow;
 
-use crate::func;
 use crate::libapi::{FuncDef, Module};
 use crate::str::Buf;
 use crate::sym::Symbol;

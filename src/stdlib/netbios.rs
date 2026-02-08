@@ -2,7 +2,6 @@ use pkt::dns::{rcode, DnsFlags};
 use pkt::netbios::{name, ns};
 
 use crate::err::Error::RuntimeError;
-use crate::func;
 use crate::libapi::{FuncDef, Module};
 use crate::str::Buf;
 use crate::sym::Symbol;
