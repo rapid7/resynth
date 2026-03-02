@@ -23,11 +23,10 @@ const ENCAP: FuncDef = func!(
         let it: Rc<Box<[Packet]>> = args.next().into();
         let timestamp: u32 = args.next().into();
 
-        let mut ret: Vec<Packet> = Vec::with_capacity(it.len());
-
-        for pkt in it.iter() {
-            ret.push(this.encap(&pkt.as_slice().get(pkt), timestamp));
-        }
+        let ret: Vec<Packet> = it
+            .iter()
+            .map(|pkt| this.encap(&pkt.as_slice().get(pkt), timestamp))
+            .collect();
 
         Ok(ret.into())
     }

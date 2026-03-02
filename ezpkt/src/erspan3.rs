@@ -65,12 +65,8 @@ impl Erspan3Frame {
     pub fn encap<T: AsRef<[u8]>>(self, payload: T) -> Packet {
         let p = payload.as_ref();
 
-        let overhead = Erspan3Frame::OVERHEAD
-            + if self.platform.is_some() {
-                Erspan3Frame::PLATFORM_OVERHEAD
-            } else {
-                0
-            };
+        let overhead =
+            Erspan3Frame::OVERHEAD + self.platform.map_or(0, |_| Erspan3Frame::PLATFORM_OVERHEAD);
 
         let mut erspan = self.erspan;
         if self.platform.is_some() {
@@ -86,13 +82,11 @@ impl Erspan3Frame {
             overhead + p.len(),
         );
 
-        let frame = gre.seq(self.seq).set_hdr(erspan.build());
+        let mut frame = gre.seq(self.seq).set_hdr(erspan.build());
 
-        let frame = if let Some(plat) = self.platform {
-            frame.push(plat.to_be_bytes())
-        } else {
-            frame
-        };
+        if let Some(plat) = self.platform {
+            frame = frame.push(plat.to_be_bytes());
+        }
 
         frame.push(payload).into()
     }
