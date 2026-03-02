@@ -23,6 +23,7 @@ mod dhcp;
 mod dns;
 mod erspan1;
 mod erspan2;
+mod erspan3;
 mod eth;
 mod gre;
 mod io;
@@ -53,6 +54,7 @@ const STDLIB: Module = module! {
         eth => Symbol::Module(&eth::MODULE),
         erspan1 => Symbol::Module(&erspan1::MODULE),
         erspan2 => Symbol::Module(&erspan2::MODULE),
+        erspan3 => Symbol::Module(&erspan3::MODULE),
         time => Symbol::Module(&time::MODULE),
     }
 };
