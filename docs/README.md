@@ -11,6 +11,7 @@
 - [dns](dns/README.md)
 - [erspan1](erspan1/README.md)
 - [erspan2](erspan2/README.md)
+- [erspan3](erspan3/README.md)
 - [eth](eth/README.md)
 - [gre](gre/README.md)
 - [io](io/README.md)

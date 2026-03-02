@@ -2,6 +2,7 @@ pub mod arp;
 pub mod dhcp;
 pub mod dns;
 pub mod erspan2;
+pub mod erspan3;
 pub mod eth;
 pub mod gre;
 pub mod ipv4;
