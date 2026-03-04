@@ -1,7 +1,7 @@
 [package]
 edition = "2024"
 name = "resynth"
-version = "0.4.0-dev"
+version = "0.4.0"
 description = "A packet synthesis language"
 authors = ["Gianni Tedesco <gianni@scaramanga.co.uk>"]
 license = "MIT"
@@ -42,8 +42,8 @@ lto = true
 [workspace]
 
 [dependencies]
-pkt = { path = "pkt", version = "0.4.0-dev" }
-ezpkt = { path = "ezpkt", version = "0.4.0-dev" }
+pkt = { path = "pkt", version = "0.4.0" }
+ezpkt = { path = "ezpkt", version = "0.4.0" }
 
 lazy-regex = "3.4"
 regex = "1.9.5"
