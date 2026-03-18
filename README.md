@@ -61,7 +61,7 @@ file called `http.pcap` will be created.
 Not only can you write arbitrary TCP, UDP, ICMP packets, raw IP packets, and IP
 fragments, but there are also library modules to help with crafting packets for
 the following protocols:
-- VXLAN, ERSPAN Types I & II
+- VXLAN, ERSPAN Types I, II & III
 - DHCP
 - DNS
 - Netbios name service (NBNS)
