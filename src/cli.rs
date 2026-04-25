@@ -1,6 +1,6 @@
 use pkt::PcapWriter;
 
-use resynth::stdlib::write_docs;
+use resynth::stdlib::{write_docs, write_stdlib_json};
 use resynth::{EOF, Error, Lexer, Loc, Parser, Program};
 use resynth::{error, ok, warn};
 
@@ -19,7 +19,7 @@ use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
     about,
     group(
         ArgGroup::new("run_mode")
-            .args(["docs", "input"])
+            .args(["docs", "stdlib_json", "input"])
             .required(true)
     ),
 )]
@@ -39,6 +39,10 @@ struct Cli {
     /// Output documentation to DIR
     #[arg(long = "output-docs", value_name = "DIR")]
     docs: Option<PathBuf>,
+
+    /// Output stdlib as JSON to FILE (omit FILE to write to stdout)
+    #[arg(long = "output-stdlib-json", value_name = "FILE", num_args = 0..=1, default_missing_value = "")]
+    stdlib_json: Option<String>,
 
     /// Output pcap filenames (must match number of input files)
     #[arg(short = 'o', long = "output", value_name = "FILE")]
@@ -157,8 +161,18 @@ fn resynth() -> Result<(), ()> {
     };
     let mut stdout = StandardStream::stdout(color);
 
-    if let Some(docs_dir) = argv.docs {
-        write_docs(&docs_dir);
+    if let Some(docs_dir) = &argv.docs {
+        write_docs(docs_dir);
+        return Ok(());
+    }
+
+    if let Some(json_path) = &argv.stdlib_json {
+        let path = if json_path.is_empty() {
+            None
+        } else {
+            Some(PathBuf::from(json_path))
+        };
+        write_stdlib_json(path.as_deref());
         return Ok(());
     }
 
