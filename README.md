@@ -4,15 +4,51 @@
 [![Documentation](https://img.shields.io/docsrs/resynth)](https://docs.rs/resynth/latest/resynth/)
 
 ## About
-Resynth is a packet synthesis language. It produces network traffic (in the
-form of pcap files) from textual descriptions of traffic. It enables
-version-controlled packets-as-code workflows which can be useful for various
-packet processing, or security research applications such as DPI engines, or
-network intrusion detection systems.
+
+When you build software that processes network traffic — a DPI engine, an IDS,
+a protocol parser — you need test data. Real packet captures are hard to work
+with: they're noisy, may contain sensitive data, and most importantly they're
+opaque binary blobs. Checking pcap files into version control (as tools like
+[suricata-verify](https://github.com/OISF/suricata-verify) require) means your
+test data is unreadable, un-reviewable, and its history is meaningless.
+
+Resynth is a language for describing exactly what should happen on the wire. You
+write human-readable source files that describe network flows, and resynth
+compiles them to pcap files. The source files live in version control alongside
+the code they test — diffs are readable, reviews are meaningful, and the intent
+behind each test case is transparent rather than buried in a binary. When you
+need a variant of an existing test (a truncated payload, a different cipher
+suite, an extra retransmission), you copy the source file and edit it. With
+pcaps, that same change means firing up a packet editor or regenerating the
+capture from scratch.
+
+Beyond the version control story, resynth gives you precise control over what
+goes on the wire. You can craft fragmented IP datagrams, reordered TCP segments,
+truncated protocol headers, or any other edge case that's difficult or
+impossible to capture from real traffic. Higher-level protocol modules handle
+the tedious byte-layout work so you can focus on describing the scenario.
 
 
-## Examples
-Here is how you might represent an HTTP request and response in resynth:
+## Example
+
+A minimal UDP exchange:
+
+```
+import ipv4;
+
+let flow = ipv4::udp::flow(
+  192.168.0.1/12345,
+  8.8.8.8/53,
+);
+
+flow.client_dgram("hello");
+flow.server_dgram("world");
+```
+
+Run `resynth hello.rsyn` and a `hello.pcap` file will be created.
+
+Here is a more complete example representing a DNS lookup followed by an HTTP
+request and response:
 
 ```
 import ipv4;
@@ -53,36 +89,58 @@ http.server_message(
 http.server_close();
 ```
 
-You can compile this to a pcap file with the command `resynth http.rsyn` - a
-file called `http.pcap` will be created.
-
 
 ## Currently Supported Protocols
-Not only can you write arbitrary TCP, UDP, ICMP packets, raw IP packets, and IP
-fragments, but there are also library modules to help with crafting packets for
-the following protocols:
-- VXLAN, ERSPAN Types I, II & III
-- DHCP
+
+At the lowest level you have full control: arbitrary TCP, UDP, and ICMP
+packets, raw IP datagrams, IP fragments, and reordered or retransmitted
+segments. Higher-level library modules are available for:
+
 - DNS
-- Netbios name service (NBNS)
-- TLS (early stages, still need support for SSL2 and common extensions,
-  although you can craft arbitrary TLS frames)
-- I/O: packets can be crafted which include the contents of external files
+- DHCP
+- TLS (including crafting arbitrary record sequences and malformed frames)
+- NetBIOS name service (NBNS)
+- VXLAN, GRE, ERSPAN Types I, II & III
+- Ethernet
+- I/O: embed the contents of an external file (e.g. a certificate) into a packet
+
+
+## Design Goals
+
+**Packets as code.** Source files are plain text. They can be read, reviewed,
+and diffed like any other code. The intent behind a test case is visible without
+opening a packet analyser. And because they're just text, test cases can be
+copied and modified — varying one field, adding a fragment, changing a cipher
+suite — in a way that's simply not possible with an opaque binary pcap.
+
+**Precise control.** Fragmented reassembly, out-of-order delivery, truncated
+headers, crafted TLS handshakes — things that are difficult to capture from real
+traffic and tedious to construct by hand are straightforward to describe.
+
+**High-level where helpful, low-level where necessary.** Protocol modules handle
+checksums, sequence numbers, and framing automatically. When you need to go
+off-script, raw bytes can be injected anywhere using inline hex escapes:
+`"some payload|0d 0a|more payload"`.
+
+**Speed.** The compiler is written in Rust. Generating thousands of test pcaps
+is fast enough that it can be a routine part of a build or test pipeline.
 
 
 ## Why not use $OTHER\_TOOL?
-- Scapy and python-based packet generation frameworks: they are incredibly slow
-  for my intended use-cases (fuzz-testing, live high-speed packet-generation),
-  even by the standards of what is possible in a pure python program. For very
-  high-rate applications, I don't think it would be possible to automatically
-  and transparently optimize scapy programs without adding some other layer
-  designed specifically to speed things up.
-- flowsynth: Flowsynth is really nice, and a big source of inspiration for
-  this. But it lacks support for higher-level protocols and that little bit of
-  extensibility which I really need.
+
+- **Scapy and other Python frameworks**: too slow for high-rate generation or
+  fuzz-testing workloads, and the programs don't lend themselves to
+  the compile-to-artifact workflow that makes test data versionable.
+- **flowsynth**: a big source of inspiration, but limited to lower-level
+  primitives with no support for higher-level protocol construction or
+  extensibility.
+- **Checking in pcap files directly**: the standard approach for tools like
+  suricata-verify, but pcaps are binary, opaque to code review, and wasteful
+  in version control history.
 
 
 ## Future Directions
+
 I plan to combine this with a DPDK-based packet generator in order to build a
 network performance-testing suite (think T-Rex). The idea would be to add a
 multi-instancing feature to the language to scale up the number of flows. The
@@ -92,16 +150,10 @@ addresses and port numbers) modulated. This would move all of the expensive
 work out of the packet transmit mainloop and allow us to generate traffic at
 upwards of 20Gbps per CPU.
 
-The language is pretty bare-bones right now but I plan to add:
-- More builtin types: eg. signed integers, booleans, integers of various widths
-- Arithmetic and logical operators so that complex expressions can be built
-- The ability to coerce any type in to bytes
-- Syntax for concatenating buffers
-
 I plan to add support for the following protocols to the standard library:
-- Support for PMTU and segmentization of TCP messages
+- Support for PMTU and segmentation of TCP messages
 - More direct support for HTTP
-- SMB2
 - ARP
+- SMB2
 - DCE-RPC
 - More exotic TCP/IP interactions and better ICMP support
