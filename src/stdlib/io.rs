@@ -101,7 +101,7 @@ const BUFIO_READ_ALL: FuncDef = func!(
     }
 );
 
-const BUFIO_CLASS: ClassDef = class!(
+static BUFIO_CLASS: ClassDef = class!(
     /// # Buffered I/O
     ///
     /// A stateful byte buffer that can be read in sequential chunks. Useful for

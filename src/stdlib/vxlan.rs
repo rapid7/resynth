@@ -48,7 +48,7 @@ const DGRAM: FuncDef = func!(
     }
 );
 
-const VXLAN: ClassDef = class!(
+static VXLAN: ClassDef = class!(
     /// # VXLAN Session
     resynth class Vxlan {
         dgram => Symbol::Func(&DGRAM),

@@ -31,7 +31,7 @@ const ENCAP: FuncDef = func!(
     }
 );
 
-const ERSPAN1: ClassDef = class!(
+static ERSPAN1: ClassDef = class!(
     /// # ERSPAN1 Session
     resynth class Erspan1 {
         encap => Symbol::Func(&ENCAP),

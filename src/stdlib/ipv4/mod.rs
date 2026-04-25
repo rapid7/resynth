@@ -167,7 +167,7 @@ const FRAG_DATAGRAM: FuncDef = func!(
     }
 );
 
-const IPFRAG: ClassDef = class!(
+static IPFRAG: ClassDef = class!(
     /// # IP Packet Fragment Builder
     ///
     /// Represents a single IP datagram that can be emitted either whole or split
