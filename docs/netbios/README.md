@@ -29,7 +29,7 @@
          dns::name(netbios::name::encode("BILLG")),
          atype: netbios::ns::rrtype::NB,
          ttl: 300,
-         std::be16(0x0000),       # NB_FLAGS: B-node, unique
+         netbios::ns::nb_flags(),  # NB_FLAGS: B-node, unique (defaults)
          192.168.1.100,           # NB_ADDRESS
      ),
  );

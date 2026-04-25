@@ -17,6 +17,9 @@
 | [len_be16](#len_be16) | `bytes` | Prefix a buffer with a 16-bit big-endian length field |
 | [len_be32](#len_be32) | `bytes` | Prefix a buffer with a 32-bit big-endian length field |
 | [len_be64](#len_be64) | `bytes` | Prefix a buffer with a 64-bit big-endian length field |
+| [len_le16](#len_le16) | `bytes` | Prefix a buffer with a 16-bit little-endian length field |
+| [len_le32](#len_le32) | `bytes` | Prefix a buffer with a 32-bit little-endian length field |
+| [len_le64](#len_le64) | `bytes` | Prefix a buffer with a 64-bit little-endian length field |
 | [len_u8](#len_u8) | `bytes` | Prefix a buffer with an 8-bit byte length field |
 | [u8](#u8) | `bytes` | Convert an integer into a one-byte string |
 
@@ -202,7 +205,82 @@ resynth fn len_be64 (
 ```
 Prefix a buffer with a 64-bit big-endian length field
 
- Prepends a 4-byte big-endian encoding of `len(payload) + adjust` to the payload bytes.
+ Prepends an 8-byte big-endian encoding of `len(payload) + adjust` to the payload bytes.
+
+### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| `adjust` | `u64` | Adjustment value added to the computed length before encoding _(default: `0x0000000000000000`)_ |
+| `…` | `bytes` | Zero or more additional values |
+
+### Returns
+
+| Type |
+| ---- |
+| `bytes` |
+
+## len_le16
+```resynth
+resynth fn len_le16 (
+    adjust: u16 = 0x0000,
+    =>
+    *collect_args: bytes,
+) -> bytes;
+```
+Prefix a buffer with a 16-bit little-endian length field
+
+ Prepends a 2-byte little-endian encoding of `len(payload) + adjust` to the payload bytes.
+
+### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| `adjust` | `u16` | Adjustment value added to the computed length before encoding _(default: `0x0000`)_ |
+| `…` | `bytes` | Zero or more additional values |
+
+### Returns
+
+| Type |
+| ---- |
+| `bytes` |
+
+## len_le32
+```resynth
+resynth fn len_le32 (
+    adjust: u32 = 0x00000000,
+    =>
+    *collect_args: bytes,
+) -> bytes;
+```
+Prefix a buffer with a 32-bit little-endian length field
+
+ Prepends a 4-byte little-endian encoding of `len(payload) + adjust` to the payload bytes.
+
+### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| `adjust` | `u32` | Adjustment value added to the computed length before encoding _(default: `0x00000000`)_ |
+| `…` | `bytes` | Zero or more additional values |
+
+### Returns
+
+| Type |
+| ---- |
+| `bytes` |
+
+## len_le64
+```resynth
+resynth fn len_le64 (
+    adjust: u64 = 0x0000000000000000,
+    =>
+    *collect_args: bytes,
+) -> bytes;
+```
+Prefix a buffer with a 64-bit little-endian length field
+
+ Prepends an 8-byte little-endian encoding of `len(payload) + adjust` to the payload bytes.
 
 ### Parameters
 

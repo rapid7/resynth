@@ -1,0 +1,30 @@
+import ipv4;
+import netbios;
+import dns;
+import std;
+
+let querier   = 192.168.1.1;
+let responder = 192.168.1.100;
+
+# NBNS Name Query Response: BILLG is at 192.168.1.100
+ipv4::udp::unicast(
+  responder/137,
+  querier/137,
+  dns::hdr(
+    0x1234,
+    netbios::ns::flags(
+      netbios::ns::opcode::QUERY,
+      response: true,
+      aa:       true,
+      ra:       true,
+    ),
+    ancount: 1,
+  ),
+  dns::answer(
+    dns::name(netbios::name::encode("BILLG")),
+    atype: netbios::ns::rrtype::NB,
+    ttl:   300,
+    netbios::ns::nb_flags(),  # B-node, unique (defaults)
+    responder,          # NB_ADDRESS
+  ),
+);

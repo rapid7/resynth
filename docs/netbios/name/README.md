@@ -2,6 +2,12 @@
 ## Index
 
 
+### Modules
+
+| Module | Description |
+| ------ | ----------- |
+| [suffix](suffix/README.md) | NetBIOS name suffixes |
+
 ### Functions
 
 | Function | Returns | Description |
