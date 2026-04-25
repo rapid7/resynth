@@ -4,13 +4,16 @@
 use crate::args::Args;
 use crate::err::Error;
 use crate::err::Error::RuntimeError;
-use crate::libapi::{ClassMap, Documented, Module, SymDesc};
+use crate::libapi::{ArgDecl, ClassDef, ClassMap, Documented, FuncDef, Module, SymDesc};
 use crate::sym::Symbol;
-use crate::val::Val;
+use crate::val::{Typed, Val, ValDef, ValType};
 
 use ::std::fs::{File, create_dir_all};
 use ::std::io::BufWriter;
 use ::std::path::{Path, PathBuf};
+
+use base64::{Engine as _, engine::general_purpose::STANDARD as BASE64};
+use serde_json::{Map, Value, json};
 
 pub fn unimplemented(mut args: Args) -> Result<Val, Error> {
     println!("Unimplemented stdlib call");
@@ -148,6 +151,173 @@ pub fn write_docs(out_dir: &Path) {
     collect_classes(&mut stk, &STDLIB, &mut class_map);
 
     recurse(out_dir, &mut stk, &STDLIB, &class_map)
+}
+
+// ── JSON stdlib export ────────────────────────────────────────────────────────
+
+/// Maximum integer value that can be represented exactly in a JSON number (2⁵³ − 1).
+const JSON_SAFE_INTEGER: u64 = 9_007_199_254_740_991;
+
+fn valdef_to_json_fields(val: &ValDef) -> Map<String, Value> {
+    let mut m = Map::new();
+    m.insert("type".into(), json!(val.val_type().to_string()));
+    match val {
+        ValDef::Nil => {}
+        ValDef::Bool(b) => {
+            m.insert("value".into(), json!(b));
+        }
+        ValDef::U8(n) => {
+            m.insert("value".into(), json!(n));
+        }
+        ValDef::U16(n) => {
+            m.insert("value".into(), json!(n));
+        }
+        ValDef::U32(n) => {
+            m.insert("value".into(), json!(n));
+        }
+        ValDef::U64(n) => {
+            if *n <= JSON_SAFE_INTEGER {
+                m.insert("value".into(), json!(n));
+            } else {
+                m.insert("value_decimal".into(), json!(n.to_string()));
+            }
+        }
+        ValDef::Ip4(addr) => {
+            m.insert("value".into(), json!(addr.to_string()));
+        }
+        ValDef::Sock4(sock) => {
+            m.insert("value".into(), json!(sock.to_string()));
+        }
+        ValDef::Str(bytes) => match ::std::str::from_utf8(bytes) {
+            Ok(s) => {
+                m.insert("value".into(), json!(s));
+            }
+            Err(_) => {
+                m.insert("value_base64".into(), json!(BASE64.encode(bytes)));
+            }
+        },
+        ValDef::Type(t) => {
+            m.insert("value".into(), json!(t.to_string()));
+        }
+    }
+    m
+}
+
+fn arg_to_json(arg: &crate::libapi::ArgDesc) -> Value {
+    let mut m = Map::new();
+    m.insert("name".into(), json!(arg.name));
+    m.insert("doc".into(), json!(arg.doc.trim()));
+    match &arg.typ {
+        ArgDecl::Positional(t) => {
+            m.insert("type".into(), json!(t.to_string()));
+            m.insert("required".into(), json!(true));
+        }
+        ArgDecl::Optional(d) => {
+            m.insert("type".into(), json!(d.val_type().to_string()));
+            m.insert("required".into(), json!(false));
+            m.insert("default".into(), json!(d.to_string()));
+        }
+    }
+    Value::Object(m)
+}
+
+fn func_to_json(f: &'static FuncDef) -> Value {
+    let args: Vec<Value> = f.args.iter().map(arg_to_json).collect();
+    let collect_type = if f.collect_type == ValType::Void {
+        Value::Null
+    } else {
+        json!(f.collect_type.to_string())
+    };
+    json!({
+        "doc": f.doc.trim(),
+        "signature": f.to_string(),
+        "args": args,
+        "collect_type": collect_type,
+        "returns": f.return_type.to_string(),
+    })
+}
+
+fn class_to_json(cls: &'static ClassDef) -> Value {
+    let methods: Map<String, Value> = cls
+        .symtab
+        .iter()
+        .filter_map(|SymDesc { name, sym }| {
+            if let Symbol::Func(f) = sym {
+                Some(((*name).to_string(), func_to_json(f)))
+            } else {
+                None
+            }
+        })
+        .collect();
+    json!({
+        "doc": cls.doc.trim(),
+        "methods": methods,
+    })
+}
+
+fn collect_json(
+    m: &'static Module,
+    stk: &mut Vec<&'static str>,
+    functions: &mut Map<String, Value>,
+    classes: &mut Map<String, Value>,
+    constants: &mut Map<String, Value>,
+) {
+    for SymDesc { name, sym } in m.symtab.iter() {
+        stk.push(name);
+        match sym {
+            Symbol::Module(child) => {
+                collect_json(child, stk, functions, classes, constants);
+            }
+            Symbol::Func(f) => {
+                functions.insert(stk.join("::"), func_to_json(f));
+            }
+            Symbol::Class(cls) => {
+                classes
+                    .entry(cls.name.to_string())
+                    .or_insert_with(|| class_to_json(cls));
+            }
+            Symbol::Val(val) => {
+                constants.insert(stk.join("::"), Value::Object(valdef_to_json_fields(val)));
+            }
+        }
+        stk.pop();
+    }
+}
+
+/// Write the stdlib as structured JSON.
+///
+/// If `out_path` is `Some`, writes to that file; otherwise writes to stdout.
+pub fn write_stdlib_json(out_path: Option<&Path>) {
+    let mut functions: Map<String, Value> = Map::new();
+    let mut classes: Map<String, Value> = Map::new();
+    let mut constants: Map<String, Value> = Map::new();
+
+    let mut stk: Vec<&'static str> = Vec::new();
+    collect_json(
+        &STDLIB,
+        &mut stk,
+        &mut functions,
+        &mut classes,
+        &mut constants,
+    );
+
+    let root = json!({
+        "version": env!("CARGO_PKG_VERSION"),
+        "functions": functions,
+        "classes": classes,
+        "constants": constants,
+    });
+
+    match out_path {
+        Some(path) => {
+            let f = File::create(path).expect("create json output file");
+            serde_json::to_writer(f, &root).expect("write stdlib json");
+        }
+        None => {
+            serde_json::to_writer(::std::io::stdout(), &root).expect("write stdlib json");
+            println!();
+        }
+    }
 }
 
 #[cfg(test)]

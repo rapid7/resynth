@@ -55,6 +55,8 @@ termcolor = {version = "1.4", optional = true}
 clap = {version = "4.6", optional = true, features = ["cargo", "derive"]}
 bytemuck = { version = "1.25.0", features = ["derive"] }
 derive_more = { version = "2.1.1", features = ["display", "error", "from"] }
+serde_json = "1.0.149"
+base64 = "0.22.1"
 
 [[bin]]
 name = "resynth"
