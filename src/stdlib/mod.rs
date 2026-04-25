@@ -41,7 +41,20 @@ mod vxlan;
 const STDLIB: Module = module! {
     /// # Resynth Standard Library
     ///
-    /// These are all the basic functions included in resynth
+    /// Resynth is a packet synthesis language for building precise, readable
+    /// network captures. Programs are compiled to `.pcap` files that can be
+    /// used to test DPI engines, intrusion detection systems, protocol
+    /// decoders, and other network analysis tools.
+    ///
+    /// A resynth program imports modules from this standard library, constructs
+    /// flows and datagrams using typed functions, and emits packets by
+    /// evaluating expressions. The language is small by design: there are
+    /// exactly three statement forms, one binary operator, and a handful of
+    /// literal types — but the stdlib covers a wide range of protocols.
+    ///
+    /// See the [language grammar and type system](grammar.md) for a full
+    /// reference on syntax, types, calling conventions, and byte-encoding
+    /// semantics.
     resynth mod stdlib {
         std => Symbol::Module(&std::MODULE),
         text => Symbol::Module(&text::MODULE),
@@ -133,7 +146,7 @@ pub fn recurse(
                 let f = File::create(mod_path.clone()).expect("Unable to create file");
                 let mut wr = BufWriter::new(f);
 
-                let doc_root = doc_root_prefix(stk.len());
+                let doc_root = doc_root_prefix(stk.len() - 1);
                 cls.write_docs(&mut wr, class_map, &doc_root)
                     .expect("class doc");
             }
