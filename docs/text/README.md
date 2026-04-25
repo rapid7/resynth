@@ -25,6 +25,11 @@ resynth fn concat (
 ```
  Concatenate strings
 
+| | Name | Type |
+|-| ---- | ---- |
+| collect | `*args` | `bytes` |
+| returns | | `bytes` |
+
 ## crlflines
 ```resynth
 resynth fn crlflines (
@@ -34,6 +39,11 @@ resynth fn crlflines (
 ```
  join strings with CRLF line-endings
 
+| | Name | Type |
+|-| ---- | ---- |
+| collect | `*args` | `bytes` |
+| returns | | `bytes` |
+
 ## len
 ```resynth
 resynth fn len (
@@ -42,3 +52,8 @@ resynth fn len (
 ) -> u64;
 ```
  Return the length of a string (or strings)
+
+| | Name | Type |
+|-| ---- | ---- |
+| collect | `*args` | `bytes` |
+| returns | | `u64` |

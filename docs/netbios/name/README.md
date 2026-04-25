@@ -17,3 +17,9 @@ resynth fn encode (
 ) -> bytes;
 ```
  Encode a netbios name, including the one-byte suffix field
+
+| | Name | Type |
+|-| ---- | ---- |
+| opt | `suffix` | `u8` |
+| collect | `*args` | `bytes` |
+| returns | | `bytes` |

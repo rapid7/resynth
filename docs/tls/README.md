@@ -222,6 +222,11 @@ resynth fn certificates (
 ```
  Returns a chain of X.509 certificates
 
+| | Name | Type |
+|-| ---- | ---- |
+| collect | `*args` | `bytes` |
+| returns | | `bytes` |
+
 ## ciphers
 ```resynth
 resynth fn ciphers (
@@ -233,6 +238,11 @@ resynth fn ciphers (
 
  ### Arguments
  * `*cipher: u16` the [TLS ciphers](cipher/README.md)
+
+| | Name | Type |
+|-| ---- | ---- |
+| collect | `*args` | `u16` |
+| returns | | `bytes` |
 
 ## client_hello
 ```resynth
@@ -257,6 +267,15 @@ resynth fn client_hello (
  * `compression: Str` Supported compression algorithms (pretty much defunct)
  * `*extensions: Str` Extensions, eg. as created by [extension()](#extension)
 
+| | Name | Type |
+|-| ---- | ---- |
+| opt | `version` | `u16` |
+| opt | `sessionid` | `bytes` |
+| opt | `ciphers` | `bytes` |
+| opt | `compression` | `bytes` |
+| collect | `*args` | `bytes` |
+| returns | | `bytes` |
+
 ## extension
 ```resynth
 resynth fn extension (
@@ -280,6 +299,12 @@ resynth fn extension (
  ### Arguments
  * `ext: u16` [TLS Extension](ext/README.md)
  * `*payload: Str` the payload bytes
+
+| | Name | Type |
+|-| ---- | ---- |
+| arg | `ext` | `u16` |
+| collect | `*args` | `bytes` |
+| returns | | `bytes` |
 
 ## message
 ```resynth
@@ -308,6 +333,13 @@ resynth fn message (
  * `content: u8` The [TLS message type](content/README.md)
  * `*payload: Str` the payload bytes
 
+| | Name | Type |
+|-| ---- | ---- |
+| opt | `version` | `u16` |
+| opt | `content` | `u8` |
+| collect | `*args` | `bytes` |
+| returns | | `bytes` |
+
 ## server_hello
 ```resynth
 resynth fn server_hello (
@@ -330,6 +362,15 @@ resynth fn server_hello (
  * `compression: u8` Negotiated compression algorithm (pretty much defunct)
  * `*extensions: Str` Extensions, eg. as created by [extension()](#extension)
 
+| | Name | Type |
+|-| ---- | ---- |
+| opt | `version` | `u16` |
+| opt | `sessionid` | `bytes` |
+| opt | `cipher` | `u16` |
+| opt | `compression` | `u8` |
+| collect | `*args` | `bytes` |
+| returns | | `bytes` |
+
 ## sni
 ```resynth
 resynth fn sni (
@@ -343,3 +384,8 @@ resynth fn sni (
 
  ### Arguments
  * `name: Str` Server Names
+
+| | Name | Type |
+|-| ---- | ---- |
+| collect | `*args` | `bytes` |
+| returns | | `bytes` |

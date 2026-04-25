@@ -16,3 +16,9 @@ resynth fn encap (
 ) -> PktGen;
 ```
  Encapsulate packets in ERSPAN2
+
+| | Name | Type |
+|-| ---- | ---- |
+| arg | `it` | `PktGen` |
+| opt | `port_index` | `u32` |
+| returns | | `PktGen` |

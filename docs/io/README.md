@@ -26,6 +26,11 @@ resynth fn bufio (
  packets — for example, sending the first 15 bytes of a TLS record in one
  TCP segment and the rest in another.
 
+| | Name | Type |
+|-| ---- | ---- |
+| collect | `*args` | `bytes` |
+| returns | | [BufIO](../io/BufIO.md) |
+
 ## file
 ```resynth
 resynth fn file (
@@ -35,3 +40,9 @@ resynth fn file (
 ) -> bytes;
 ```
  Load the contents of a file into a string
+
+| | Name | Type |
+|-| ---- | ---- |
+| arg | `filename` | `bytes` |
+| collect | `*args` | `bytes` |
+| returns | | `bytes` |

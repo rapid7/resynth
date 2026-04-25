@@ -26,6 +26,11 @@ resynth fn be16 (
 ```
  Encode a 16bit integer into 2 big-endian bytes
 
+| | Name | Type |
+|-| ---- | ---- |
+| arg | `val` | `u64` |
+| returns | | `bytes` |
+
 ## be32
 ```resynth
 resynth fn be32 (
@@ -33,6 +38,11 @@ resynth fn be32 (
 ) -> bytes;
 ```
  Encode a 32bit integer into 4 big-endian bytes
+
+| | Name | Type |
+|-| ---- | ---- |
+| arg | `val` | `u64` |
+| returns | | `bytes` |
 
 ## be64
 ```resynth
@@ -42,6 +52,11 @@ resynth fn be64 (
 ```
  Encode a 64bit integer into 8 big-endian bytes
 
+| | Name | Type |
+|-| ---- | ---- |
+| arg | `val` | `u64` |
+| returns | | `bytes` |
+
 ## le16
 ```resynth
 resynth fn le16 (
@@ -49,6 +64,11 @@ resynth fn le16 (
 ) -> bytes;
 ```
  Encode a 16bit integer into 2 little-endian bytes
+
+| | Name | Type |
+|-| ---- | ---- |
+| arg | `val` | `u64` |
+| returns | | `bytes` |
 
 ## le32
 ```resynth
@@ -58,6 +78,11 @@ resynth fn le32 (
 ```
  Encode a 32bit integer into 4 little-endian bytes
 
+| | Name | Type |
+|-| ---- | ---- |
+| arg | `val` | `u64` |
+| returns | | `bytes` |
+
 ## le64
 ```resynth
 resynth fn le64 (
@@ -65,6 +90,11 @@ resynth fn le64 (
 ) -> bytes;
 ```
  Encode a 64bit integer into 8 little-endian bytes
+
+| | Name | Type |
+|-| ---- | ---- |
+| arg | `val` | `u64` |
+| returns | | `bytes` |
 
 ## len_be16
 ```resynth
@@ -79,6 +109,12 @@ resynth fn len_be16 (
  ### Arguments
  * `adjust: u16` An adjustment value to add to the prefixed length
 
+| | Name | Type |
+|-| ---- | ---- |
+| opt | `adjust` | `u16` |
+| collect | `*args` | `bytes` |
+| returns | | `bytes` |
+
 ## len_be32
 ```resynth
 resynth fn len_be32 (
@@ -91,6 +127,12 @@ resynth fn len_be32 (
 
  ### Arguments
  * `adjust: u32` An adjustment value to add to the prefixed length
+
+| | Name | Type |
+|-| ---- | ---- |
+| opt | `adjust` | `u32` |
+| collect | `*args` | `bytes` |
+| returns | | `bytes` |
 
 ## len_be64
 ```resynth
@@ -105,6 +147,12 @@ resynth fn len_be64 (
  ### Arguments
  * `adjust: u64` An adjustment value to add to the prefixed length
 
+| | Name | Type |
+|-| ---- | ---- |
+| opt | `adjust` | `u64` |
+| collect | `*args` | `bytes` |
+| returns | | `bytes` |
+
 ## len_u8
 ```resynth
 resynth fn len_u8 (
@@ -118,6 +166,12 @@ resynth fn len_u8 (
  ### Arguments
  * `adjust: u8` An adjustment value to add to the prefixed length
 
+| | Name | Type |
+|-| ---- | ---- |
+| opt | `adjust` | `u8` |
+| collect | `*args` | `bytes` |
+| returns | | `bytes` |
+
 ## u8
 ```resynth
 resynth fn u8 (
@@ -125,3 +179,8 @@ resynth fn u8 (
 ) -> bytes;
 ```
  Convert an integer into a one-byte string
+
+| | Name | Type |
+|-| ---- | ---- |
+| arg | `val` | `u8` |
+| returns | | `bytes` |

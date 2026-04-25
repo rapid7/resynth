@@ -25,3 +25,14 @@ resynth fn session (
 ) -> Erspan3;
 ```
  Create an erspan3 session
+
+| | Name | Type |
+|-| ---- | ---- |
+| arg | `cl` | `Ip4` |
+| arg | `sv` | `Ip4` |
+| opt | `raw` | `bool` |
+| opt | `hwid` | `u32` |
+| opt | `sgt` | `u32` |
+| opt | `granularity` | `u32` |
+| opt | `direction` | `u32` |
+| returns | | [Erspan3](../erspan3/Erspan3.md) |

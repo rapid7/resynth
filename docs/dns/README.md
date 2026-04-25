@@ -39,6 +39,15 @@ resynth fn answer (
 ```
  A DNS answer (RR)
 
+| | Name | Type |
+|-| ---- | ---- |
+| arg | `aname` | `bytes` |
+| opt | `atype` | `u16` |
+| opt | `aclass` | `u16` |
+| opt | `ttl` | `u32` |
+| collect | `*args` | `bytes` |
+| returns | | `bytes` |
+
 ## flags
 ```resynth
 resynth fn flags (
@@ -56,6 +65,20 @@ resynth fn flags (
 ```
  a DNS flags field
 
+| | Name | Type |
+|-| ---- | ---- |
+| arg | `opcode` | `u8` |
+| opt | `response` | `bool` |
+| opt | `aa` | `bool` |
+| opt | `tc` | `bool` |
+| opt | `rd` | `bool` |
+| opt | `ra` | `bool` |
+| opt | `z` | `bool` |
+| opt | `ad` | `bool` |
+| opt | `cd` | `bool` |
+| opt | `rcode` | `u8` |
+| returns | | `u16` |
+
 ## hdr
 ```resynth
 resynth fn hdr (
@@ -68,6 +91,16 @@ resynth fn hdr (
 ) -> bytes;
 ```
  A DNS header
+
+| | Name | Type |
+|-| ---- | ---- |
+| arg | `id` | `u16` |
+| arg | `flags` | `u16` |
+| opt | `qdcount` | `u16` |
+| opt | `ancount` | `u16` |
+| opt | `nscount` | `u16` |
+| opt | `arcount` | `u16` |
+| returns | | `bytes` |
 
 ## host
 ```resynth
@@ -83,6 +116,16 @@ resynth fn host (
 ```
  Perform a DNS lookup, with response
 
+| | Name | Type |
+|-| ---- | ---- |
+| arg | `client` | `Ip4` |
+| arg | `qname` | `bytes` |
+| opt | `ttl` | `u32` |
+| opt | `ns` | `Ip4` |
+| opt | `raw` | `bool` |
+| collect | `*args` | `Ip4` |
+| returns | | `PktGen` |
+
 ## name
 ```resynth
 resynth fn name (
@@ -93,6 +136,12 @@ resynth fn name (
 ```
  A DNS name encoded with length prefixes
 
+| | Name | Type |
+|-| ---- | ---- |
+| opt | `complete` | `bool` |
+| collect | `*args` | `bytes` |
+| returns | | `bytes` |
+
 ## pointer
 ```resynth
 resynth fn pointer (
@@ -100,6 +149,11 @@ resynth fn pointer (
 ) -> bytes;
 ```
  A DNS compression pointer
+
+| | Name | Type |
+|-| ---- | ---- |
+| opt | `offset` | `u16` |
+| returns | | `bytes` |
 
 ## question
 ```resynth
@@ -110,3 +164,10 @@ resynth fn question (
 ) -> bytes;
 ```
  A DNS question
+
+| | Name | Type |
+|-| ---- | ---- |
+| arg | `qname` | `bytes` |
+| opt | `qtype` | `u16` |
+| opt | `qclass` | `u16` |
+| returns | | `bytes` |

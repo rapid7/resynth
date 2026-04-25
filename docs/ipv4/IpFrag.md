@@ -35,6 +35,12 @@ resynth fn datagram (
  ### Arguments
  * 'raw' If true, then omit ethernet header
 
+| | Name | Type |
+|-| ---- | ---- |
+| opt | `raw` | `bool` |
+| collect | `*args` | `bytes` |
+| returns | | `Pkt` |
+
 ## fragment
 ```resynth
 resynth fn fragment (
@@ -52,6 +58,14 @@ resynth fn fragment (
  * `len` Length in bytes
  * 'raw' If true, then omit ethernet header
 
+| | Name | Type |
+|-| ---- | ---- |
+| arg | `frag_off` | `u16` |
+| arg | `len` | `u16` |
+| opt | `raw` | `bool` |
+| collect | `*args` | `bytes` |
+| returns | | `Pkt` |
+
 ## tail
 ```resynth
 resynth fn tail (
@@ -67,3 +81,10 @@ resynth fn tail (
  ### Arguments
  * `frag_off` Offset in 8-byte blocks
  * 'raw' If true, then omit ethernet header
+
+| | Name | Type |
+|-| ---- | ---- |
+| arg | `frag_off` | `u16` |
+| opt | `raw` | `bool` |
+| collect | `*args` | `bytes` |
+| returns | | `Pkt` |

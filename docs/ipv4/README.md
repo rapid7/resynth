@@ -38,6 +38,20 @@ resynth fn datagram (
 ```
  Create a raw IPv4 header or datagram
 
+| | Name | Type |
+|-| ---- | ---- |
+| arg | `src` | `Ip4` |
+| arg | `dst` | `Ip4` |
+| opt | `id` | `u16` |
+| opt | `evil` | `bool` |
+| opt | `df` | `bool` |
+| opt | `mf` | `bool` |
+| opt | `ttl` | `u8` |
+| opt | `frag_off` | `u16` |
+| opt | `proto` | `u8` |
+| collect | `*args` | `bytes` |
+| returns | | `Pkt` |
+
 ## frag
 ```resynth
 resynth fn frag (
@@ -53,3 +67,15 @@ resynth fn frag (
 ) -> IpFrag;
 ```
  Create a context for a packet which can be arbitrarily fragmented
+
+| | Name | Type |
+|-| ---- | ---- |
+| arg | `src` | `Ip4` |
+| arg | `dst` | `Ip4` |
+| opt | `id` | `u16` |
+| opt | `evil` | `bool` |
+| opt | `df` | `bool` |
+| opt | `ttl` | `u8` |
+| opt | `proto` | `u8` |
+| collect | `*args` | `bytes` |
+| returns | | [IpFrag](../ipv4/IpFrag.md) |

@@ -17,6 +17,11 @@ resynth fn dgram (
 ```
  Encapsulate a single packet
 
+| | Name | Type |
+|-| ---- | ---- |
+| arg | `pkt` | `Pkt` |
+| returns | | `Pkt` |
+
 ## encap
 ```resynth
 resynth fn encap (
@@ -24,3 +29,8 @@ resynth fn encap (
 ) -> PktGen;
 ```
  Encapsulate a series of packets
+
+| | Name | Type |
+|-| ---- | ---- |
+| arg | `it` | `PktGen` |
+| returns | | `PktGen` |

@@ -28,6 +28,15 @@ resynth fn broadcast (
 ```
  Send a broadcast datagram
 
+| | Name | Type |
+|-| ---- | ---- |
+| arg | `src` | `Sock4` |
+| arg | `dst` | `Sock4` |
+| opt | `srcip` | `type` |
+| opt | `raw` | `bool` |
+| collect | `*args` | `bytes` |
+| returns | | `Pkt` |
+
 ## flow
 ```resynth
 resynth fn flow (
@@ -37,6 +46,13 @@ resynth fn flow (
 ) -> UdpFlow;
 ```
  Create a UDP flow context, from which other packets can be created
+
+| | Name | Type |
+|-| ---- | ---- |
+| arg | `cl` | `Sock4` |
+| arg | `sv` | `Sock4` |
+| opt | `raw` | `bool` |
+| returns | | [UdpFlow](../../ipv4/udp/UdpFlow.md) |
 
 ## hdr
 ```resynth
@@ -49,6 +65,14 @@ resynth fn hdr (
 ```
  Returns a UDP header (with no IP header)
 
+| | Name | Type |
+|-| ---- | ---- |
+| arg | `src` | `u16` |
+| arg | `dst` | `u16` |
+| opt | `len` | `u16` |
+| opt | `csum` | `u16` |
+| returns | | `bytes` |
+
 ## unicast
 ```resynth
 resynth fn unicast (
@@ -60,3 +84,11 @@ resynth fn unicast (
 ) -> Pkt;
 ```
  Send a unicast datagram
+
+| | Name | Type |
+|-| ---- | ---- |
+| arg | `src` | `Sock4` |
+| arg | `dst` | `Sock4` |
+| opt | `raw` | `bool` |
+| collect | `*args` | `bytes` |
+| returns | | `Pkt` |

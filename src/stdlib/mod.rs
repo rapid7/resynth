@@ -4,7 +4,7 @@
 use crate::args::Args;
 use crate::err::Error;
 use crate::err::Error::RuntimeError;
-use crate::libapi::{Documented, Module, SymDesc};
+use crate::libapi::{ClassMap, Documented, Module, SymDesc};
 use crate::sym::Symbol;
 use crate::val::Val;
 
@@ -70,8 +70,35 @@ pub fn toplevel_module(name: &str) -> Option<&'static Module> {
     }
 }
 
-/// Generate documentation for a module.. This needs a lot of work.
-pub fn recurse(out_dir: &Path, stk: &mut Vec<&'static str>, m: &'static Module) {
+/// First pass: walk the module tree and collect all class → doc-root-relative path entries.
+fn collect_classes(stk: &mut Vec<&'static str>, m: &'static Module, map: &mut ClassMap) {
+    for SymDesc { name, sym } in m.symtab.iter() {
+        stk.push(name);
+        match sym {
+            Symbol::Module(child) => collect_classes(stk, child, map),
+            Symbol::Class(cls) => {
+                let path = format!("{}/{}.md", stk[..stk.len() - 1].join("/"), name);
+                map.insert(cls, path);
+            }
+            _ => {}
+        }
+        stk.pop();
+    }
+}
+
+/// Compute the relative prefix needed to reach the docs root from a module at depth `depth`.
+/// e.g. depth 1 → `"../"`, depth 2 → `"../../"`.
+fn doc_root_prefix(depth: usize) -> String {
+    "../".repeat(depth)
+}
+
+/// Generate documentation for a module.
+pub fn recurse(
+    out_dir: &Path,
+    stk: &mut Vec<&'static str>,
+    m: &'static Module,
+    class_map: &ClassMap,
+) {
     let mut mod_path = PathBuf::from(out_dir);
 
     for item in stk.iter() {
@@ -88,12 +115,14 @@ pub fn recurse(out_dir: &Path, stk: &mut Vec<&'static str>, m: &'static Module) 
 
     mod_path.pop();
 
-    m.write_docs(&mut wr).expect("Write module docs");
+    let doc_root = doc_root_prefix(stk.len());
+    m.write_docs(&mut wr, class_map, &doc_root)
+        .expect("Write module docs");
 
     for SymDesc { name, sym } in m.symtab.iter() {
         stk.push(name);
         match sym {
-            Symbol::Module(child) => recurse(out_dir, stk, child),
+            Symbol::Module(child) => recurse(out_dir, stk, child, class_map),
             Symbol::Class(cls) => {
                 mod_path.push(format!("{}.md", name));
                 println!("class -> {}", mod_path.display());
@@ -101,7 +130,9 @@ pub fn recurse(out_dir: &Path, stk: &mut Vec<&'static str>, m: &'static Module) 
                 let f = File::create(mod_path.clone()).expect("Unable to create file");
                 let mut wr = BufWriter::new(f);
 
-                cls.write_docs(&mut wr).expect("class doc");
+                let doc_root = doc_root_prefix(stk.len());
+                cls.write_docs(&mut wr, class_map, &doc_root)
+                    .expect("class doc");
             }
             _ => {}
         }
@@ -113,8 +144,10 @@ pub fn write_docs(out_dir: &Path) {
     create_dir_all(out_dir).expect("mkdir");
 
     let mut stk: Vec<&'static str> = Vec::new();
+    let mut class_map = ClassMap::new();
+    collect_classes(&mut stk, &STDLIB, &mut class_map);
 
-    recurse(out_dir, &mut stk, &STDLIB)
+    recurse(out_dir, &mut stk, &STDLIB, &class_map)
 }
 
 #[cfg(test)]
