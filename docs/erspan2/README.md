@@ -1,14 +1,20 @@
- # ERSPAN version 2
+ # ERSPAN Version 2
+
+ ERSPAN Type II — encapsulates mirrored traffic in a GRE tunnel with sequence numbers and port IDs.
 ## Index
 
 
 ### Classes
 
-- [Erspan2](Erspan2.md)
+| Class | Description |
+| ----- | ----------- |
+| [Erspan2](Erspan2.md) | ERSPAN2 Session |
 
 ### Functions
 
-- [session](#session)
+| Function | Returns | Description |
+| -------- | ------- | ----------- |
+| [session](#session) | [Erspan2](../erspan2/Erspan2.md) | Create an erspan2 session |
 
 
 
@@ -20,11 +26,18 @@ resynth fn session (
     raw: bool = false,
 ) -> Erspan2;
 ```
- Create an erspan2 session
+Create an erspan2 session
 
-| | Name | Type |
-|-| ---- | ---- |
-| arg | `cl` | `Ip4` |
-| arg | `sv` | `Ip4` |
-| opt | `raw` | `bool` |
-| returns | | [Erspan2](../erspan2/Erspan2.md) |
+### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| `cl` | `Ip4` | Source (collector) IP address |
+| `sv` | `Ip4` | Destination (monitor) IP address |
+| `raw` | `bool` | Enable raw mode; disables automatic IP/GRE header computation _(default: `false`)_ |
+
+### Returns
+
+| Type |
+| ---- |
+| [Erspan2](../erspan2/Erspan2.md) |

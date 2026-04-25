@@ -1,14 +1,20 @@
  # Transmission Control Protocol (TCP)
+
+ TCP flow construction — open connections, send data, and close sessions over IPv4.
 ## Index
 
 
 ### Classes
 
-- [TcpFlow](TcpFlow.md)
+| Class | Description |
+| ----- | ----------- |
+| [TcpFlow](TcpFlow.md) | TCP Connection |
 
 ### Functions
 
-- [flow](#flow)
+| Function | Returns | Description |
+| -------- | ------- | ----------- |
+| [flow](#flow) | [TcpFlow](../../ipv4/tcp/TcpFlow.md) | Create a [TCP flow context](TcpFlow.md), from which packets can be created |
 
 
 
@@ -22,13 +28,20 @@ resynth fn flow (
     raw: bool = false,
 ) -> TcpFlow;
 ```
- Create a [TCP flow context](TcpFlow.md), from which packets can be created
+Create a [TCP flow context](TcpFlow.md), from which packets can be created
 
-| | Name | Type |
-|-| ---- | ---- |
-| arg | `cl` | `Sock4` |
-| arg | `sv` | `Sock4` |
-| opt | `cl_seq` | `u32` |
-| opt | `sv_seq` | `u32` |
-| opt | `raw` | `bool` |
-| returns | | [TcpFlow](../../ipv4/tcp/TcpFlow.md) |
+### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| `cl` | `Sock4` | Client socket address |
+| `sv` | `Sock4` | Server socket address |
+| `cl_seq` | `u32` | Initial client TCP sequence number _(default: `0x00000001`)_ |
+| `sv_seq` | `u32` | Initial server TCP sequence number _(default: `0x00000001`)_ |
+| `raw` | `bool` | Enable raw mode; disables automatic IP/TCP header computation _(default: `false`)_ |
+
+### Returns
+
+| Type |
+| ---- |
+| [TcpFlow](../../ipv4/tcp/TcpFlow.md) |

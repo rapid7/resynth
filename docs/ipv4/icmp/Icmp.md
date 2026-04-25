@@ -4,8 +4,10 @@
 
 ### Functions
 
-- [echo](#echo)
-- [echo_reply](#echo_reply)
+| Function | Returns | Description |
+| -------- | ------- | ----------- |
+| [echo](#echo) | `Pkt` | ICMP Ping |
+| [echo_reply](#echo_reply) | `Pkt` | ICMP Ping reply |
 
 
 
@@ -15,12 +17,19 @@ resynth fn echo (
     payload: bytes,
 ) -> Pkt;
 ```
- ICMP Ping
+ICMP Ping
 
-| | Name | Type |
-|-| ---- | ---- |
-| arg | `payload` | `bytes` |
-| returns | | `Pkt` |
+### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| `payload` | `bytes` | Payload bytes for the ICMP echo request |
+
+### Returns
+
+| Type |
+| ---- |
+| `Pkt` |
 
 ## echo_reply
 ```resynth
@@ -28,9 +37,16 @@ resynth fn echo_reply (
     payload: bytes,
 ) -> Pkt;
 ```
- ICMP Ping reply
+ICMP Ping reply
 
-| | Name | Type |
-|-| ---- | ---- |
-| arg | `payload` | `bytes` |
-| returns | | `Pkt` |
+### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| `payload` | `bytes` | Payload bytes for the ICMP echo reply |
+
+### Returns
+
+| Type |
+| ---- |
+| `Pkt` |

@@ -1,17 +1,24 @@
  # DHCP / BOOTP
+
+ Dynamic Host Configuration Protocol — packet construction and protocol constants
+ for DHCP and its predecessor BOOTP.
 ## Index
 
 
 ### Modules
 
-- [msgtype](msgtype/README.md)
-- [opcode](opcode/README.md)
-- [opt](opt/README.md)
+| Module | Description |
+| ------ | ----------- |
+| [msgtype](msgtype/README.md) | DHCP Message Type |
+| [opcode](opcode/README.md) | DHCP Opcodes |
+| [opt](opt/README.md) | DHCP Options |
 
 ### Functions
 
-- [hdr](#hdr)
-- [option](#option)
+| Function | Returns | Description |
+| -------- | ------- | ----------- |
+| [hdr](#hdr) | `bytes` | DHCP header |
+| [option](#option) | `bytes` | DHCP Option |
 
 ### Constants
 
@@ -40,24 +47,31 @@ resynth fn hdr (
     magic: u32 = 0x63825363,
 ) -> bytes;
 ```
- DHCP header
+DHCP header
 
-| | Name | Type |
-|-| ---- | ---- |
-| opt | `opcode` | `u8` |
-| opt | `htype` | `u8` |
-| opt | `hlen` | `u8` |
-| opt | `hops` | `u8` |
-| opt | `xid` | `u32` |
-| opt | `ciaddr` | `Ip4` |
-| opt | `yiaddr` | `Ip4` |
-| opt | `siaddr` | `Ip4` |
-| opt | `giaddr` | `Ip4` |
-| opt | `chaddr` | `type` |
-| opt | `sname` | `type` |
-| opt | `file` | `type` |
-| opt | `magic` | `u32` |
-| returns | | `bytes` |
+### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| `opcode` | `u8` | DHCP opcode (REQUEST or REPLY) _(default: `0x01`)_ |
+| `htype` | `u8` | Hardware address type (e.g. ETHER) _(default: `0x01`)_ |
+| `hlen` | `u8` | Hardware address length in bytes _(default: `0x06`)_ |
+| `hops` | `u8` | Number of relay agent hops _(default: `0x00`)_ |
+| `xid` | `u32` | Transaction ID to correlate request and reply _(default: `0x00000000`)_ |
+| `ciaddr` | `Ip4` | Client IP address (filled in if client has one) _(default: `0.0.0.0`)_ |
+| `yiaddr` | `Ip4` | Your (client) IP address as assigned by the server _(default: `0.0.0.0`)_ |
+| `siaddr` | `Ip4` | Next server IP address _(default: `0.0.0.0`)_ |
+| `giaddr` | `Ip4` | Relay agent IP address _(default: `0.0.0.0`)_ |
+| `chaddr` | `type` | Client hardware address (MAC address bytes) _(default: `Str`)_ |
+| `sname` | `type` | Server host name (optional, null-terminated string) _(default: `Str`)_ |
+| `file` | `type` | Boot file name (optional, null-terminated string) _(default: `Str`)_ |
+| `magic` | `u32` | DHCP magic cookie value _(default: `0x63825363`)_ |
+
+### Returns
+
+| Type |
+| ---- |
+| `bytes` |
 
 ## option
 ```resynth
@@ -67,10 +81,17 @@ resynth fn option (
     *collect_args: bytes,
 ) -> bytes;
 ```
- DHCP Option
+DHCP Option
 
-| | Name | Type |
-|-| ---- | ---- |
-| arg | `opt` | `u8` |
-| collect | `*args` | `bytes` |
-| returns | | `bytes` |
+### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| `opt` | `u8` | DHCP option code |
+| `…` | `bytes` | Zero or more additional values |
+
+### Returns
+
+| Type |
+| ---- |
+| `bytes` |

@@ -1,12 +1,16 @@
  # Text / Byte-String Functions
+
+ String and byte-buffer manipulation — concatenation, length, encoding, and hex conversion.
 ## Index
 
 
 ### Functions
 
-- [concat](#concat)
-- [crlflines](#crlflines)
-- [len](#len)
+| Function | Returns | Description |
+| -------- | ------- | ----------- |
+| [concat](#concat) | `bytes` | Concatenate strings |
+| [crlflines](#crlflines) | `bytes` | join strings with CRLF line-endings |
+| [len](#len) | `u64` | Return the length of a string (or strings) |
 
 ### Constants
 
@@ -23,12 +27,19 @@ resynth fn concat (
     *collect_args: bytes,
 ) -> bytes;
 ```
- Concatenate strings
+Concatenate strings
 
-| | Name | Type |
-|-| ---- | ---- |
-| collect | `*args` | `bytes` |
-| returns | | `bytes` |
+### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| `…` | `bytes` | Zero or more additional values |
+
+### Returns
+
+| Type |
+| ---- |
+| `bytes` |
 
 ## crlflines
 ```resynth
@@ -37,12 +48,19 @@ resynth fn crlflines (
     *collect_args: bytes,
 ) -> bytes;
 ```
- join strings with CRLF line-endings
+join strings with CRLF line-endings
 
-| | Name | Type |
-|-| ---- | ---- |
-| collect | `*args` | `bytes` |
-| returns | | `bytes` |
+### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| `…` | `bytes` | Zero or more additional values |
+
+### Returns
+
+| Type |
+| ---- |
+| `bytes` |
 
 ## len
 ```resynth
@@ -51,9 +69,16 @@ resynth fn len (
     *collect_args: bytes,
 ) -> u64;
 ```
- Return the length of a string (or strings)
+Return the length of a string (or strings)
 
-| | Name | Type |
-|-| ---- | ---- |
-| collect | `*args` | `bytes` |
-| returns | | `u64` |
+### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| `…` | `bytes` | Zero or more additional values |
+
+### Returns
+
+| Type |
+| ---- |
+| `u64` |

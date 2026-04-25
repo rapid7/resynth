@@ -11,8 +11,10 @@
 
 ### Functions
 
-- [read](#read)
-- [read_all](#read_all)
+| Function | Returns | Description |
+| -------- | ------- | ----------- |
+| [read](#read) | `bytes` | Read the next `bytes` bytes from the buffer, advancing the read position. If fewer than `bytes` bytes remain, returns what is left. |
+| [read_all](#read_all) | `bytes` | Read all remaining bytes from the buffer, advancing the read position to the end. |
 
 
 
@@ -22,21 +24,30 @@ resynth fn read (
     bytes: u64,
 ) -> bytes;
 ```
- Read the next `bytes` bytes from the buffer, advancing the read position.
+Read the next `bytes` bytes from the buffer, advancing the read position.
  If fewer than `bytes` bytes remain, returns what is left.
 
-| | Name | Type |
-|-| ---- | ---- |
-| arg | `bytes` | `u64` |
-| returns | | `bytes` |
+### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| `bytes` | `u64` | Number of bytes to read from the buffer |
+
+### Returns
+
+| Type |
+| ---- |
+| `bytes` |
 
 ## read_all
 ```resynth
 resynth fn read_all (
 ) -> bytes;
 ```
- Read all remaining bytes from the buffer, advancing the read position to the end.
+Read all remaining bytes from the buffer, advancing the read position to the end.
 
-| | Name | Type |
-|-| ---- | ---- |
-| returns | | `bytes` |
+### Returns
+
+| Type |
+| ---- |
+| `bytes` |

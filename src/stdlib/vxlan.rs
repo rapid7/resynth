@@ -10,6 +10,7 @@ use ezpkt::VxlanFlow;
 const ENCAP: FuncDef = func!(
     /// Encapsulate a series of packets
     resynth fn encap(
+        /// Sequence of packets to encapsulate
         it: PktGen
         =>
         =>
@@ -34,6 +35,7 @@ const ENCAP: FuncDef = func!(
 const DGRAM: FuncDef = func!(
     /// Encapsulate a single packet
     resynth fn dgram(
+        /// Single packet to encapsulate
         pkt: Pkt
         =>
         =>
@@ -65,10 +67,14 @@ impl Class for VxlanFlow {
 const SESSION: FuncDef = func!(
     /// Create a VXLAN session
     resynth fn session(
+        /// Client (sender) socket address
         cl: Sock4,
+        /// Server (receiver) socket address
         sv: Sock4,
         =>
+        /// VXLAN Network Identifier (VNI)
         sessionid: U32 = 0, // TODO: Make it optional
+        /// Enable raw mode; disables automatic IP/UDP header computation
         raw: Bool = false,
         =>
         Void

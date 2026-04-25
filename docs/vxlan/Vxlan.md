@@ -4,8 +4,10 @@
 
 ### Functions
 
-- [dgram](#dgram)
-- [encap](#encap)
+| Function | Returns | Description |
+| -------- | ------- | ----------- |
+| [dgram](#dgram) | `Pkt` | Encapsulate a single packet |
+| [encap](#encap) | `PktGen` | Encapsulate a series of packets |
 
 
 
@@ -15,12 +17,19 @@ resynth fn dgram (
     pkt: Pkt,
 ) -> Pkt;
 ```
- Encapsulate a single packet
+Encapsulate a single packet
 
-| | Name | Type |
-|-| ---- | ---- |
-| arg | `pkt` | `Pkt` |
-| returns | | `Pkt` |
+### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| `pkt` | `Pkt` | Single packet to encapsulate |
+
+### Returns
+
+| Type |
+| ---- |
+| `Pkt` |
 
 ## encap
 ```resynth
@@ -28,9 +37,16 @@ resynth fn encap (
     it: PktGen,
 ) -> PktGen;
 ```
- Encapsulate a series of packets
+Encapsulate a series of packets
 
-| | Name | Type |
-|-| ---- | ---- |
-| arg | `it` | `PktGen` |
-| returns | | `PktGen` |
+### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| `it` | `PktGen` | Sequence of packets to encapsulate |
+
+### Returns
+
+| Type |
+| ---- |
+| `PktGen` |

@@ -19,20 +19,22 @@ macro_rules! func {
     };
 
     (
-        @pos $name:ident $type:ident
+        @pos $(#[doc = $arg_doc:literal])+ $name:ident $type:ident
     ) => {
         ArgDesc {
             name: stringify!($name),
             typ: func!(@pdecl $type),
+            doc: concat_with::concat_line!($($arg_doc),+),
         }
     };
 
     (
-        @opt $name:ident $type:ident $init:expr
+        @opt $(#[doc = $dfl_doc:literal])+ $name:ident $type:ident $init:expr
     ) => {
         ArgDesc {
             name: stringify!($name),
             typ: func!(@odecl $type $init),
+            doc: concat_with::concat_line!($($dfl_doc),+),
         }
     };
 
@@ -40,9 +42,9 @@ macro_rules! func {
         $(#[doc = $doc:literal])+
         resynth fn $name:ident
         (
-            $($arg_name:ident : $arg_type:ident),* $(,)*
+            $($(#[doc = $arg_doc:literal])+ $arg_name:ident : $arg_type:ident),* $(,)*
             =>
-            $($dfl_name:ident : $dfl_type:ident = $dfl_init:expr),* $(,)*
+            $($(#[doc = $dfl_doc:literal])+ $dfl_name:ident : $dfl_type:ident = $dfl_init:expr),* $(,)*
             =>
             $collect_type:ident
         ) -> Class($cls:expr)
@@ -72,8 +74,8 @@ macro_rules! func {
                 name: stringify!($name),
                 return_type: ValType::Class($cls),
                 args: &[
-                    $(func!(@pos $arg_name $arg_type),)*
-                    $(func!(@opt $dfl_name $dfl_type $dfl_init),)*
+                    $(func!(@pos $(#[doc = $arg_doc])+ $arg_name $arg_type),)*
+                    $(func!(@opt $(#[doc = $dfl_doc])+ $dfl_name $dfl_type $dfl_init),)*
                 ],
                 arg_pos,
                 min_args: func!(@len $($arg_name)*),
@@ -88,9 +90,9 @@ macro_rules! func {
         $(#[doc = $doc:literal])+
         resynth fn $name:ident
         (
-            $($arg_name:ident : $arg_type:ident),* $(,)*
+            $($(#[doc = $arg_doc:literal])+ $arg_name:ident : $arg_type:ident),* $(,)*
             =>
-            $($dfl_name:ident : $dfl_type:ident = $dfl_init:expr),* $(,)*
+            $($(#[doc = $dfl_doc:literal])+ $dfl_name:ident : $dfl_type:ident = $dfl_init:expr),* $(,)*
             =>
             $collect_type:ident
         ) -> $return_type:ident
@@ -120,8 +122,8 @@ macro_rules! func {
                 name: stringify!($name),
                 return_type: ValType::$return_type,
                 args: &[
-                    $(func!(@pos $arg_name $arg_type),)*
-                    $(func!(@opt $dfl_name $dfl_type $dfl_init),)*
+                    $(func!(@pos $(#[doc = $arg_doc])+ $arg_name $arg_type),)*
+                    $(func!(@opt $(#[doc = $dfl_doc])+ $dfl_name $dfl_type $dfl_init),)*
                 ],
                 arg_pos,
                 min_args: func!(@len $($arg_name)*),

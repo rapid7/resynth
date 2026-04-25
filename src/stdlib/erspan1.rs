@@ -10,6 +10,7 @@ use ezpkt::Erspan1Flow;
 const ENCAP: FuncDef = func!(
     /// Encapsulate a sequence of packets
     resynth fn encap(
+        /// Sequence of packets to encapsulate
         it: PktGen
         =>
         =>
@@ -47,9 +48,12 @@ impl Class for Erspan1Flow {
 const SESSION: FuncDef = func!(
     /// Create an ERSPAN session
     resynth fn session(
+        /// Source (collector) IP address
         cl: Ip4,
+        /// Destination (monitor) IP address
         sv: Ip4,
         =>
+        /// Enable raw mode; disables automatic IP/GRE header computation
         raw: Bool = false,
         =>
         Void
@@ -64,6 +68,8 @@ const SESSION: FuncDef = func!(
 
 pub const MODULE: Module = module! {
     /// # ERSPAN Version 1
+    ///
+    /// ERSPAN Type I — encapsulates mirrored traffic in a GRE tunnel (version 1, no sequence numbers).
     resynth mod erspan1 {
         Erspan1 => Symbol::Class(&ERSPAN1),
         session => Symbol::Func(&SESSION),

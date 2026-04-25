@@ -42,6 +42,8 @@ const LEN: FuncDef = func!(
 
 pub const MODULE: Module = module! {
     /// # Text / Byte-String Functions
+    ///
+    /// String and byte-buffer manipulation — concatenation, length, encoding, and hex conversion.
     resynth mod text {
         concat => Symbol::Func(&CONCAT),
         crlflines => Symbol::Func(&CRLFLINES),

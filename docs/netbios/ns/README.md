@@ -4,13 +4,17 @@
 
 ### Modules
 
-- [opcode](opcode/README.md)
-- [rcode](rcode/README.md)
-- [rrtype](rrtype/README.md)
+| Module | Description |
+| ------ | ----------- |
+| [opcode](opcode/README.md) | NetBIOS Name Service Opcodes |
+| [rcode](rcode/README.md) | NetBIOS Name Service Response codes |
+| [rrtype](rrtype/README.md) | NetBIOS Name Service RR types |
 
 ### Functions
 
-- [flags](#flags)
+| Function | Returns | Description |
+| -------- | ------- | ----------- |
+| [flags](#flags) | `u16` | Returns netbios-ns flags |
 
 
 
@@ -29,18 +33,25 @@ resynth fn flags (
     rcode: u8 = 0x00,
 ) -> u16;
 ```
- Returns netbios-ns flags
+Returns netbios-ns flags
 
-| | Name | Type |
-|-| ---- | ---- |
-| arg | `opcode` | `u8` |
-| opt | `response` | `bool` |
-| opt | `aa` | `bool` |
-| opt | `tc` | `bool` |
-| opt | `rd` | `bool` |
-| opt | `ra` | `bool` |
-| opt | `z` | `bool` |
-| opt | `ad` | `bool` |
-| opt | `b` | `bool` |
-| opt | `rcode` | `u8` |
-| returns | | `u16` |
+### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| `opcode` | `u8` | NetBIOS name service opcode |
+| `response` | `bool` | If true, this is a response; if false, a query _(default: `false`)_ |
+| `aa` | `bool` | Authoritative Answer flag _(default: `false`)_ |
+| `tc` | `bool` | Truncation flag _(default: `false`)_ |
+| `rd` | `bool` | Recursion Desired flag _(default: `false`)_ |
+| `ra` | `bool` | Recursion Available flag _(default: `false`)_ |
+| `z` | `bool` | Reserved (Z) bit _(default: `false`)_ |
+| `ad` | `bool` | Must be zero (maps to DNS AD bit) _(default: `false`)_ |
+| `b` | `bool` | Broadcast/multicast flag _(default: `false`)_ |
+| `rcode` | `u8` | Response code _(default: `0x00`)_ |
+
+### Returns
+
+| Type |
+| ---- |
+| `u16` |

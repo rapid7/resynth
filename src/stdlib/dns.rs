@@ -126,9 +126,13 @@ const CLASS: Module = module! {
 };
 
 pub(crate) const DNS_NAME: FuncDef = func! (
-    /// A DNS name encoded with length prefixes
+    /// A DNS name encoded with DNS label format (length-prefixed labels, null-terminated).
+    ///
+    /// Also used to wrap a `netbios::name::encode()` result into a complete NBNS
+    /// name label for use in NBNS packets (which share the DNS wire format).
     resynth fn name(
         =>
+        /// If true, append a root label to terminate the name; if false, leave it open
         complete: Bool = true,
         =>
         Str
@@ -166,6 +170,7 @@ const DNS_POINTER: FuncDef = func! (
     /// A DNS compression pointer
     resynth fn pointer(
         =>
+        /// Byte offset within the DNS message to point to
         offset: U16 = 0x0c,
         =>
         Void
@@ -182,16 +187,26 @@ const DNS_POINTER: FuncDef = func! (
 const DNS_FLAGS: FuncDef = func!(
     /// a DNS flags field
     resynth fn flags(
+        /// DNS opcode for this message
         opcode: U8,
         =>
+        /// If true, this is a response; if false, a query
         response: Bool = false,
+        /// Authoritative Answer flag
         aa: Bool = false,
+        /// Truncation flag
         tc: Bool = false,
+        /// Recursion Desired flag
         rd: Bool = false,
+        /// Recursion Available flag
         ra: Bool = false,
+        /// Reserved (Z) bit
         z: Bool = false,
+        /// Authentic Data flag (DNSSEC)
         ad: Bool = false,
+        /// Checking Disabled flag (DNSSEC)
         cd: Bool = false,
+        /// Response code
         rcode: U8 = rcode::NOERROR,
         =>
         Void
@@ -228,12 +243,18 @@ const DNS_FLAGS: FuncDef = func!(
 const DNS_HDR: FuncDef = func!(
     /// A DNS header
     resynth fn hdr(
+        /// DNS message transaction ID
         id: U16,
+        /// DNS flags field (use dns::flags() to construct)
         flags: U16,
         =>
+        /// Number of entries in the question section
         qdcount: U16 = 0,
+        /// Number of resource records in the answer section
         ancount: U16 = 0,
+        /// Number of name server resource records in the authority section
         nscount: U16 = 0,
+        /// Number of resource records in the additional records section
         arcount: U16 = 0,
         =>
         Void
@@ -262,9 +283,12 @@ const DNS_HDR: FuncDef = func!(
 const DNS_QUESTION: FuncDef = func!(
     /// A DNS question
     resynth fn question(
+        /// Encoded DNS name being queried
         qname: Str,
         =>
+        /// DNS record type to query (e.g. dns::rtype::A)
         qtype: U16 = 1,
+        /// DNS record class (e.g. dns::class::IN)
         qclass: U16 = 1,
         =>
         Void
@@ -287,10 +311,14 @@ const DNS_QUESTION: FuncDef = func!(
 const DNS_ANSWER: FuncDef = func!(
     /// A DNS answer (RR)
     resynth fn answer(
+        /// Encoded DNS name this record applies to
         aname: Str,
         =>
+        /// DNS record type (e.g. dns::rtype::A)
         atype: U16 = 1,
+        /// DNS record class (e.g. dns::class::IN)
         aclass: U16 = 1,
+        /// Time-to-live for this record in seconds
         ttl: U32 = 229,
         =>
         Str
@@ -318,11 +346,16 @@ const DNS_ANSWER: FuncDef = func!(
 const DNS_HOST: FuncDef = func!(
     /// Perform a DNS lookup, with response
     resynth fn host(
+        /// Client IP address sending the DNS query
         client: Ip4,
+        /// DNS name to look up
         qname: Str,
         =>
+        /// Time-to-live for the answer records in seconds
         ttl: U32 = 229,
+        /// IP address of the DNS name server
         ns: Ip4 = Ipv4Addr::new(1, 1, 1, 1),
+        /// Enable raw mode; disables automatic IP/UDP header computation
         raw: Bool = false,
         =>
         Ip4
