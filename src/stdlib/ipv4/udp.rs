@@ -203,7 +203,7 @@ const SV_RAW_DGRAM: FuncDef = func!(
     }
 );
 
-const UDP_FLOW: ClassDef = class!(
+static UDP_FLOW: ClassDef = class!(
     /// # UDP Flow
     resynth class UdpFlow {
         client_dgram => Symbol::Func(&CL_DGRAM),

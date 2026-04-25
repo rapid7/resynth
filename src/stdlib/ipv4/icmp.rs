@@ -38,7 +38,7 @@ const ICMP_ECHO_REPLY: FuncDef = func!(
     }
 );
 
-const ICMP: ClassDef = class!(
+static ICMP: ClassDef = class!(
     /// # ICMP Session
     resynth class Icmp {
         echo => Symbol::Func(&ICMP_ECHO),

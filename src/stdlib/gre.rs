@@ -32,7 +32,7 @@ const ENCAP: FuncDef = func!(
     }
 );
 
-const GRE: ClassDef = class!(
+static GRE: ClassDef = class!(
     /// # GRE Session
     resynth class Gre {
         encap => Symbol::Func(&ENCAP),

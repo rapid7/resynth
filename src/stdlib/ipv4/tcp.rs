@@ -395,7 +395,7 @@ const TCP_SV_RESET: FuncDef = func!(
     }
 );
 
-const TCP_FLOW: ClassDef = class!(
+static TCP_FLOW: ClassDef = class!(
     /// # TCP Connection
     ///
     /// Represents a TCP flow between a client and server socket address. The
