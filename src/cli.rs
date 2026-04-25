@@ -9,9 +9,54 @@ use std::io::BufRead;
 use std::path::{Path, PathBuf};
 use std::{fs, io};
 
-use clap::{Arg, ArgAction, ArgGroup, Command, error::ErrorKind, value_parser};
-use clap::{crate_authors, crate_description, crate_name, crate_version};
+use clap::{ArgGroup, Parser as ClapParser};
 use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
+
+#[derive(ClapParser, Debug)]
+#[command(
+    version,
+    author,
+    about,
+    group(
+        ArgGroup::new("run_mode")
+            .args(["docs", "input"])
+            .required(true)
+    ),
+)]
+struct Cli {
+    /// Output color: always, ansi, auto, never
+    #[arg(long, default_value = "auto", value_parser = ["always", "ansi", "auto", "never"])]
+    color: String,
+
+    /// Print packets
+    #[arg(short, long)]
+    verbose: bool,
+
+    /// Keep pcap files on error
+    #[arg(short, long)]
+    keep: bool,
+
+    /// Output documentation to DIR
+    #[arg(long = "output-docs", value_name = "DIR")]
+    docs: Option<PathBuf>,
+
+    /// Output pcap filenames (must match number of input files)
+    #[arg(short = 'o', long = "output", value_name = "FILE")]
+    out: Vec<PathBuf>,
+
+    /// Directory to write pcap files to
+    #[arg(
+        long = "out-dir",
+        value_name = "DIR",
+        default_value = ".",
+        conflicts_with = "out"
+    )]
+    outdir: PathBuf,
+
+    /// Input .rsyn files
+    #[arg(value_name = "FILE")]
+    input: Vec<String>,
+}
 
 /// A [source code location](Loc) and an [error code](Error)
 #[derive(Debug)]
@@ -96,81 +141,9 @@ pub fn process_file(
 }
 
 fn resynth() -> Result<(), ()> {
-    let mut ret = Ok(());
+    let argv = Cli::parse();
 
-    let mut cmd = Command::new(crate_name!())
-        .version(crate_version!())
-        .author(crate_authors!())
-        .about(crate_description!())
-        .arg(
-            Arg::new("color")
-                .long("color")
-                .value_parser(["always", "ansi", "auto", "never"])
-                .default_value("auto")
-                .help("always|ansi|auto|never"),
-        )
-        .arg(
-            Arg::new("verbose")
-                .short('v')
-                .long("verbose")
-                .action(ArgAction::SetTrue)
-                .help("Print packets"),
-        )
-        .arg(
-            Arg::new("keep")
-                .short('k')
-                .long("keep")
-                .action(ArgAction::SetTrue)
-                .help("Keep pcap files on error"),
-        )
-        .arg(
-            Arg::new("docs")
-                .long("output-docs")
-                .value_name("FILE")
-                .required(false)
-                .value_parser(value_parser!(PathBuf))
-                .help("Output documentation"),
-        )
-        .arg(
-            Arg::new("out")
-                .short('o')
-                .long("output")
-                .value_name("FILE")
-                .required(false)
-                .value_parser(value_parser!(PathBuf))
-                .action(ArgAction::Append)
-                .help("Filenames for pcap output"),
-        )
-        .arg(
-            Arg::new("outdir")
-                .long("out-dir")
-                .value_name("DIR")
-                .default_value(".")
-                .conflicts_with("out")
-                .value_parser(value_parser!(PathBuf))
-                .help("Directory to write pcap files to"),
-        )
-        .arg(
-            Arg::new("in")
-                .help("Sets the input file to use")
-                .value_name("FILE")
-                .required(true)
-                .action(ArgAction::Append)
-                .index(1),
-        )
-        .group(
-            ArgGroup::new("run_mode")
-                .args(["docs", "in"])
-                .required(true),
-        );
-
-    let argv = cmd.clone().get_matches();
-
-    let verbose = argv.get_one::<bool>("verbose").copied().unwrap();
-    let keep = argv.get_one::<bool>("keep").copied().unwrap();
-
-    let preference: &String = argv.get_one("color").expect("default");
-    let color = match preference.as_str() {
+    let color = match argv.color.as_str() {
         "always" => ColorChoice::Always,
         "ansi" => ColorChoice::AlwaysAnsi,
         "auto" => {
@@ -184,48 +157,36 @@ fn resynth() -> Result<(), ()> {
     };
     let mut stdout = StandardStream::stdout(color);
 
-    if let Some(docs_dir) = argv.get_one::<PathBuf>("docs") {
-        write_docs(docs_dir);
+    if let Some(docs_dir) = argv.docs {
+        write_docs(&docs_dir);
         return Ok(());
     }
 
-    let use_filenames = argv.contains_id("out");
+    let use_filenames = !argv.out.is_empty();
 
-    let in_args = argv.get_many::<String>("in").unwrap();
-
-    let out_args = argv
-        .get_many::<PathBuf>("out")
-        .unwrap_or_default()
-        .collect::<Vec<_>>();
-    let out_dir = argv.get_one::<PathBuf>("outdir");
-
-    if use_filenames && out_args.len() != in_args.len() {
-        cmd.error(
-            ErrorKind::WrongNumberOfValues,
-            format!(
-                "Received {} output(s), expected: {}",
-                out_args.len(),
-                in_args.len(),
-            ),
-        )
-        .exit();
+    if use_filenames && argv.out.len() != argv.input.len() {
+        eprintln!(
+            "error: Received {} output(s), expected: {}",
+            argv.out.len(),
+            argv.input.len(),
+        );
+        return Err(());
     }
 
-    for (i, input) in in_args.enumerate() {
+    let mut ret = Ok(());
+
+    for (i, input) in argv.input.iter().enumerate() {
         let p = Path::new(input);
-        let out = if use_filenames {
-            Cow::Borrowed(out_args[i])
+        let out: Cow<Path> = if use_filenames {
+            Cow::Borrowed(&argv.out[i])
         } else {
-            let mut out = match out_dir {
-                Some(p) => p.clone(),
-                None => PathBuf::new(),
-            };
+            let mut out = argv.outdir.clone();
             out.push(p.file_stem().unwrap());
             out.set_extension("pcap");
             Cow::Owned(out)
         };
 
-        let result = process_file(&mut stdout, p, &out, verbose);
+        let result = process_file(&mut stdout, p, &out, argv.verbose);
 
         if let Err(error) = result {
             let ErrorLoc { loc, err } = error;
@@ -238,7 +199,9 @@ fn resynth() -> Result<(), ()> {
             error!(stdout, "error");
             println!(": process_file: {}", err);
 
-            if !keep && let Err(rm_err) = fs::remove_file(out.as_ref()) {
+            if !argv.keep
+                && let Err(rm_err) = fs::remove_file(out.as_ref())
+            {
                 print!("{}: ", p.display());
                 error!(stdout, "error");
                 println!(": delete: {}", rm_err);
