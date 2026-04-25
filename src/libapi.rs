@@ -31,6 +31,7 @@ pub enum ArgDecl {
 pub struct ArgDesc {
     pub name: &'static str,
     pub typ: ArgDecl,
+    pub doc: &'static str,
 }
 
 /// Defines a function or method for the resynth stdlib
@@ -110,22 +111,50 @@ pub trait Documented {
 
         if !submods.is_empty() {
             wr.write_all(b"\n### Modules\n\n")?;
-            for SymDesc { name, sym: _ } in &submods {
-                wr.write_all(format!("- [{}]({}/README.md)\n", name, name,).as_bytes())?;
+            wr.write_all(b"| Module | Description |\n")?;
+            wr.write_all(b"| ------ | ----------- |\n")?;
+            for SymDesc { name, sym } in &submods {
+                let desc = if let Symbol::Module(m) = sym {
+                    table_cell(&doc_summary(m.doc))
+                } else {
+                    String::new()
+                };
+                wr.write_all(
+                    format!("| [{}]({}/README.md) | {} |\n", name, name, desc).as_bytes(),
+                )?;
             }
         }
 
         if !classes.is_empty() {
             wr.write_all(b"\n### Classes\n\n")?;
-            for SymDesc { name, sym: _ } in &classes {
-                wr.write_all(format!("- [{}]({}.md)\n", name, name,).as_bytes())?;
+            wr.write_all(b"| Class | Description |\n")?;
+            wr.write_all(b"| ----- | ----------- |\n")?;
+            for SymDesc { name, sym } in &classes {
+                let desc = if let Symbol::Class(cls) = sym {
+                    table_cell(&doc_summary(cls.doc))
+                } else {
+                    String::new()
+                };
+                wr.write_all(format!("| [{}]({}.md) | {} |\n", name, name, desc).as_bytes())?;
             }
         }
 
         if !funcs.is_empty() {
             wr.write_all(b"\n### Functions\n\n")?;
-            for SymDesc { name, sym: _ } in &funcs {
-                wr.write_all(format!("- [{}](#{})\n", name, name,).as_bytes())?;
+            wr.write_all(b"| Function | Returns | Description |\n")?;
+            wr.write_all(b"| -------- | ------- | ----------- |\n")?;
+            for SymDesc { name, sym } in &funcs {
+                let (ret, desc) = if let Symbol::Func(f) = sym {
+                    (
+                        fmt_type_link(&f.return_type, class_map, doc_root),
+                        table_cell(&doc_summary(f.doc)),
+                    )
+                } else {
+                    (String::new(), String::new())
+                };
+                wr.write_all(
+                    format!("| [{}](#{}) | {} | {} |\n", name, name, ret, desc).as_bytes(),
+                )?;
             }
         }
 
@@ -272,7 +301,47 @@ struct ArgPrep {
 ///  COLLECT-NAME-OPTS if func has collect args, optionals MUST be named
 ///  NOCOLLECT-ANON-OPTS if func doesn't have collect args, optionals MAY be anonymous
 ///  COLLECT-AFTER-NAMED collect args must come after the last named arg
-/// Format a [`ValType`] as a markdown cell, linking to the class doc page if applicable.
+/// Extract a short summary from a doc string for use in index tables.
+///
+/// - If the first non-empty line is a heading (`# ...`), strip the leading `#` chars and
+///   return that as the title.
+/// - Otherwise collect the first contiguous paragraph (non-empty lines joined by spaces).
+fn doc_summary(doc: &str) -> String {
+    let mut lines = doc.lines().peekable();
+
+    // Skip leading blank lines
+    while matches!(lines.peek(), Some(l) if l.trim().is_empty()) {
+        lines.next();
+    }
+
+    // If the first content line is a heading, return its text
+    if let Some(&line) = lines.peek() {
+        let trimmed = line.trim();
+        if trimmed.starts_with('#') {
+            return trimmed.trim_start_matches('#').trim().to_string();
+        }
+    }
+
+    // Otherwise collect the first paragraph
+    let mut para: Vec<&str> = Vec::new();
+    for line in lines {
+        let trimmed = line.trim();
+        if trimmed.is_empty() {
+            if !para.is_empty() {
+                break;
+            }
+        } else {
+            para.push(trimmed);
+        }
+    }
+    para.join(" ")
+}
+
+/// Escape a string for safe use in a Markdown table cell.
+fn table_cell(s: &str) -> String {
+    s.replace('|', "\\|")
+}
+
 /// `doc_root` is the path from the current page's location to the docs root (e.g. `"../../"`).
 fn fmt_type_link(typ: &ValType, class_map: &ClassMap, doc_root: &str) -> String {
     if let ValType::Class(cls) = typ {
@@ -432,7 +501,7 @@ impl FuncDef {
         // are in extra assert!(args.len() <= self.args.len());
 
         // 2. Take named positionals and optionals
-        for ArgDesc { name, typ } in self.args.iter().skip(nr_positional) {
+        for ArgDesc { name, typ, .. } in self.args.iter().skip(nr_positional) {
             if let Some(val) = named.remove(*name) {
                 // positional or optional specified by name, push it
                 args.push(val);
@@ -452,7 +521,7 @@ impl FuncDef {
         assert!(named.is_empty());
 
         // 3. Final type-check of all positional args
-        for (ArgDesc { name, typ }, arg) in self.args.iter().zip(args.iter()) {
+        for (ArgDesc { name, typ, .. }, arg) in self.args.iter().zip(args.iter()) {
             if !match typ {
                 ArgDecl::Positional(typ) => typ.compatible_with(arg),
                 ArgDecl::Optional(dfl) => dfl.arg_compatible(arg),
@@ -488,31 +557,44 @@ impl FuncDef {
         wr.write_all(b"```resynth\n")?;
         wr.write_all(format!("{}\n", self).as_bytes())?;
         wr.write_all(b"```\n")?;
-        wr.write_all(self.doc.as_bytes())?;
+        wr.write_all(self.doc.trim().as_bytes())?;
         wr.write_all(b"\n")?;
 
-        // Parameter + return type table
-        let has_args = !self.args.is_empty() || !self.collect_type.is_nil();
-        let has_return = !self.return_type.is_nil();
-        if has_args || has_return {
-            wr.write_all(b"\n| | Name | Type |\n")?;
-            wr.write_all(b"|-| ---- | ---- |\n")?;
-            for ArgDesc { name, typ } in self.args.iter() {
-                let (kind, vtype) = match typ {
-                    ArgDecl::Positional(t) => ("arg", *t),
-                    ArgDecl::Optional(d) => ("opt", d.val_type()),
+        // Parameters table
+        if !self.args.is_empty() || !self.collect_type.is_nil() {
+            wr.write_all(b"\n### Parameters\n\n")?;
+            wr.write_all(b"| Name | Type | Description |\n")?;
+            wr.write_all(b"| ---- | ---- | ----------- |\n")?;
+            for ArgDesc { name, typ, doc } in self.args.iter() {
+                let (type_str, default) = match typ {
+                    ArgDecl::Positional(t) => (fmt_type_link(t, class_map, doc_root), None),
+                    ArgDecl::Optional(d) => (
+                        fmt_type_link(&d.val_type(), class_map, doc_root),
+                        Some(format!("{}", d)),
+                    ),
                 };
-                let type_cell = fmt_type_link(&vtype, class_map, doc_root);
-                wr.write_all(format!("| {} | `{}` | {} |\n", kind, name, type_cell).as_bytes())?;
+                let desc = if let Some(dfl) = default {
+                    format!("{} _(default: `{}`)_", doc.trim(), dfl)
+                } else {
+                    doc.trim().to_string()
+                };
+                wr.write_all(format!("| `{}` | {} | {} |\n", name, type_str, desc).as_bytes())?;
             }
             if !self.collect_type.is_nil() {
-                let type_cell = fmt_type_link(&self.collect_type, class_map, doc_root);
-                wr.write_all(format!("| collect | `*args` | {} |\n", type_cell).as_bytes())?;
+                let type_str = fmt_type_link(&self.collect_type, class_map, doc_root);
+                wr.write_all(
+                    format!("| `…` | {} | Zero or more additional values |\n", type_str).as_bytes(),
+                )?;
             }
-            if has_return {
-                let type_cell = fmt_type_link(&self.return_type, class_map, doc_root);
-                wr.write_all(format!("| returns | | {} |\n", type_cell).as_bytes())?;
-            }
+        }
+
+        // Returns table
+        if !self.return_type.is_nil() {
+            wr.write_all(b"\n### Returns\n\n")?;
+            wr.write_all(b"| Type |\n")?;
+            wr.write_all(b"| ---- |\n")?;
+            let type_str = fmt_type_link(&self.return_type, class_map, doc_root);
+            wr.write_all(format!("| {} |\n", type_str).as_bytes())?;
         }
 
         Ok(())

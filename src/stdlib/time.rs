@@ -9,6 +9,7 @@ const MHZ: u64 = KHZ / 1000;
 const JUMP_SECS: FuncDef = func!(
     /// Advance the pcap timestamp clock by some number of seconds
     resynth fn jump_seconds(
+        /// Number of seconds to advance the clock
         seconds: U32,
         =>
         =>
@@ -24,6 +25,7 @@ const JUMP_SECS: FuncDef = func!(
 const JUMP_MILLIS: FuncDef = func!(
     /// Advance the pcap timestamp clock by some number of milliseconds
     resynth fn jump_millis(
+        /// Number of milliseconds to advance the clock
         ms: U64,
         =>
         =>
@@ -39,6 +41,7 @@ const JUMP_MILLIS: FuncDef = func!(
 const JUMP_MICROS: FuncDef = func!(
     /// Advance the pcap timestamp clock by some number of microseconds
     resynth fn jump_micros(
+        /// Number of microseconds to advance the clock
         us: U64,
         =>
         =>
@@ -54,6 +57,7 @@ const JUMP_MICROS: FuncDef = func!(
 const JUMP_NANOS: FuncDef = func!(
     /// Advance the pcap timestamp clock by some number of nanoseconds
     resynth fn jump_nanos(
+        /// Number of nanoseconds to advance the clock
         ns: U64,
         =>
         =>
@@ -68,6 +72,8 @@ const JUMP_NANOS: FuncDef = func!(
 
 pub const MODULE: Module = module! {
     /// # Time Manipulation
+    ///
+    /// Functions to control packet timestamps and introduce time offsets in captures.
     resynth mod time {
         jump_seconds => Symbol::Func(&JUMP_SECS),
         jump_millis => Symbol::Func(&JUMP_MILLIS),

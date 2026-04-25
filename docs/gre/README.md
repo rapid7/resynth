@@ -6,11 +6,15 @@
 
 ### Classes
 
-- [Gre](Gre.md)
+| Class | Description |
+| ----- | ----------- |
+| [Gre](Gre.md) | GRE Session |
 
 ### Functions
 
-- [session](#session)
+| Function | Returns | Description |
+| -------- | ------- | ----------- |
+| [session](#session) | [Gre](../gre/Gre.md) | Create a GRETAP session |
 
 
 
@@ -23,12 +27,19 @@ resynth fn session (
     raw: bool = false,
 ) -> Gre;
 ```
- Create a GRETAP session
+Create a GRETAP session
 
-| | Name | Type |
-|-| ---- | ---- |
-| arg | `cl` | `Ip4` |
-| arg | `sv` | `Ip4` |
-| arg | `ethertype` | `u16` |
-| opt | `raw` | `bool` |
-| returns | | [Gre](../gre/Gre.md) |
+### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| `cl` | `Ip4` | Source IP address |
+| `sv` | `Ip4` | Destination IP address |
+| `ethertype` | `u16` | EtherType of the encapsulated payload |
+| `raw` | `bool` | Enable raw mode; disables automatic IP/GRE header computation _(default: `false`)_ |
+
+### Returns
+
+| Type |
+| ---- |
+| [Gre](../gre/Gre.md) |

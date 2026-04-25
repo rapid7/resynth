@@ -34,15 +34,24 @@ const IPV4_DGRAM_OVERHEAD: usize = std::mem::size_of::<eth_hdr>() + std::mem::si
 const DGRAM: FuncDef = func!(
     /// Create a raw IPv4 header or datagram
     resynth fn datagram(
+        /// Source IPv4 address
         src: Ip4,
+        /// Destination IPv4 address
         dst: Ip4,
         =>
+        /// IP identification field
         id: U16 = 0,
+        /// Set the evil bit (RFC 3514)
         evil: Bool = false,
+        /// Set the Don't Fragment (DF) flag
         df: Bool = false,
+        /// Set the More Fragments (MF) flag
         mf: Bool = false,
+        /// IP Time-To-Live value
         ttl: U8 = 64,
+        /// Fragment offset field (in 8-byte units)
         frag_off: U16 = 0,
+        /// IP protocol number
         proto: U8 = proto::UDP,
         =>
         Str
@@ -93,16 +102,17 @@ const DGRAM: FuncDef = func!(
 );
 
 const FRAG_FRAGMENT: FuncDef = func!(
-    /// Returns an IPv4 packet fragment
+    /// Return an IPv4 packet fragment with the MF (more-fragments) bit set
     ///
-    /// ### Arguments
-    /// * `frag_off` Offset in 8-byte blocks
-    /// * `len` Length in bytes
-    /// * 'raw' If true, then omit ethernet header
+    /// Slices the stored datagram at the given offset and length and wraps it in
+    /// an IPv4 header with MF=1. Fragment offset is in units of 8 bytes as per RFC 791.
     resynth fn fragment(
+        /// Fragment offset in 8-byte blocks
         frag_off: U16,
+        /// Length of this fragment in bytes
         len: U16,
         =>
+        /// If true, omit the ethernet header
         raw: Bool = false,
         =>
         Str
@@ -121,15 +131,15 @@ const FRAG_FRAGMENT: FuncDef = func!(
 );
 
 const FRAG_TAIL: FuncDef = func!(
-    /// Returns an IPv4 tail-fragment, ie. with MF (more-fragments) bit set to zero.
-    /// This is just a convenience function which omits the len parameter.
+    /// Return the final IPv4 fragment with MF=0
     ///
-    /// ### Arguments
-    /// * `frag_off` Offset in 8-byte blocks
-    /// * 'raw' If true, then omit ethernet header
+    /// Convenience wrapper around [fragment](#fragment) for the last fragment in a
+    /// series — the MF bit is cleared automatically so no `len` is required.
     resynth fn tail(
+        /// Fragment offset in 8-byte blocks
         frag_off: U16,
         =>
+        /// If true, omit the ethernet header
         raw: Bool = false,
         =>
         Str
@@ -147,12 +157,12 @@ const FRAG_TAIL: FuncDef = func!(
 );
 
 const FRAG_DATAGRAM: FuncDef = func!(
-    /// Return the entire datagram without fragmenting it
+    /// Return the entire datagram as a single unfragmented packet
     ///
-    /// ### Arguments
-    /// * 'raw' If true, then omit ethernet header
+    /// Emits the full payload as one IPv4 packet with no fragmentation headers.
     resynth fn datagram(
         =>
+        /// If true, omit the ethernet header
         raw: Bool = false,
         =>
         Str
@@ -197,13 +207,20 @@ impl Class for IpFrag {
 const FRAG: FuncDef = func!(
     /// Create a context for a packet which can be arbitrarily fragmented
     resynth fn frag(
+        /// Source IPv4 address
         src: Ip4,
+        /// Destination IPv4 address
         dst: Ip4,
         =>
+        /// IP identification field
         id: U16 = 0,
+        /// Set the evil bit (RFC 3514)
         evil: Bool = false,
+        /// Set the Don't Fragment (DF) flag
         df: Bool = false,
+        /// IP Time-To-Live value
         ttl: U8 = 64,
+        /// IP protocol number
         proto: U8 = proto::UDP,
         =>
         Str
@@ -236,6 +253,8 @@ const FRAG: FuncDef = func!(
 
 pub const IPV4: Module = module! {
     /// # Internet Protocol Version 4
+    ///
+    /// IPv4 packet construction — TCP, UDP, ICMP flows and IP-level fragmentation.
     resynth mod ipv4 {
         IpFrag => Symbol::Class(&IPFRAG),
         tcp => Symbol::Module(&TCP4),

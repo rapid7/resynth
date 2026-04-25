@@ -1,15 +1,21 @@
  # Buffers and File I/O
+
+ Buffered I/O — read from and write to byte buffers and files.
 ## Index
 
 
 ### Classes
 
-- [BufIO](BufIO.md)
+| Class | Description |
+| ----- | ----------- |
+| [BufIO](BufIO.md) | Buffered I/O |
 
 ### Functions
 
-- [bufio](#bufio)
-- [file](#file)
+| Function | Returns | Description |
+| -------- | ------- | ----------- |
+| [bufio](#bufio) | [BufIO](../io/BufIO.md) | Create a `BufIO` buffer from one or more byte strings, from which bytes can be consumed in sequential chunks using `read(n)` and `read_all()`. This is useful for splitting a pre-assembled payload across multiple packets — for example, sending the first 15 bytes of a TLS record in one TCP segment and the rest in another. |
+| [file](#file) | `bytes` | Load the contents of a file into a string |
 
 
 
@@ -20,16 +26,23 @@ resynth fn bufio (
     *collect_args: bytes,
 ) -> BufIO;
 ```
- Create a `BufIO` buffer from one or more byte strings, from which bytes
+Create a `BufIO` buffer from one or more byte strings, from which bytes
  can be consumed in sequential chunks using `read(n)` and `read_all()`.
  This is useful for splitting a pre-assembled payload across multiple
  packets — for example, sending the first 15 bytes of a TLS record in one
  TCP segment and the rest in another.
 
-| | Name | Type |
-|-| ---- | ---- |
-| collect | `*args` | `bytes` |
-| returns | | [BufIO](../io/BufIO.md) |
+### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| `…` | `bytes` | Zero or more additional values |
+
+### Returns
+
+| Type |
+| ---- |
+| [BufIO](../io/BufIO.md) |
 
 ## file
 ```resynth
@@ -39,10 +52,17 @@ resynth fn file (
     *collect_args: bytes,
 ) -> bytes;
 ```
- Load the contents of a file into a string
+Load the contents of a file into a string
 
-| | Name | Type |
-|-| ---- | ---- |
-| arg | `filename` | `bytes` |
-| collect | `*args` | `bytes` |
-| returns | | `bytes` |
+### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| `filename` | `bytes` | Path to the file to load |
+| `…` | `bytes` | Zero or more additional values |
+
+### Returns
+
+| Type |
+| ---- |
+| `bytes` |

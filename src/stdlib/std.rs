@@ -6,6 +6,7 @@ use crate::val::{Val, ValDef};
 const BE16: FuncDef = func!(
     /// Encode a 16bit integer into 2 big-endian bytes
     resynth fn be16(
+        /// Integer value to encode
         val: U64,
         =>
         =>
@@ -20,6 +21,7 @@ const BE16: FuncDef = func!(
 const BE32: FuncDef = func!(
     /// Encode a 32bit integer into 4 big-endian bytes
     resynth fn be32(
+        /// Integer value to encode
         val: U64,
         =>
         =>
@@ -34,6 +36,7 @@ const BE32: FuncDef = func!(
 const BE64: FuncDef = func!(
     /// Encode a 64bit integer into 8 big-endian bytes
     resynth fn be64(
+        /// Integer value to encode
         val: U64,
         =>
         =>
@@ -48,6 +51,7 @@ const BE64: FuncDef = func!(
 const LE16: FuncDef = func!(
     /// Encode a 16bit integer into 2 little-endian bytes
     resynth fn le16(
+        /// Integer value to encode
         val: U64,
         =>
         =>
@@ -62,6 +66,7 @@ const LE16: FuncDef = func!(
 const LE32: FuncDef = func!(
     /// Encode a 32bit integer into 4 little-endian bytes
     resynth fn le32(
+        /// Integer value to encode
         val: U64,
         =>
         =>
@@ -76,6 +81,7 @@ const LE32: FuncDef = func!(
 const LE64: FuncDef = func!(
     /// Encode a 64bit integer into 8 little-endian bytes
     resynth fn le64(
+        /// Integer value to encode
         val: U64,
         =>
         =>
@@ -90,6 +96,7 @@ const LE64: FuncDef = func!(
 const U8: FuncDef = func!(
     /// Convert an integer into a one-byte string
     resynth fn u8(
+        /// Integer value to encode as a single byte
         val: U8,
         =>
         =>
@@ -104,10 +111,10 @@ const U8: FuncDef = func!(
 const LEN_BE64: FuncDef = func! (
     /// Prefix a buffer with a 64-bit big-endian length field
     ///
-    /// ### Arguments
-    /// * `adjust: u64` An adjustment value to add to the prefixed length
+    /// Prepends a 4-byte big-endian encoding of `len(payload) + adjust` to the payload bytes.
     resynth fn len_be64(
         =>
+        /// Adjustment value added to the computed length before encoding
         adjust: U64 = 0,
         =>
         Str
@@ -128,10 +135,10 @@ const LEN_BE64: FuncDef = func! (
 const LEN_BE32: FuncDef = func! (
     /// Prefix a buffer with a 32-bit big-endian length field
     ///
-    /// ### Arguments
-    /// * `adjust: u32` An adjustment value to add to the prefixed length
+    /// Prepends a 4-byte big-endian encoding of `len(payload) + adjust` to the payload bytes.
     resynth fn len_be32(
         =>
+        /// Adjustment value added to the computed length before encoding
         adjust: U32 = 0,
         =>
         Str
@@ -152,10 +159,10 @@ const LEN_BE32: FuncDef = func! (
 const LEN_BE16: FuncDef = func! (
     /// Prefix a buffer with a 16-bit big-endian length field
     ///
-    /// ### Arguments
-    /// * `adjust: u16` An adjustment value to add to the prefixed length
+    /// Prepends a 2-byte big-endian encoding of `len(payload) + adjust` to the payload bytes.
     resynth fn len_be16(
         =>
+        /// Adjustment value added to the computed length before encoding
         adjust: U16 = 0,
         =>
         Str
@@ -174,12 +181,12 @@ const LEN_BE16: FuncDef = func! (
 );
 
 const LEN_U8: FuncDef = func! (
-    /// Prefix a buffer with a 8-bit byte length field
+    /// Prefix a buffer with an 8-bit byte length field
     ///
-    /// ### Arguments
-    /// * `adjust: u8` An adjustment value to add to the prefixed length
+    /// Prepends a single byte encoding of `len(payload) + adjust` to the payload bytes.
     resynth fn len_u8(
         =>
+        /// Adjustment value added to the computed length before encoding
         adjust: U8 = 0,
         =>
         Str
@@ -199,6 +206,8 @@ const LEN_U8: FuncDef = func! (
 
 pub const MODULE: Module = module! {
     /// # Standard types
+    ///
+    /// Core type conversion and utility functions available in every resynth program.
     resynth mod std {
         be16 => Symbol::Func(&BE16),
         be32 => Symbol::Func(&BE32),

@@ -7,11 +7,16 @@ use crate::val::{Val, ValDef};
 const PLAIN: FuncDef = func! {
     /// PLAIN
     resynth fn PLAIN(
+        /// First positional integer
         a: U64,
+        /// Second positional string
         b: Str,
         =>
+        /// Optional integer
         c: U64 = 123,
+        /// Optional string
         d: Str = b"hello",
+        /// Optional type value
         e: Type = ValType::Bool,
         =>
         Void
@@ -184,8 +189,10 @@ fn argvec_multiple_named_optional() {
 const COLLECT: FuncDef = func! {
     /// COLLECT
     resynth fn COLLECT(
+        /// Positional integer
         a: U64,
         =>
+        /// Optional integer
         b: U64 = 123,
         =>
         Str
@@ -296,8 +303,11 @@ const NAMED: FuncDef = func! {
     /// NAMED
     resynth fn NAMED(
         =>
+        /// Optional integer
         a: U64 = 123,
+        /// Optional string
         b: Str = b"hello",
+        /// Optional boolean
         c: Bool = true,
         =>
         Void
@@ -326,8 +336,11 @@ const OPTIONAL_COLLECT_STR: FuncDef = func! {
     /// OPTIONAL_COLLECT_STR
     resynth fn OPTIONAL_COLLECT_STR(
         =>
+        /// Optional boolean
         a: Bool = true,
+        /// Optional integer
         b: U64 = 123,
+        /// Optional string
         c: Str = b"hello",
         =>
         Str
@@ -357,8 +370,11 @@ const OPTIONAL_COLLECT_U64: FuncDef = func! {
     /// OPTIONAL_COLLECT_U64
     resynth fn OPTIONAL_COLLECT_U64(
         =>
+        /// Optional integer
         a: U64 = 123,
+        /// Optional string
         b: Str = b"hello",
+        /// Optional boolean
         c: Bool = true,
         =>
         U64

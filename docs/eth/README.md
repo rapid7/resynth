@@ -1,15 +1,21 @@
  # Ethernet
+
+ Ethernet frame construction and ethertype constants.
 ## Index
 
 
 ### Modules
 
-- [ethertype](ethertype/README.md)
+| Module | Description |
+| ------ | ----------- |
+| [ethertype](ethertype/README.md) | Ethernet Ethertypes |
 
 ### Functions
 
-- [frame](#frame)
-- [from_ip](#from_ip)
+| Function | Returns | Description |
+| -------- | ------- | ----------- |
+| [frame](#frame) | `Pkt` | Construct an Ethernet frame |
+| [from_ip](#from_ip) | `bytes` | Map an IPv4 address to a locally-administered Ethernet address |
 
 ### Constants
 
@@ -29,21 +35,24 @@ resynth fn frame (
     *collect_args: bytes,
 ) -> Pkt;
 ```
- Ethernet Frame
+Construct an Ethernet frame
 
- ### Arguments
- * `dst` Destination ethernet address as bytes
- * `src` Source ethernet address as bytes
- * `ethertype` [Ethertype](ethertype/README.md), defaults to IPV4
- * `*payload: Str` the payload bytes
+ Wraps the payload bytes in an Ethernet II frame header.
 
-| | Name | Type |
-|-| ---- | ---- |
-| arg | `src` | `bytes` |
-| arg | `dst` | `bytes` |
-| opt | `ethertype` | `u16` |
-| collect | `*args` | `bytes` |
-| returns | | `Pkt` |
+### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| `src` | `bytes` | Source ethernet address as 6 bytes |
+| `dst` | `bytes` | Destination ethernet address as 6 bytes |
+| `ethertype` | `u16` | [EtherType](ethertype/README.md) identifying the encapsulated protocol _(default: `0x0800`)_ |
+| `…` | `bytes` | Zero or more additional values |
+
+### Returns
+
+| Type |
+| ---- |
+| `Pkt` |
 
 ## from_ip
 ```resynth
@@ -51,15 +60,19 @@ resynth fn from_ip (
     ip: Ip4,
 ) -> bytes;
 ```
- Map IPv4 address into ethernet address
+Map an IPv4 address to a locally-administered Ethernet address
 
- Right now you just get a locally administered IP address with the IP address as the last
- four octets
+ Produces a locally-administered unicast MAC address with the IPv4 address
+ encoded in the last four octets (e.g. `192.0.2.1` → `02:00:c0:00:02:01`).
 
- ### Arguments
- * `ip` Ip address
+### Parameters
 
-| | Name | Type |
-|-| ---- | ---- |
-| arg | `ip` | `Ip4` |
-| returns | | `bytes` |
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| `ip` | `Ip4` | IPv4 address to map to an ethernet address |
+
+### Returns
+
+| Type |
+| ---- |
+| `bytes` |

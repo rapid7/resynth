@@ -69,23 +69,36 @@ const HDR: FuncDef = func!(
     /// DHCP header
     resynth fn hdr(
         =>
+        /// DHCP opcode (REQUEST or REPLY)
         opcode: U8 = opcode::REQUEST,
+        /// Hardware address type (e.g. ETHER)
         htype: U8 = hrd::ETHER,
+        /// Hardware address length in bytes
         hlen: U8 = 6,
+        /// Number of relay agent hops
         hops: U8 = 0,
 
+        /// Transaction ID to correlate request and reply
         xid: U32 = 0,
 
+        /// Client IP address (filled in if client has one)
         ciaddr: Ip4 = Ipv4Addr::new(0, 0, 0, 0),
+        /// Your (client) IP address as assigned by the server
         yiaddr: Ip4 = Ipv4Addr::new(0, 0, 0, 0),
+        /// Next server IP address
         siaddr: Ip4 = Ipv4Addr::new(0, 0, 0, 0),
+        /// Relay agent IP address
         giaddr: Ip4 = Ipv4Addr::new(0, 0, 0, 0),
 
+        /// Client hardware address (MAC address bytes)
         chaddr: Type = ValType::Str,
 
+        /// Server host name (optional, null-terminated string)
         sname: Type = ValType::Str,
+        /// Boot file name (optional, null-terminated string)
         file: Type = ValType::Str,
 
+        /// DHCP magic cookie value
         magic: U32 = MAGIC,
         =>
         Void
@@ -139,6 +152,7 @@ const HDR: FuncDef = func!(
 const OPTION: FuncDef = func!(
     /// DHCP Option
     resynth fn option(
+        /// DHCP option code
         opt: U8,
         =>
         =>
@@ -154,6 +168,9 @@ const OPTION: FuncDef = func!(
 
 pub const MODULE: Module = module! {
     /// # DHCP / BOOTP
+    ///
+    /// Dynamic Host Configuration Protocol — packet construction and protocol constants
+    /// for DHCP and its predecessor BOOTP.
     resynth mod dhcp {
         CLIENT_PORT => Symbol::u16(CLIENT_PORT),
         SERVER_PORT => Symbol::u16(SERVER_PORT),

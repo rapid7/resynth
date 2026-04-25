@@ -12,6 +12,7 @@ use crate::val::Val;
 const IO_FILE: FuncDef = func!(
     /// Load the contents of a file into a string
     resynth fn file(
+        /// Path to the file to load
         filename: Str,
         =>
         =>
@@ -72,6 +73,7 @@ const BUFIO_READ: FuncDef = func!(
     /// Read the next `bytes` bytes from the buffer, advancing the read position.
     /// If fewer than `bytes` bytes remain, returns what is left.
     resynth fn read(
+        /// Number of bytes to read from the buffer
         bytes: U64,
         =>
         =>
@@ -141,6 +143,8 @@ const BUFIO: FuncDef = func!(
 
 pub const MODULE: Module = module!(
     /// # Buffers and File I/O
+    ///
+    /// Buffered I/O — read from and write to byte buffers and files.
     resynth mod io {
         BufIO => Symbol::Class(&BUFIO_CLASS),
         file => Symbol::Func(&IO_FILE),

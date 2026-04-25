@@ -11,6 +11,7 @@ use ezpkt::GreFlow;
 const ENCAP: FuncDef = func!(
     /// Encapsulate packets in GRETAP
     resynth fn encap(
+        /// Sequence of packets to encapsulate
         it: PktGen
         =>
         =>
@@ -48,10 +49,14 @@ impl Class for GreFlow {
 const SESSION: FuncDef = func!(
     /// Create a GRETAP session
     resynth fn session(
+        /// Source IP address
         cl: Ip4,
+        /// Destination IP address
         sv: Ip4,
+        /// EtherType of the encapsulated payload
         ethertype: U16,
         =>
+        /// Enable raw mode; disables automatic IP/GRE header computation
         raw: Bool = false,
         =>
         Void

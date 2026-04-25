@@ -7,4 +7,6 @@
 
 ### Modules
 
-- [hrd](hrd/README.md)
+| Module | Description |
+| ------ | ----------- |
+| [hrd](hrd/README.md) | ARP Hardware types |

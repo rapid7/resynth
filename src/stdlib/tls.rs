@@ -837,9 +837,9 @@ const CIPHER: Module = module! {
 };
 
 const TLS_MESSAGE: FuncDef = func! (
-    /// Returns a TLS record
+    /// Construct a TLS record
     ///
-    /// This implements the TLS record framing:
+    /// Wraps payload bytes in the TLS record framing:
     ///
     /// ```c
     /// struct tls_hdr {
@@ -849,14 +849,11 @@ const TLS_MESSAGE: FuncDef = func! (
     ///     uint8_t payload[0];
     /// } _packed;
     /// ```
-    ///
-    /// ### Arguments
-    /// * `version: u16` [TLS version](version/README.md)
-    /// * `content: u8` The [TLS message type](content/README.md)
-    /// * `*payload: Str` the payload bytes
     resynth fn message(
         =>
+        /// [TLS version](version/README.md) for the record header (e.g. [tls::version::TLS_1_2](version/README.md))
         version: U16 = version::TLS_1_2,
+        /// [TLS content type](content/README.md) (e.g. [tls::content::HANDSHAKE](content/README.md))
         content: U8 = content::HANDSHAKE,
         =>
         Str
@@ -879,9 +876,9 @@ const TLS_MESSAGE: FuncDef = func! (
 );
 
 const TLS_EXTENSION: FuncDef = func! (
-    /// Returns a TLS extension
+    /// Construct a TLS extension
     ///
-    /// This implements the TLS extension framing:
+    /// Wraps payload bytes in the TLS extension framing:
     ///
     /// ```c
     /// struct tls_ext {
@@ -890,11 +887,8 @@ const TLS_EXTENSION: FuncDef = func! (
     ///     uint8_t payload[0];
     /// } _packed;
     /// ```
-    ///
-    /// ### Arguments
-    /// * `ext: u16` [TLS Extension](ext/README.md)
-    /// * `*payload: Str` the payload bytes
     resynth fn extension(
+        /// [TLS extension type](ext/README.md) (e.g. [tls::ext::SERVER_NAME](ext/README.md))
         ext: U16,
         =>
         =>
@@ -920,10 +914,11 @@ fn len24(len: usize) -> [u8; 3] {
 }
 
 const TLS_CIPHERS: FuncDef = func! (
-    /// Returns a TLS ciphers list
+    /// Build a TLS cipher suites list
     ///
-    /// ### Arguments
-    /// * `*cipher: u16` the [TLS ciphers](cipher/README.md)
+    /// Encodes the supplied [cipher suite](cipher/README.md) constants as a
+    /// 16-bit length-prefixed list, ready to embed in a [client_hello](#client_hello)
+    /// or [server_hello](#server_hello).
     resynth fn ciphers(
         =>
         =>
@@ -945,22 +940,19 @@ const TLS_CIPHERS: FuncDef = func! (
 );
 
 const TLS_CLIENT_HELLO: FuncDef = func! (
-    /// Returns a TLS client hello
+    /// Construct a TLS ClientHello handshake message
     ///
-    /// This has to be framed inside a content::HANDSHAKE [message](#message)
-    ///
-    /// ### Arguments
-    /// * `version: u16` Requested [TLS version](version/README.md)
-    /// * `sessionid: Str` Session ID, should be a u8 len prefixed buffer
-    /// * `ciphers: Str` Supported [ciphers](cipher/README.md) eg. as created with
-    ///                  [ciphers()][#ciphers]
-    /// * `compression: Str` Supported compression algorithms (pretty much defunct)
-    /// * `*extensions: Str` Extensions, eg. as created by [extension()](#extension)
+    /// Must be framed inside a [tls::content::HANDSHAKE](content/README.md)
+    /// [message](#message). The random field is fixed to a placeholder value.
     resynth fn client_hello(
         =>
+        /// Requested [TLS version](version/README.md)
         version: U16 = version::TLS_1_2,
+        /// Session ID bytes (u8 length-prefixed; `\x00` means no session resumption)
         sessionid: Str = b"\x00",
+        /// Supported cipher suites list — use [tls::ciphers()](#ciphers) to construct
         ciphers: Str = b"\x00\x02\x00\x00", // null cipher
+        /// Supported compression methods list (essentially defunct; null compression = `\x01\x00`)
         compression: Str = b"\x01\x00", // null compression
         =>
         Str
@@ -1003,21 +995,19 @@ const TLS_CLIENT_HELLO: FuncDef = func! (
 );
 
 const TLS_SERVER_HELLO: FuncDef = func! (
-    /// Returns a TLS server hello
+    /// Construct a TLS ServerHello handshake message
     ///
-    /// This has to be framed inside a content::HANDSHAKE [message](#message)
-    ///
-    /// ### Arguments
-    /// * `version: u16` Negotiated [TLS version](version/README.md)
-    /// * `sessionid: Str` Session ID, should be a u8 len prefixed buffer
-    /// * `cipher: u16` Negotiated [ciphers](cipher/README.md)
-    /// * `compression: u8` Negotiated compression algorithm (pretty much defunct)
-    /// * `*extensions: Str` Extensions, eg. as created by [extension()](#extension)
+    /// Must be framed inside a [tls::content::HANDSHAKE](content/README.md)
+    /// [message](#message). The random field is fixed to a placeholder value.
     resynth fn server_hello(
         =>
+        /// Negotiated [TLS version](version/README.md)
         version: U16 = version::TLS_1_2,
+        /// Session ID bytes (u8 length-prefixed; `\x00` means no session resumption)
         sessionid: Str = b"\x00",
+        /// Negotiated [cipher suite](cipher/README.md)
         cipher: U16 = ciphers::NULL_WITH_NULL_NULL,
+        /// Negotiated compression method (essentially defunct; 0 = null compression)
         compression: U8 = 0,
         =>
         Str
@@ -1061,12 +1051,11 @@ const TLS_SERVER_HELLO: FuncDef = func! (
 );
 
 const TLS_SNI: FuncDef = func! (
-    /// Returns a TLS SNI extension
+    /// Construct a TLS Server Name Indication (SNI) extension
     ///
-    /// The SNI extension is the Server Name Indictator
-    ///
-    /// ### Arguments
-    /// * `name: Str` Server Names
+    /// Encodes one or more server names as a [tls::ext::SERVER_NAME](ext/README.md)
+    /// extension, ready to pass to [extension](#extension) or embed directly in
+    /// [client_hello](#client_hello).
     resynth fn sni(
         =>
         =>
@@ -1125,7 +1114,15 @@ const TLS_CERTIFICATES: FuncDef = func! (
 pub const TLS: Module = module! {
     /// # Transport Layer Security (TLS)
     ///
-    /// ## Example
+    /// Construct TLS handshake traffic over a TCP flow. The module provides record framing
+    /// ([message](#message)), handshake message builders ([client_hello](#client_hello),
+    /// [server_hello](#server_hello), [certificates](#certificates)), and extension helpers
+    /// ([extension](#extension), [sni](#sni), [ciphers](#ciphers)).
+    ///
+    /// ## Full handshake example
+    ///
+    /// ### Setup — open a TCP connection
+    ///
     /// ```resynth
     /// import io;
     /// import ipv4;
@@ -1138,175 +1135,93 @@ pub const TLS: Module = module! {
     /// );
     ///
     /// tls.open();
+    /// ```
     ///
-    /// // Client Hello
+    /// ### Client Hello
+    ///
+    /// The client advertises a minimal modern cipher suite list and a handful of extensions.
+    /// The outer record uses [tls::version::TLS_1_0](version/README.md) for broad
+    /// compatibility; the inner `client_hello` requests
+    /// [tls::version::TLS_1_2](version/README.md).
+    ///
+    /// ```resynth
     /// tls.client_message(
     ///   tls::message(
     ///     content: tls::content::HANDSHAKE,
     ///     version: tls::version::TLS_1_0,
     ///     tls::client_hello(
+    ///       version: tls::version::TLS_1_2,
     ///       ciphers: tls::ciphers(
-    ///         tls::cipher::ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,
     ///         tls::cipher::ECDHE_RSA_WITH_AES_256_GCM_SHA384,
-    ///         tls::cipher::ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256,
-    ///         tls::cipher::ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256,
-    ///         tls::cipher::ECDHE_ECDSA_WITH_AES_256_CCM,
-    ///         tls::cipher::ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
     ///         tls::cipher::ECDHE_RSA_WITH_AES_128_GCM_SHA256,
-    ///         tls::cipher::ECDHE_ECDSA_WITH_AES_128_CCM,
-    ///         tls::cipher::ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,
-    ///         tls::cipher::ECDHE_RSA_WITH_AES_128_CBC_SHA256,
-    ///         tls::cipher::ECDHE_ECDSA_WITH_AES_256_CBC_SHA,
-    ///         tls::cipher::ECDHE_RSA_WITH_AES_256_CBC_SHA,
-    ///         tls::cipher::ECDHE_ECDSA_WITH_AES_128_CBC_SHA,
-    ///         tls::cipher::ECDHE_RSA_WITH_AES_128_CBC_SHA,
-    ///         tls::cipher::RSA_WITH_AES_256_GCM_SHA384,
-    ///         tls::cipher::RSA_WITH_AES_256_CCM,
-    ///         tls::cipher::RSA_WITH_AES_128_GCM_SHA256,
-    ///         tls::cipher::RSA_WITH_AES_128_CCM,
-    ///         tls::cipher::RSA_WITH_AES_256_CBC_SHA256,
-    ///         tls::cipher::RSA_WITH_AES_128_CBC_SHA256,
-    ///         tls::cipher::RSA_WITH_AES_256_CBC_SHA,
-    ///         tls::cipher::RSA_WITH_AES_128_CBC_SHA,
-    ///         tls::cipher::DHE_RSA_WITH_AES_256_GCM_SHA384,
-    ///         tls::cipher::DHE_RSA_WITH_CHACHA20_POLY1305_SHA256,
-    ///         tls::cipher::DHE_RSA_WITH_AES_256_CCM,
-    ///         tls::cipher::DHE_RSA_WITH_AES_128_GCM_SHA256,
-    ///         tls::cipher::DHE_RSA_WITH_AES_128_CCM,
-    ///         tls::cipher::DHE_RSA_WITH_AES_256_CBC_SHA256,
-    ///         tls::cipher::DHE_RSA_WITH_AES_128_CBC_SHA256,
-    ///         tls::cipher::DHE_RSA_WITH_AES_256_CBC_SHA,
-    ///         tls::cipher::DHE_RSA_WITH_AES_128_CBC_SHA,
+    ///         tls::cipher::ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256,
     ///         tls::cipher::EMPTY_RENEGOTIATION_INFO_SCSV,
     ///       ),
-    ///       version: tls::version::TLS_1_2,
-    ///
     ///       tls::sni("test.local"),
-    ///
+    ///       tls::extension(tls::ext::SESSION_TICKET),
+    ///       tls::extension(tls::ext::EXTENDED_MASTER_SECRET),
     ///       tls::extension(
     ///         tls::ext::EC_POINT_FORMATS,
-    ///         std::len_u8(
-    ///           "|00 01 02|",
-    ///         )
+    ///         std::len_u8("|00 01 02|"),
     ///       ),
-    ///
-    ///       tls::extension(
-    ///         tls::ext::SUPPORTED_GROUPS,
-    ///         std::len_be16(
-    ///           "|00 1d 00 17 00 1e 00 19 00 18|",
-    ///         ),
-    ///       ),
-    ///
-    ///       tls::extension(
-    ///         tls::ext::SESSION_TICKET,
-    ///       ),
-    ///
-    ///       tls::extension(
-    ///         tls::ext::ENCRYPT_THEN_MAC,
-    ///       ),
-    ///
-    ///       tls::extension(
-    ///         tls::ext::EXTENDED_MASTER_SECRET,
-    ///       ),
-    ///
-    ///       tls::extension(
-    ///         tls::ext::SIGNATURE_ALGORITHMS,
-    ///         std::len_be16(
-    ///           "|04 03 05 03 06 03 08 07 08 08 08 09 08 0a 08 0b|",
-    ///           "|08 04 08 05 08 06 04 01 05 01 06 01 03 03 03 01|",
-    ///         ),
-    ///       ),
-    ///
     ///       tls::extension(
     ///         tls::ext::ALPN,
     ///         std::len_be16(
-    ///           std::len_u8("postgresql"),
     ///           std::len_u8("http/0.9"),
-    ///           std::len_u8("imap"),
     ///           std::len_u8("pop3"),
-    ///           std::len_u8("h2"),
     ///         ),
     ///       ),
     ///     )
     ///   ),
     /// );
+    /// ```
     ///
+    /// ### Server Hello, Certificate, and Server Hello Done
+    ///
+    /// The server responds with its chosen cipher suite and extensions, followed by its
+    /// certificate chain, and a Server Hello Done to signal it is ready for key exchange.
+    /// All three messages are bundled into a single `server_message` call so they arrive
+    /// in the same TCP segment.
+    ///
+    /// ```resynth
     /// tls.server_message(
+    ///   // Server Hello — negotiate cipher and extensions
     ///   tls::message(
     ///     content: tls::content::HANDSHAKE,
     ///     version: tls::version::TLS_1_2,
     ///     tls::server_hello(
     ///       version: tls::version::TLS_1_2,
     ///       cipher: tls::cipher::ECDHE_RSA_WITH_AES_256_GCM_SHA384,
-    ///       tls::extension(
-    ///         tls::ext::RENEGOTIATION_INFO,
-    ///         std::u8(0),
-    ///       ),
+    ///       tls::extension(tls::ext::RENEGOTIATION_INFO, std::u8(0)),
     ///       tls::extension(
     ///         tls::ext::EC_POINT_FORMATS,
-    ///         std::len_u8(
-    ///           std::u8(0),
-    ///           std::u8(1),
-    ///           std::u8(2),
-    ///         ),
+    ///         std::len_u8("|00 01 02|"),
     ///       ),
-    ///       tls::extension(
-    ///         tls::ext::SESSION_TICKET,
-    ///       ),
-    ///       tls::extension(
-    ///         tls::ext::EXTENDED_MASTER_SECRET,
-    ///       ),
+    ///       tls::extension(tls::ext::SESSION_TICKET),
+    ///       tls::extension(tls::ext::EXTENDED_MASTER_SECRET),
     ///       tls::extension(
     ///         tls::ext::ALPN,
-    ///         std::len_be16(
-    ///           std::len_u8("http/0.9"),
-    ///           std::len_u8("pop3"),
-    ///         ),
+    ///         std::len_be16(std::len_u8("http/0.9")),
     ///       ),
     ///     ),
     ///   ),
     ///
-    ///
+    ///   // Certificate — DER-encoded X.509 certificate chain
     ///   tls::message(
     ///     content: tls::content::HANDSHAKE,
     ///     version: tls::version::TLS_1_2,
-    ///     tls::certificates(
-    ///       io::file("./example-data/rsa4096.x509.cert.der"),
-    ///     )
+    ///     tls::certificates(io::file("./example-data/rsa4096.x509.cert.der")),
     ///   ),
     ///
-    ///   // Server Key Exchange
+    ///   // Server Key Exchange — ECDH parameters (load from file or embed as hex bytes)
     ///   tls::message(
     ///     content: tls::content::HANDSHAKE,
     ///     version: tls::version::TLS_1_2,
     ///     tls::handshake::SERVER_KEY_EXCHANGE,
-    ///     "|00 02 28 03 00 1d 20 2f b5 e1 12 ca 8a de fc 9b c9 96 ed eb 63 8e df e5|",
-    ///     "|aa 96 57 cd 0f 39 7c 46 b0 18 49 b3 48 3c 70 08 04 02 00 42 27 29 90 25|",
-    ///     "|ef a9 ab 29 b2 ec d2 24 6b f7 9a cc 1e 2a 49 44 93 fb b6 0a 75 51 40 40|",
-    ///     "|90 45 d2 fb d2 c7 0a be 68 5b 90 45 c2 00 19 29 b5 6f 70 0c cb b6 c6 15|",
-    ///     "|fb 1c 4a fe 48 10 d2 d0 de a3 1d 54 7f 8f 5f 93 5c 71 68 77 6b 60 62 d2|",
-    ///     "|6c 4c 8f 05 00 61 f1 18 0e 6a e8 18 99 3e 44 b6 b9 52 d0 cb 70 dd ad 50|",
-    ///     "|01 af 07 98 a3 7b 13 4c c8 21 cb f5 54 14 d3 b3 ee 76 5b ce cb f7 ac a6|",
-    ///     "|49 f9 6f 2b ec e0 5b 3e 4c f3 22 88 f9 00 1c 5d 20 91 31 64 ed 85 48 03|",
-    ///     "|c7 8b 41 14 4d 04 5d 68 92 ca 21 09 c0 2d bc dd 00 74 26 7d 85 45 6a 44|",
-    ///     "|c9 82 36 19 b3 d3 3b 34 10 7f b9 7c e1 23 a1 1b 35 5f 1f 73 57 3d 9b c2|",
-    ///     "|d2 20 92 ac 22 cb ac 82 15 1a 7c 64 ae 93 c0 e0 03 c1 87 9c c5 ff c2 3d|",
-    ///     "|1b d7 d6 22 44 eb c2 a5 81 b0 11 71 c0 ac 47 3d 6e 2c b3 61 7d d0 13 df|",
-    ///     "|4f a5 5b bd 60 c0 cf 94 3c de de 19 c3 07 04 55 b7 c2 3a ca 90 33 0c 9f|",
-    ///     "|e5 ee b5 35 37 f9 b8 9c 0c 9e 8c 1e f2 15 56 05 fc af 77 a1 81 6c 7a c8|",
-    ///     "|27 fa ac 54 aa 2e 19 75 fe 71 2b bf f6 be 16 6d c3 46 09 97 65 36 b5 45|",
-    ///     "|45 37 eb 5b b9 b2 f9 58 d4 50 45 d7 86 ae 45 8f 57 54 79 b8 14 1c 70 26|",
-    ///     "|45 18 01 47 d6 9b e2 a8 0c 50 73 15 9a 52 c6 c1 15 ce 61 33 1f 6e a6 99|",
-    ///     "|38 39 29 31 29 eb da 82 5e 86 cc 4a f1 9c d2 ad 26 7d ac ed 54 0f e2 07|",
-    ///     "|32 05 22 9a bf 57 b2 7d 53 e8 7f ce 9c 0c ed b6 02 2c ab 6a 2d 14 20 96|",
-    ///     "|ca de eb 55 d4 17 83 30 c2 da df 7c 59 f9 7c 08 c2 14 37 0a 30 b5 94 13|",
-    ///     "|34 c2 a5 12 1d 11 c4 77 40 e4 d9 a1 5e b4 7e 2a a9 14 06 c1 57 2e 02 f3|",
-    ///     "|7d 05 9e 07 70 a7 2b fc 41 a4 db 7e ae 7b 34 1f cd 05 43 ed 15 06 72 6d|",
-    ///     "|f2 82 1c 9d 94 a3 87 97 7f 09 7b 38 c3 8b 10 93 e5 0a 11 1e 24 0f e7 0a|",
-    ///     "|ce e8 35|"
+    ///     io::file("./example-data/server_key_exchange.bin"),
     ///   ),
     ///
-    ///   // Server Hello Done
+    ///   // Server Hello Done — signals end of server's handshake flight
     ///   tls::message(
     ///     content: tls::content::HANDSHAKE,
     ///     version: tls::version::TLS_1_2,

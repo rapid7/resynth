@@ -4,7 +4,9 @@
 
 ### Functions
 
-- [encap](#encap)
+| Function | Returns | Description |
+| -------- | ------- | ----------- |
+| [encap](#encap) | `PktGen` | Encapsulate packets in ERSPAN3 |
 
 
 
@@ -15,10 +17,17 @@ resynth fn encap (
     timestamp: u32 = 0x00000000,
 ) -> PktGen;
 ```
- Encapsulate packets in ERSPAN3
+Encapsulate packets in ERSPAN3
 
-| | Name | Type |
-|-| ---- | ---- |
-| arg | `it` | `PktGen` |
-| opt | `timestamp` | `u32` |
-| returns | | `PktGen` |
+### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| `it` | `PktGen` | Sequence of packets to encapsulate |
+| `timestamp` | `u32` | ERSPAN timestamp value to embed in the header _(default: `0x00000000`)_ |
+
+### Returns
+
+| Type |
+| ---- |
+| `PktGen` |

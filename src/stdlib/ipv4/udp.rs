@@ -13,10 +13,14 @@ use crate::val::{Val, ValDef};
 const BROADCAST: FuncDef = func!(
     /// Send a broadcast datagram
     resynth fn broadcast(
+        /// Source socket address
         src: Sock4,
+        /// Destination socket address
         dst: Sock4,
         =>
+        /// Override source IP address (useful for spoofed/crafted packets)
         srcip: Type = ValType::Ip4,
+        /// Enable raw mode; disables automatic IP/UDP header computation
         raw: Bool = false,
         =>
         Str
@@ -46,9 +50,12 @@ const BROADCAST: FuncDef = func!(
 const UNICAST: FuncDef = func!(
     /// Send a unicast datagram
     resynth fn unicast(
+        /// Source socket address
         src: Sock4,
+        /// Destination socket address
         dst: Sock4,
         =>
+        /// Enable raw mode; disables automatic IP/UDP header computation
         raw: Bool = false,
         =>
         Str
@@ -70,10 +77,14 @@ const UNICAST: FuncDef = func!(
 const HDR: FuncDef = func!(
     /// Returns a UDP header (with no IP header)
     resynth fn hdr(
+        /// Source UDP port
         src: U16,
+        /// Destination UDP port
         dst: U16,
         =>
+        /// Payload length in bytes (added to UDP header size automatically)
         len: U16 = 0,
+        /// UDP checksum value
         csum: U16 = 0,
         =>
         Void
@@ -99,7 +110,9 @@ const CL_DGRAM: FuncDef = func!(
     /// Send a datagram from client to server
     resynth fn client_dgram(
         =>
+        /// IP fragment offset (in 8-byte units) for the enclosing IP datagram
         frag_off: U16 = 0,
+        /// If true, compute and fill in the UDP checksum
         csum: Bool = true,
         =>
         Str
@@ -127,7 +140,9 @@ const SV_DGRAM: FuncDef = func!(
     /// Send a datagram from server to client
     resynth fn server_dgram(
         =>
+        /// IP fragment offset (in 8-byte units) for the enclosing IP datagram
         frag_off: U16 = 0,
+        /// If true, compute and fill in the UDP checksum
         csum: Bool = true,
         =>
         Str
@@ -155,6 +170,7 @@ const CL_RAW_DGRAM: FuncDef = func!(
     /// Return a datagram from client to server (minus IP header)
     resynth fn client_raw_dgram(
         =>
+        /// If true, compute and fill in the UDP checksum
         csum: Bool = true,
         =>
         Str
@@ -181,6 +197,7 @@ const SV_RAW_DGRAM: FuncDef = func!(
     /// Return a datagram from server to client (minus IP header)
     resynth fn server_raw_dgram(
         =>
+        /// If true, compute and fill in the UDP checksum
         csum: Bool = true,
         =>
         Str
@@ -222,9 +239,12 @@ impl Class for UdpFlow {
 const FLOW: FuncDef = func!(
     /// Create a UDP flow context, from which other packets can be created
     resynth fn flow(
+        /// Client socket address
         cl: Sock4,
+        /// Server socket address
         sv: Sock4,
         =>
+        /// Enable raw mode; disables automatic IP/UDP header computation
         raw: Bool = false,
         =>
         Void
@@ -239,6 +259,8 @@ const FLOW: FuncDef = func!(
 
 pub const UDP4: Module = module! {
     /// # User Datagram Protocol (UDP)
+    ///
+    /// UDP flow construction — send and receive datagrams over IPv4.
     resynth mod udp {
         UdpFlow => Symbol::Class(&UDP_FLOW),
         flow => Symbol::Func(&FLOW),

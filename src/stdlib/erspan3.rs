@@ -10,8 +10,10 @@ use ezpkt::Erspan3Flow;
 const ENCAP: FuncDef = func!(
     /// Encapsulate packets in ERSPAN3
     resynth fn encap(
+        /// Sequence of packets to encapsulate
         it: PktGen
         =>
+        /// ERSPAN timestamp value to embed in the header
         timestamp: U32 = 0,
         =>
         Void
@@ -48,13 +50,20 @@ impl Class for Erspan3Flow {
 const SESSION: FuncDef = func!(
     /// Create an erspan3 session
     resynth fn session(
+        /// Source (collector) IP address
         cl: Ip4,
+        /// Destination (monitor) IP address
         sv: Ip4,
         =>
+        /// Enable raw mode; disables automatic IP/GRE header computation
         raw: Bool = false,
+        /// Hardware ID field in the ERSPAN3 header
         hwid: U32 = 0,
+        /// Security Group Tag (SGT) field
         sgt: U32 = 0,
+        /// Timestamp granularity field
         granularity: U32 = 0,
+        /// Direction bit (0 = ingress, non-zero = egress)
         direction: U32 = 0,
         =>
         Void
@@ -77,7 +86,9 @@ const SESSION: FuncDef = func!(
 );
 
 pub const MODULE: Module = module! {
-    /// # ERSPAN version 3
+    /// # ERSPAN Version 3
+    ///
+    /// ERSPAN Type III — extends version 2 with timestamps, SGT, hardware ID, and directional metadata.
     resynth mod erspan3 {
         Erspan3 => Symbol::Class(&ERSPAN3),
         session => Symbol::Func(&SESSION),

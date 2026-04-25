@@ -25,17 +25,16 @@ fn ether<T: AsRef<[u8]>>(val: T) -> Result<eth_addr, Error> {
 }
 
 const FRAME: FuncDef = func!(
-    /// Ethernet Frame
+    /// Construct an Ethernet frame
     ///
-    /// ### Arguments
-    /// * `dst` Destination ethernet address as bytes
-    /// * `src` Source ethernet address as bytes
-    /// * `ethertype` [Ethertype](ethertype/README.md), defaults to IPV4
-    /// * `*payload: Str` the payload bytes
+    /// Wraps the payload bytes in an Ethernet II frame header.
     resynth fn frame(
+        /// Source ethernet address as 6 bytes
         src: Str,
+        /// Destination ethernet address as 6 bytes
         dst: Str,
         =>
+        /// [EtherType](ethertype/README.md) identifying the encapsulated protocol
         ethertype: U16 = ethertype::IPV4,
         =>
         Str
@@ -61,14 +60,12 @@ const FRAME: FuncDef = func!(
 );
 
 const FROM_IP: FuncDef = func!(
-    /// Map IPv4 address into ethernet address
+    /// Map an IPv4 address to a locally-administered Ethernet address
     ///
-    /// Right now you just get a locally administered IP address with the IP address as the last
-    /// four octets
-    ///
-    /// ### Arguments
-    /// * `ip` Ip address
+    /// Produces a locally-administered unicast MAC address with the IPv4 address
+    /// encoded in the last four octets (e.g. `192.0.2.1` → `02:00:c0:00:02:01`).
     resynth fn from_ip(
+        /// IPv4 address to map to an ethernet address
         ip: Ip4,
         =>
         =>
@@ -101,6 +98,8 @@ const TYPE: Module = module! {
 
 pub const MODULE: Module = module! {
     /// # Ethernet
+    ///
+    /// Ethernet frame construction and ethertype constants.
     resynth mod eth {
         ethertype => Symbol::Module(&TYPE),
         frame => Symbol::Func(&FRAME),

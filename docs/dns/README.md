@@ -8,21 +8,25 @@
 
 ### Modules
 
-- [class](class/README.md)
-- [opcode](opcode/README.md)
-- [qtype](qtype/README.md)
-- [rcode](rcode/README.md)
-- [rtype](rtype/README.md)
+| Module | Description |
+| ------ | ----------- |
+| [class](class/README.md) | DNS Record Class |
+| [opcode](opcode/README.md) | DNS Opcode |
+| [qtype](qtype/README.md) | DNS Record Type |
+| [rcode](rcode/README.md) | DNS Response Codes (Errors) |
+| [rtype](rtype/README.md) | DNS Record Type |
 
 ### Functions
 
-- [answer](#answer)
-- [flags](#flags)
-- [hdr](#hdr)
-- [host](#host)
-- [name](#name)
-- [pointer](#pointer)
-- [question](#question)
+| Function | Returns | Description |
+| -------- | ------- | ----------- |
+| [answer](#answer) | `bytes` | A DNS answer (RR) |
+| [flags](#flags) | `u16` | a DNS flags field |
+| [hdr](#hdr) | `bytes` | A DNS header |
+| [host](#host) | `PktGen` | Perform a DNS lookup, with response |
+| [name](#name) | `bytes` | A DNS name encoded with DNS label format (length-prefixed labels, null-terminated). |
+| [pointer](#pointer) | `bytes` | A DNS compression pointer |
+| [question](#question) | `bytes` | A DNS question |
 
 
 
@@ -37,16 +41,23 @@ resynth fn answer (
     *collect_args: bytes,
 ) -> bytes;
 ```
- A DNS answer (RR)
+A DNS answer (RR)
 
-| | Name | Type |
-|-| ---- | ---- |
-| arg | `aname` | `bytes` |
-| opt | `atype` | `u16` |
-| opt | `aclass` | `u16` |
-| opt | `ttl` | `u32` |
-| collect | `*args` | `bytes` |
-| returns | | `bytes` |
+### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| `aname` | `bytes` | Encoded DNS name this record applies to |
+| `atype` | `u16` | DNS record type (e.g. dns::rtype::A) _(default: `0x0001`)_ |
+| `aclass` | `u16` | DNS record class (e.g. dns::class::IN) _(default: `0x0001`)_ |
+| `ttl` | `u32` | Time-to-live for this record in seconds _(default: `0x000000e5`)_ |
+| `…` | `bytes` | Zero or more additional values |
+
+### Returns
+
+| Type |
+| ---- |
+| `bytes` |
 
 ## flags
 ```resynth
@@ -63,21 +74,28 @@ resynth fn flags (
     rcode: u8 = 0x00,
 ) -> u16;
 ```
- a DNS flags field
+a DNS flags field
 
-| | Name | Type |
-|-| ---- | ---- |
-| arg | `opcode` | `u8` |
-| opt | `response` | `bool` |
-| opt | `aa` | `bool` |
-| opt | `tc` | `bool` |
-| opt | `rd` | `bool` |
-| opt | `ra` | `bool` |
-| opt | `z` | `bool` |
-| opt | `ad` | `bool` |
-| opt | `cd` | `bool` |
-| opt | `rcode` | `u8` |
-| returns | | `u16` |
+### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| `opcode` | `u8` | DNS opcode for this message |
+| `response` | `bool` | If true, this is a response; if false, a query _(default: `false`)_ |
+| `aa` | `bool` | Authoritative Answer flag _(default: `false`)_ |
+| `tc` | `bool` | Truncation flag _(default: `false`)_ |
+| `rd` | `bool` | Recursion Desired flag _(default: `false`)_ |
+| `ra` | `bool` | Recursion Available flag _(default: `false`)_ |
+| `z` | `bool` | Reserved (Z) bit _(default: `false`)_ |
+| `ad` | `bool` | Authentic Data flag (DNSSEC) _(default: `false`)_ |
+| `cd` | `bool` | Checking Disabled flag (DNSSEC) _(default: `false`)_ |
+| `rcode` | `u8` | Response code _(default: `0x00`)_ |
+
+### Returns
+
+| Type |
+| ---- |
+| `u16` |
 
 ## hdr
 ```resynth
@@ -90,17 +108,24 @@ resynth fn hdr (
     arcount: u16 = 0x0000,
 ) -> bytes;
 ```
- A DNS header
+A DNS header
 
-| | Name | Type |
-|-| ---- | ---- |
-| arg | `id` | `u16` |
-| arg | `flags` | `u16` |
-| opt | `qdcount` | `u16` |
-| opt | `ancount` | `u16` |
-| opt | `nscount` | `u16` |
-| opt | `arcount` | `u16` |
-| returns | | `bytes` |
+### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| `id` | `u16` | DNS message transaction ID |
+| `flags` | `u16` | DNS flags field (use dns::flags() to construct) |
+| `qdcount` | `u16` | Number of entries in the question section _(default: `0x0000`)_ |
+| `ancount` | `u16` | Number of resource records in the answer section _(default: `0x0000`)_ |
+| `nscount` | `u16` | Number of name server resource records in the authority section _(default: `0x0000`)_ |
+| `arcount` | `u16` | Number of resource records in the additional records section _(default: `0x0000`)_ |
+
+### Returns
+
+| Type |
+| ---- |
+| `bytes` |
 
 ## host
 ```resynth
@@ -114,17 +139,24 @@ resynth fn host (
     *collect_args: Ip4,
 ) -> PktGen;
 ```
- Perform a DNS lookup, with response
+Perform a DNS lookup, with response
 
-| | Name | Type |
-|-| ---- | ---- |
-| arg | `client` | `Ip4` |
-| arg | `qname` | `bytes` |
-| opt | `ttl` | `u32` |
-| opt | `ns` | `Ip4` |
-| opt | `raw` | `bool` |
-| collect | `*args` | `Ip4` |
-| returns | | `PktGen` |
+### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| `client` | `Ip4` | Client IP address sending the DNS query |
+| `qname` | `bytes` | DNS name to look up |
+| `ttl` | `u32` | Time-to-live for the answer records in seconds _(default: `0x000000e5`)_ |
+| `ns` | `Ip4` | IP address of the DNS name server _(default: `1.1.1.1`)_ |
+| `raw` | `bool` | Enable raw mode; disables automatic IP/UDP header computation _(default: `false`)_ |
+| `…` | `Ip4` | Zero or more additional values |
+
+### Returns
+
+| Type |
+| ---- |
+| `PktGen` |
 
 ## name
 ```resynth
@@ -134,13 +166,23 @@ resynth fn name (
     *collect_args: bytes,
 ) -> bytes;
 ```
- A DNS name encoded with length prefixes
+A DNS name encoded with DNS label format (length-prefixed labels, null-terminated).
 
-| | Name | Type |
-|-| ---- | ---- |
-| opt | `complete` | `bool` |
-| collect | `*args` | `bytes` |
-| returns | | `bytes` |
+ Also used to wrap a `netbios::name::encode()` result into a complete NBNS
+ name label for use in NBNS packets (which share the DNS wire format).
+
+### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| `complete` | `bool` | If true, append a root label to terminate the name; if false, leave it open _(default: `true`)_ |
+| `…` | `bytes` | Zero or more additional values |
+
+### Returns
+
+| Type |
+| ---- |
+| `bytes` |
 
 ## pointer
 ```resynth
@@ -148,12 +190,19 @@ resynth fn pointer (
     offset: u16 = 0x000c,
 ) -> bytes;
 ```
- A DNS compression pointer
+A DNS compression pointer
 
-| | Name | Type |
-|-| ---- | ---- |
-| opt | `offset` | `u16` |
-| returns | | `bytes` |
+### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| `offset` | `u16` | Byte offset within the DNS message to point to _(default: `0x000c`)_ |
+
+### Returns
+
+| Type |
+| ---- |
+| `bytes` |
 
 ## question
 ```resynth
@@ -163,11 +212,18 @@ resynth fn question (
     qclass: u16 = 0x0001,
 ) -> bytes;
 ```
- A DNS question
+A DNS question
 
-| | Name | Type |
-|-| ---- | ---- |
-| arg | `qname` | `bytes` |
-| opt | `qtype` | `u16` |
-| opt | `qclass` | `u16` |
-| returns | | `bytes` |
+### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| `qname` | `bytes` | Encoded DNS name being queried |
+| `qtype` | `u16` | DNS record type to query (e.g. dns::rtype::A) _(default: `0x0001`)_ |
+| `qclass` | `u16` | DNS record class (e.g. dns::class::IN) _(default: `0x0001`)_ |
+
+### Returns
+
+| Type |
+| ---- |
+| `bytes` |

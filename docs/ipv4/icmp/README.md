@@ -1,14 +1,20 @@
  # Internet Control Message Protocol (ICMP)
+
+ ICMP flow construction — echo requests, replies, and other control messages over IPv4.
 ## Index
 
 
 ### Classes
 
-- [Icmp](Icmp.md)
+| Class | Description |
+| ----- | ----------- |
+| [Icmp](Icmp.md) | ICMP Session |
 
 ### Functions
 
-- [flow](#flow)
+| Function | Returns | Description |
+| -------- | ------- | ----------- |
+| [flow](#flow) | [Icmp](../../ipv4/icmp/Icmp.md) | Create an ICMP flow |
 
 
 
@@ -20,11 +26,18 @@ resynth fn flow (
     raw: bool = false,
 ) -> Icmp;
 ```
- Create an ICMP flow
+Create an ICMP flow
 
-| | Name | Type |
-|-| ---- | ---- |
-| arg | `cl` | `Ip4` |
-| arg | `sv` | `Ip4` |
-| opt | `raw` | `bool` |
-| returns | | [Icmp](../../ipv4/icmp/Icmp.md) |
+### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| `cl` | `Ip4` | Client (sender) IP address |
+| `sv` | `Ip4` | Server (responder) IP address |
+| `raw` | `bool` | Enable raw mode; disables automatic IP/ICMP header computation _(default: `false`)_ |
+
+### Returns
+
+| Type |
+| ---- |
+| [Icmp](../../ipv4/icmp/Icmp.md) |

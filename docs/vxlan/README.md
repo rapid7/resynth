@@ -6,11 +6,15 @@
 
 ### Classes
 
-- [Vxlan](Vxlan.md)
+| Class | Description |
+| ----- | ----------- |
+| [Vxlan](Vxlan.md) | VXLAN Session |
 
 ### Functions
 
-- [session](#session)
+| Function | Returns | Description |
+| -------- | ------- | ----------- |
+| [session](#session) | [Vxlan](../vxlan/Vxlan.md) | Create a VXLAN session |
 
 ### Constants
 
@@ -29,12 +33,19 @@ resynth fn session (
     raw: bool = false,
 ) -> Vxlan;
 ```
- Create a VXLAN session
+Create a VXLAN session
 
-| | Name | Type |
-|-| ---- | ---- |
-| arg | `cl` | `Sock4` |
-| arg | `sv` | `Sock4` |
-| opt | `sessionid` | `u32` |
-| opt | `raw` | `bool` |
-| returns | | [Vxlan](../vxlan/Vxlan.md) |
+### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| `cl` | `Sock4` | Client (sender) socket address |
+| `sv` | `Sock4` | Server (receiver) socket address |
+| `sessionid` | `u32` | VXLAN Network Identifier (VNI) _(default: `0x00000000`)_ |
+| `raw` | `bool` | Enable raw mode; disables automatic IP/UDP header computation _(default: `false`)_ |
+
+### Returns
+
+| Type |
+| ---- |
+| [Vxlan](../vxlan/Vxlan.md) |

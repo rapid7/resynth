@@ -7,6 +7,7 @@ use ezpkt::IcmpFlow;
 const ICMP_ECHO: FuncDef = func!(
     /// ICMP Ping
     resynth fn echo(
+        /// Payload bytes for the ICMP echo request
         payload: Str,
         =>
         =>
@@ -24,6 +25,7 @@ const ICMP_ECHO: FuncDef = func!(
 const ICMP_ECHO_REPLY: FuncDef = func!(
     /// ICMP Ping reply
     resynth fn echo_reply(
+        /// Payload bytes for the ICMP echo reply
         payload: Str,
         =>
         =>
@@ -55,9 +57,12 @@ impl Class for IcmpFlow {
 const ICMP_FLOW: FuncDef = func!(
     /// Create an ICMP flow
     resynth fn flow(
+        /// Client (sender) IP address
         cl: Ip4,
+        /// Server (responder) IP address
         sv: Ip4,
         =>
+        /// Enable raw mode; disables automatic IP/ICMP header computation
         raw: Bool = false,
         =>
         Void
@@ -72,6 +77,8 @@ const ICMP_FLOW: FuncDef = func!(
 
 pub const ICMP4: Module = module! {
     /// # Internet Control Message Protocol (ICMP)
+    ///
+    /// ICMP flow construction — echo requests, replies, and other control messages over IPv4.
     resynth mod icmp {
         Icmp => Symbol::Class(&ICMP),
         flow => Symbol::Func(&ICMP_FLOW),

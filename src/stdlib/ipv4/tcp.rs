@@ -28,9 +28,13 @@ const TCP_CL_MSG: FuncDef = func!(
     /// out-of-order or reassembly test cases.
     resynth fn client_message(
         =>
+        /// If true, emit an ACK from the server after the data segment
         send_ack: Bool = true,
+        /// Override the TCP sequence number for this segment
         seq: Type = ValType::U32,
+        /// Override the TCP acknowledgement number for this segment
         ack: Type = ValType::U32,
+        /// IP fragment offset (in 8-byte units) for the enclosing IP datagram
         frag_off: U16 = 0,
         =>
         Str
@@ -61,9 +65,13 @@ const TCP_SV_MSG: FuncDef = func!(
     /// out-of-order or reassembly test cases.
     resynth fn server_message(
         =>
+        /// If true, emit an ACK from the client after the data segment
         send_ack: Bool = true,
+        /// Override the TCP sequence number for this segment
         seq: Type = ValType::U32,
+        /// Override the TCP acknowledgement number for this segment
         ack: Type = ValType::U32,
+        /// IP fragment offset (in 8-byte units) for the enclosing IP datagram
         frag_off: U16 = 0,
         =>
         Str
@@ -93,7 +101,9 @@ const TCP_CL_SEG: FuncDef = func!(
     /// Ethernet+IP+TCP packet) rather than a `PktGen`.
     resynth fn client_segment(
         =>
+        /// Override the TCP sequence number for this segment
         seq: Type = ValType::U32,
+        /// Override the TCP acknowledgement number for this segment
         ack: Type = ValType::U32,
         =>
         Str
@@ -121,7 +131,9 @@ const TCP_SV_SEG: FuncDef = func!(
     /// Ethernet+IP+TCP packet) rather than a `PktGen`.
     resynth fn server_segment(
         =>
+        /// Override the TCP sequence number for this segment
         seq: Type = ValType::U32,
+        /// Override the TCP acknowledgement number for this segment
         ack: Type = ValType::U32,
         =>
         Str
@@ -150,7 +162,9 @@ const TCP_CL_RAW_SEG: FuncDef = func!(
     /// IP-fragmented TCP segments.
     resynth fn client_raw_segment(
         =>
+        /// Override the TCP sequence number for this segment
         seq: Type = ValType::U32,
+        /// Override the TCP acknowledgement number for this segment
         ack: Type = ValType::U32,
         =>
         Str
@@ -179,7 +193,9 @@ const TCP_SV_RAW_SEG: FuncDef = func!(
     /// IP-fragmented TCP segments.
     resynth fn server_raw_segment(
         =>
+        /// Override the TCP sequence number for this segment
         seq: Type = ValType::U32,
+        /// Override the TCP acknowledgement number for this segment
         ack: Type = ValType::U32,
         =>
         Str
@@ -210,6 +226,7 @@ const TCP_CL_HDR: FuncDef = func!(
     /// and the payload in another.
     resynth fn client_hdr(
         =>
+        /// Number of payload bytes to advance the sequence number by, without emitting them
         bytes: U32 = 0,
         =>
         Void
@@ -233,6 +250,7 @@ const TCP_SV_HDR: FuncDef = func!(
     /// and the payload in another.
     resynth fn server_hdr(
         =>
+        /// Number of payload bytes to advance the sequence number by, without emitting them
         bytes: U32 = 0,
         =>
         Void
@@ -251,7 +269,9 @@ const TCP_CL_ACK: FuncDef = func!(
     /// Sends an ACK from the client
     resynth fn client_ack(
         =>
+        /// Override the TCP sequence number for this ACK
         seq: Type = ValType::U32,
+        /// Override the TCP acknowledgement number for this ACK
         ack: Type = ValType::U32,
         =>
         Void
@@ -275,7 +295,9 @@ const TCP_SV_ACK: FuncDef = func!(
     /// Sends an ACK from the server
     resynth fn server_ack(
         =>
+        /// Override the TCP sequence number for this ACK
         seq: Type = ValType::U32,
+        /// Override the TCP acknowledgement number for this ACK
         ack: Type = ValType::U32,
         =>
         Void
@@ -299,6 +321,7 @@ const TCP_CL_HOLE: FuncDef = func!(
     /// Creates a hole in the sever's Tx sequence space, making it look like we missed a packet
     /// from the client
     resynth fn client_hole(
+        /// Number of bytes to advance the client sequence number without emitting a packet
         bytes: U32,
         =>
         =>
@@ -319,6 +342,7 @@ const TCP_SV_HOLE: FuncDef = func!(
     /// Creates a hole in the sever's Tx sequence space, making it look like we missed a packet
     /// from the server
     resynth fn server_hole(
+        /// Number of bytes to advance the server sequence number without emitting a packet
         bytes: U32,
         =>
         =>
@@ -401,19 +425,26 @@ static TCP_FLOW: ClassDef = class!(
     /// Represents a TCP flow between a client and server socket address. The
     /// flow tracks sequence and acknowledgement numbers automatically.
     ///
-    /// ## Method overview
+    /// Use [open](#open) to perform the 3-way handshake and [client_close](#client_close) /
+    /// [server_close](#server_close) for the FIN/ACK teardown.
     ///
-    /// | Method | Returns | Description |
-    /// |--------|---------|-------------|
-    /// | `open` | `PktGen` | Full 3-way handshake |
-    /// | `client_message` / `server_message` | `PktGen` | Data segment(s) + optional auto-ACK; advances sequence numbers |
-    /// | `client_segment` / `server_segment` | `Pkt` | Single data segment, no auto-ACK; advances sequence numbers |
-    /// | `client_raw_segment` / `server_raw_segment` | `bytes` | TCP+payload bytes only (no IP header); use with `ipv4::frag` |
-    /// | `client_hdr` / `server_hdr` | `bytes` | TCP header only (no IP header, no payload); use with `ipv4::frag` |
-    /// | `client_ack` / `server_ack` | `Pkt` | Bare ACK packet |
-    /// | `client_hole` / `server_hole` | `void` | Advance sequence number without emitting a packet, simulating a missing segment |
-    /// | `client_close` / `server_close` | `PktGen` | Full FIN/ACK/FIN/ACK teardown |
-    /// | `client_reset` / `server_reset` | `Pkt` | RST packet |
+    /// For data transfer there are three levels of abstraction:
+    ///
+    /// - [client_message](#client_message) / [server_message](#server_message) — emit a data
+    ///   segment and automatically follow it with an ACK from the other side. This is the
+    ///   highest-level option and covers most use cases.
+    /// - [client_segment](#client_segment) / [server_segment](#server_segment) — emit a single
+    ///   data segment with no auto-ACK. Use when you need fine-grained control over ACK timing
+    ///   or want to interleave segments from both sides manually.
+    /// - [client_raw_segment](#client_raw_segment) / [server_raw_segment](#server_raw_segment) —
+    ///   return TCP header + payload as raw bytes (no IP or Ethernet framing). Use with
+    ///   [`ipv4::frag`](../README.md#frag) to build IP-fragmented TCP segments.
+    ///
+    /// [client_hdr](#client_hdr) / [server_hdr](#server_hdr) go one step further and return
+    /// only the TCP header bytes, for cases where the header and payload must land in separate
+    /// IP fragments. [client_hole](#client_hole) / [server_hole](#server_hole) advance the
+    /// sequence number without emitting any packet, simulating a missing segment for
+    /// reassembly test cases.
     resynth class TcpFlow {
         open => Symbol::Func(&TCP_OPEN),
         client_message => Symbol::Func(&TCP_CL_MSG),
@@ -444,11 +475,16 @@ impl Class for TcpFlow {
 const FLOW: FuncDef = func!(
     /// Create a [TCP flow context](TcpFlow.md), from which packets can be created
     resynth fn flow(
+        /// Client socket address
         cl: Sock4,
+        /// Server socket address
         sv: Sock4,
         =>
+        /// Initial client TCP sequence number
         cl_seq: U32 = 1,
+        /// Initial server TCP sequence number
         sv_seq: U32 = 1,
+        /// Enable raw mode; disables automatic IP/TCP header computation
         raw: Bool = false,
         =>
         Void
@@ -465,6 +501,8 @@ const FLOW: FuncDef = func!(
 
 pub const TCP4: Module = module! {
     /// # Transmission Control Protocol (TCP)
+    ///
+    /// TCP flow construction — open connections, send data, and close sessions over IPv4.
     resynth mod tcp {
         TcpFlow => Symbol::Class(&TCP_FLOW),
         flow => Symbol::Func(&FLOW),

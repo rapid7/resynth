@@ -4,7 +4,9 @@
 
 ### Functions
 
-- [encap](#encap)
+| Function | Returns | Description |
+| -------- | ------- | ----------- |
+| [encap](#encap) | `PktGen` | Encapsulate packets in GRETAP |
 
 
 
@@ -14,9 +16,16 @@ resynth fn encap (
     it: PktGen,
 ) -> PktGen;
 ```
- Encapsulate packets in GRETAP
+Encapsulate packets in GRETAP
 
-| | Name | Type |
-|-| ---- | ---- |
-| arg | `it` | `PktGen` |
-| returns | | `PktGen` |
+### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| `it` | `PktGen` | Sequence of packets to encapsulate |
+
+### Returns
+
+| Type |
+| ---- |
+| `PktGen` |
