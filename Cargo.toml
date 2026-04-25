@@ -45,14 +45,14 @@ lto = true
 pkt = { path = "pkt", version = "0.4.0" }
 ezpkt = { path = "ezpkt", version = "0.4.0" }
 
-lazy-regex = "3.4"
-regex = "1.9.5"
+lazy-regex = "3.6"
+regex = "1.12.3"
 concat-with = "0.2.9"
 
 # For cli
 atty = { version = "0.2.14", optional = true}
-termcolor = {version = "1.2", optional = true}
-clap = {version = "4.1", optional = true, features = ["cargo", "derive"]}
+termcolor = {version = "1.4", optional = true}
+clap = {version = "4.6", optional = true, features = ["cargo", "derive"]}
 bytemuck = { version = "1.25.0", features = ["derive"] }
 derive_more = { version = "2.1.1", features = ["display", "error", "from"] }
 
