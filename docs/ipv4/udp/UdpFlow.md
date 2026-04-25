@@ -22,6 +22,13 @@ resynth fn client_dgram (
 ```
  Send a datagram from client to server
 
+| | Name | Type |
+|-| ---- | ---- |
+| opt | `frag_off` | `u16` |
+| opt | `csum` | `bool` |
+| collect | `*args` | `bytes` |
+| returns | | `Pkt` |
+
 ## client_raw_dgram
 ```resynth
 resynth fn client_raw_dgram (
@@ -31,6 +38,12 @@ resynth fn client_raw_dgram (
 ) -> bytes;
 ```
  Return a datagram from client to server (minus IP header)
+
+| | Name | Type |
+|-| ---- | ---- |
+| opt | `csum` | `bool` |
+| collect | `*args` | `bytes` |
+| returns | | `bytes` |
 
 ## server_dgram
 ```resynth
@@ -43,6 +56,13 @@ resynth fn server_dgram (
 ```
  Send a datagram from server to client
 
+| | Name | Type |
+|-| ---- | ---- |
+| opt | `frag_off` | `u16` |
+| opt | `csum` | `bool` |
+| collect | `*args` | `bytes` |
+| returns | | `Pkt` |
+
 ## server_raw_dgram
 ```resynth
 resynth fn server_raw_dgram (
@@ -52,3 +72,9 @@ resynth fn server_raw_dgram (
 ) -> bytes;
 ```
  Return a datagram from server to client (minus IP header)
+
+| | Name | Type |
+|-| ---- | ---- |
+| opt | `csum` | `bool` |
+| collect | `*args` | `bytes` |
+| returns | | `bytes` |

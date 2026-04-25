@@ -37,6 +37,14 @@ resynth fn frame (
  * `ethertype` [Ethertype](ethertype/README.md), defaults to IPV4
  * `*payload: Str` the payload bytes
 
+| | Name | Type |
+|-| ---- | ---- |
+| arg | `src` | `bytes` |
+| arg | `dst` | `bytes` |
+| opt | `ethertype` | `u16` |
+| collect | `*args` | `bytes` |
+| returns | | `Pkt` |
+
 ## from_ip
 ```resynth
 resynth fn from_ip (
@@ -50,3 +58,8 @@ resynth fn from_ip (
 
  ### Arguments
  * `ip` Ip address
+
+| | Name | Type |
+|-| ---- | ---- |
+| arg | `ip` | `Ip4` |
+| returns | | `bytes` |

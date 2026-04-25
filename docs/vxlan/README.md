@@ -30,3 +30,11 @@ resynth fn session (
 ) -> Vxlan;
 ```
  Create a VXLAN session
+
+| | Name | Type |
+|-| ---- | ---- |
+| arg | `cl` | `Sock4` |
+| arg | `sv` | `Sock4` |
+| opt | `sessionid` | `u32` |
+| opt | `raw` | `bool` |
+| returns | | [Vxlan](../vxlan/Vxlan.md) |

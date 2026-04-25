@@ -24,3 +24,11 @@ resynth fn session (
 ) -> Gre;
 ```
  Create a GRETAP session
+
+| | Name | Type |
+|-| ---- | ---- |
+| arg | `cl` | `Ip4` |
+| arg | `sv` | `Ip4` |
+| arg | `ethertype` | `u16` |
+| opt | `raw` | `bool` |
+| returns | | [Gre](../gre/Gre.md) |

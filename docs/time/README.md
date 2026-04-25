@@ -19,6 +19,11 @@ resynth fn jump_micros (
 ```
  Advance the pcap timestamp clock by some number of microseconds
 
+| | Name | Type |
+|-| ---- | ---- |
+| arg | `us` | `u64` |
+| returns | | `TimeJump` |
+
 ## jump_millis
 ```resynth
 resynth fn jump_millis (
@@ -26,6 +31,11 @@ resynth fn jump_millis (
 ) -> TimeJump;
 ```
  Advance the pcap timestamp clock by some number of milliseconds
+
+| | Name | Type |
+|-| ---- | ---- |
+| arg | `ms` | `u64` |
+| returns | | `TimeJump` |
 
 ## jump_nanos
 ```resynth
@@ -35,6 +45,11 @@ resynth fn jump_nanos (
 ```
  Advance the pcap timestamp clock by some number of nanoseconds
 
+| | Name | Type |
+|-| ---- | ---- |
+| arg | `ns` | `u64` |
+| returns | | `TimeJump` |
+
 ## jump_seconds
 ```resynth
 resynth fn jump_seconds (
@@ -42,3 +57,8 @@ resynth fn jump_seconds (
 ) -> TimeJump;
 ```
  Advance the pcap timestamp clock by some number of seconds
+
+| | Name | Type |
+|-| ---- | ---- |
+| arg | `seconds` | `u32` |
+| returns | | `TimeJump` |

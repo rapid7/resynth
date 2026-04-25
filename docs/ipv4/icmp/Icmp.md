@@ -17,6 +17,11 @@ resynth fn echo (
 ```
  ICMP Ping
 
+| | Name | Type |
+|-| ---- | ---- |
+| arg | `payload` | `bytes` |
+| returns | | `Pkt` |
+
 ## echo_reply
 ```resynth
 resynth fn echo_reply (
@@ -24,3 +29,8 @@ resynth fn echo_reply (
 ) -> Pkt;
 ```
  ICMP Ping reply
+
+| | Name | Type |
+|-| ---- | ---- |
+| arg | `payload` | `bytes` |
+| returns | | `Pkt` |

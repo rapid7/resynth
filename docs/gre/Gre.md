@@ -15,3 +15,8 @@ resynth fn encap (
 ) -> PktGen;
 ```
  Encapsulate packets in GRETAP
+
+| | Name | Type |
+|-| ---- | ---- |
+| arg | `it` | `PktGen` |
+| returns | | `PktGen` |

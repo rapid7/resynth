@@ -30,3 +30,17 @@ resynth fn flags (
 ) -> u16;
 ```
  Returns netbios-ns flags
+
+| | Name | Type |
+|-| ---- | ---- |
+| arg | `opcode` | `u8` |
+| opt | `response` | `bool` |
+| opt | `aa` | `bool` |
+| opt | `tc` | `bool` |
+| opt | `rd` | `bool` |
+| opt | `ra` | `bool` |
+| opt | `z` | `bool` |
+| opt | `ad` | `bool` |
+| opt | `b` | `bool` |
+| opt | `rcode` | `u8` |
+| returns | | `u16` |

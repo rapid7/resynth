@@ -21,3 +21,10 @@ resynth fn flow (
 ) -> Icmp;
 ```
  Create an ICMP flow
+
+| | Name | Type |
+|-| ---- | ---- |
+| arg | `cl` | `Ip4` |
+| arg | `sv` | `Ip4` |
+| opt | `raw` | `bool` |
+| returns | | [Icmp](../../ipv4/icmp/Icmp.md) |

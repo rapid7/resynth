@@ -15,3 +15,8 @@ resynth fn encap (
 ) -> PktGen;
 ```
  Encapsulate a sequence of packets
+
+| | Name | Type |
+|-| ---- | ---- |
+| arg | `it` | `PktGen` |
+| returns | | `PktGen` |

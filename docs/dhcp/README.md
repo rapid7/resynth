@@ -42,6 +42,23 @@ resynth fn hdr (
 ```
  DHCP header
 
+| | Name | Type |
+|-| ---- | ---- |
+| opt | `opcode` | `u8` |
+| opt | `htype` | `u8` |
+| opt | `hlen` | `u8` |
+| opt | `hops` | `u8` |
+| opt | `xid` | `u32` |
+| opt | `ciaddr` | `Ip4` |
+| opt | `yiaddr` | `Ip4` |
+| opt | `siaddr` | `Ip4` |
+| opt | `giaddr` | `Ip4` |
+| opt | `chaddr` | `type` |
+| opt | `sname` | `type` |
+| opt | `file` | `type` |
+| opt | `magic` | `u32` |
+| returns | | `bytes` |
+
 ## option
 ```resynth
 resynth fn option (
@@ -51,3 +68,9 @@ resynth fn option (
 ) -> bytes;
 ```
  DHCP Option
+
+| | Name | Type |
+|-| ---- | ---- |
+| arg | `opt` | `u8` |
+| collect | `*args` | `bytes` |
+| returns | | `bytes` |

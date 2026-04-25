@@ -25,9 +25,18 @@ resynth fn read (
  Read the next `bytes` bytes from the buffer, advancing the read position.
  If fewer than `bytes` bytes remain, returns what is left.
 
+| | Name | Type |
+|-| ---- | ---- |
+| arg | `bytes` | `u64` |
+| returns | | `bytes` |
+
 ## read_all
 ```resynth
 resynth fn read_all (
 ) -> bytes;
 ```
  Read all remaining bytes from the buffer, advancing the read position to the end.
+
+| | Name | Type |
+|-| ---- | ---- |
+| returns | | `bytes` |

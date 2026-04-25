@@ -21,3 +21,10 @@ resynth fn session (
 ) -> Erspan2;
 ```
  Create an erspan2 session
+
+| | Name | Type |
+|-| ---- | ---- |
+| arg | `cl` | `Ip4` |
+| arg | `sv` | `Ip4` |
+| opt | `raw` | `bool` |
+| returns | | [Erspan2](../erspan2/Erspan2.md) |

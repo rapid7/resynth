@@ -1,6 +1,7 @@
 use std::cmp::Ordering;
 use std::collections::HashMap;
 use std::fmt::{Debug, Display, Formatter};
+use std::hash::{Hash, Hasher};
 use std::io::Write;
 
 use derive_more::Display;
@@ -11,6 +12,10 @@ use crate::err::Error::TypeError;
 use crate::object::ObjRef;
 use crate::sym::Symbol;
 use crate::val::{Typed, Val, ValDef, ValType};
+
+/// Map from `&'static ClassDef` to its path relative to the docs root (e.g.
+/// `"ipv4/tcp/TcpFlow.md"`). Used to generate cross-module links in markdown docs.
+pub type ClassMap = HashMap<&'static ClassDef, String>;
 
 /// Argument declarator
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Display)]
@@ -88,7 +93,12 @@ pub trait Documented {
         self.symbol_set(|&x| matches!(x.sym, Symbol::Val(_)))
     }
 
-    fn write_docs<W: Write>(&self, wr: &mut W) -> Result<(), std::io::Error> {
+    fn write_docs<W: Write>(
+        &self,
+        wr: &mut W,
+        class_map: &ClassMap,
+        doc_root: &str,
+    ) -> Result<(), std::io::Error> {
         wr.write_all(self.front_matter().as_bytes())?;
 
         let submods = self.modules();
@@ -137,7 +147,7 @@ pub trait Documented {
             for SymDesc { name, sym } in &funcs {
                 if let Symbol::Func(func) = sym {
                     assert_eq!(*name, func.name);
-                    func.write_docs(wr)?;
+                    func.write_docs(wr, class_map, doc_root)?;
                 }
             }
         }
@@ -201,6 +211,11 @@ impl PartialEq for ClassDef {
         std::ptr::eq(self as *const ClassDef, other as *const ClassDef)
     }
 }
+impl Hash for ClassDef {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        std::ptr::hash(self as *const ClassDef, state);
+    }
+}
 
 impl Documented for ClassDef {
     fn symtab(&self) -> &'static [SymDesc] {
@@ -257,6 +272,18 @@ struct ArgPrep {
 ///  COLLECT-NAME-OPTS if func has collect args, optionals MUST be named
 ///  NOCOLLECT-ANON-OPTS if func doesn't have collect args, optionals MAY be anonymous
 ///  COLLECT-AFTER-NAMED collect args must come after the last named arg
+/// Format a [`ValType`] as a markdown cell, linking to the class doc page if applicable.
+/// `doc_root` is the path from the current page's location to the docs root (e.g. `"../../"`).
+fn fmt_type_link(typ: &ValType, class_map: &ClassMap, doc_root: &str) -> String {
+    if let ValType::Class(cls) = typ {
+        if let Some(path) = class_map.get(cls) {
+            return format!("[{}]({}{})", cls.name, doc_root, path);
+        }
+        return format!("`{}`", cls.name);
+    }
+    format!("`{}`", typ)
+}
+
 impl FuncDef {
     pub fn is_collect(&self) -> bool {
         self.collect_type != ValType::Void
@@ -451,13 +478,43 @@ impl FuncDef {
         Ok(self.argvec(this, args)?.into())
     }
 
-    pub fn write_docs<W: Write>(&self, wr: &mut W) -> Result<(), std::io::Error> {
+    pub fn write_docs<W: Write>(
+        &self,
+        wr: &mut W,
+        class_map: &ClassMap,
+        doc_root: &str,
+    ) -> Result<(), std::io::Error> {
         wr.write_all(format!("\n## {}\n", self.name).as_bytes())?;
         wr.write_all(b"```resynth\n")?;
         wr.write_all(format!("{}\n", self).as_bytes())?;
         wr.write_all(b"```\n")?;
         wr.write_all(self.doc.as_bytes())?;
         wr.write_all(b"\n")?;
+
+        // Parameter + return type table
+        let has_args = !self.args.is_empty() || !self.collect_type.is_nil();
+        let has_return = !self.return_type.is_nil();
+        if has_args || has_return {
+            wr.write_all(b"\n| | Name | Type |\n")?;
+            wr.write_all(b"|-| ---- | ---- |\n")?;
+            for ArgDesc { name, typ } in self.args.iter() {
+                let (kind, vtype) = match typ {
+                    ArgDecl::Positional(t) => ("arg", *t),
+                    ArgDecl::Optional(d) => ("opt", d.val_type()),
+                };
+                let type_cell = fmt_type_link(&vtype, class_map, doc_root);
+                wr.write_all(format!("| {} | `{}` | {} |\n", kind, name, type_cell).as_bytes())?;
+            }
+            if !self.collect_type.is_nil() {
+                let type_cell = fmt_type_link(&self.collect_type, class_map, doc_root);
+                wr.write_all(format!("| collect | `*args` | {} |\n", type_cell).as_bytes())?;
+            }
+            if has_return {
+                let type_cell = fmt_type_link(&self.return_type, class_map, doc_root);
+                wr.write_all(format!("| returns | | {} |\n", type_cell).as_bytes())?;
+            }
+        }
+
         Ok(())
     }
 }

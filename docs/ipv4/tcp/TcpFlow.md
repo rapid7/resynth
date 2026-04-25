@@ -50,12 +50,22 @@ resynth fn client_ack (
 ```
  Sends an ACK from the client
 
+| | Name | Type |
+|-| ---- | ---- |
+| opt | `seq` | `type` |
+| opt | `ack` | `type` |
+| returns | | `Pkt` |
+
 ## client_close
 ```resynth
 resynth fn client_close (
 ) -> PktGen;
 ```
  Shutdown both sides of the TCP connection, with the client sending the first FIN
+
+| | Name | Type |
+|-| ---- | ---- |
+| returns | | `PktGen` |
 
 ## client_hdr
 ```resynth
@@ -70,6 +80,11 @@ resynth fn client_hdr (
  to craft fragmented packets where the TCP header lands in one fragment
  and the payload in another.
 
+| | Name | Type |
+|-| ---- | ---- |
+| opt | `bytes` | `u32` |
+| returns | | `bytes` |
+
 ## client_hole
 ```resynth
 resynth fn client_hole (
@@ -78,6 +93,10 @@ resynth fn client_hole (
 ```
  Creates a hole in the sever's Tx sequence space, making it look like we missed a packet
  from the client
+
+| | Name | Type |
+|-| ---- | ---- |
+| arg | `bytes` | `u32` |
 
 ## client_message
 ```resynth
@@ -95,6 +114,15 @@ resynth fn client_message (
  Use `send_ack: false` to suppress the ACK, for example when building
  out-of-order or reassembly test cases.
 
+| | Name | Type |
+|-| ---- | ---- |
+| opt | `send_ack` | `bool` |
+| opt | `seq` | `type` |
+| opt | `ack` | `type` |
+| opt | `frag_off` | `u16` |
+| collect | `*args` | `bytes` |
+| returns | | `PktGen` |
+
 ## client_raw_segment
 ```resynth
 resynth fn client_raw_segment (
@@ -109,12 +137,23 @@ resynth fn client_raw_segment (
  `bytes` rather than `Pkt`. Use this with `ipv4::frag` to build
  IP-fragmented TCP segments.
 
+| | Name | Type |
+|-| ---- | ---- |
+| opt | `seq` | `type` |
+| opt | `ack` | `type` |
+| collect | `*args` | `bytes` |
+| returns | | `bytes` |
+
 ## client_reset
 ```resynth
 resynth fn client_reset (
 ) -> Pkt;
 ```
  Send a RST packet from the client
+
+| | Name | Type |
+|-| ---- | ---- |
+| returns | | `Pkt` |
 
 ## client_segment
 ```resynth
@@ -129,12 +168,23 @@ resynth fn client_segment (
  sequence number. Does not emit an ACK. Returns a `Pkt` (complete
  Ethernet+IP+TCP packet) rather than a `PktGen`.
 
+| | Name | Type |
+|-| ---- | ---- |
+| opt | `seq` | `type` |
+| opt | `ack` | `type` |
+| collect | `*args` | `bytes` |
+| returns | | `Pkt` |
+
 ## open
 ```resynth
 resynth fn open (
 ) -> PktGen;
 ```
  Performs a TCP 3-way handshake
+
+| | Name | Type |
+|-| ---- | ---- |
+| returns | | `PktGen` |
 
 ## server_ack
 ```resynth
@@ -145,12 +195,22 @@ resynth fn server_ack (
 ```
  Sends an ACK from the server
 
+| | Name | Type |
+|-| ---- | ---- |
+| opt | `seq` | `type` |
+| opt | `ack` | `type` |
+| returns | | `Pkt` |
+
 ## server_close
 ```resynth
 resynth fn server_close (
 ) -> PktGen;
 ```
  Shutdown both sides of the TCP connection, with the server sending the first FIN
+
+| | Name | Type |
+|-| ---- | ---- |
+| returns | | `PktGen` |
 
 ## server_hdr
 ```resynth
@@ -165,6 +225,11 @@ resynth fn server_hdr (
  to craft fragmented packets where the TCP header lands in one fragment
  and the payload in another.
 
+| | Name | Type |
+|-| ---- | ---- |
+| opt | `bytes` | `u32` |
+| returns | | `bytes` |
+
 ## server_hole
 ```resynth
 resynth fn server_hole (
@@ -173,6 +238,10 @@ resynth fn server_hole (
 ```
  Creates a hole in the sever's Tx sequence space, making it look like we missed a packet
  from the server
+
+| | Name | Type |
+|-| ---- | ---- |
+| arg | `bytes` | `u32` |
 
 ## server_message
 ```resynth
@@ -190,6 +259,15 @@ resynth fn server_message (
  Use `send_ack: false` to suppress the ACK, for example when building
  out-of-order or reassembly test cases.
 
+| | Name | Type |
+|-| ---- | ---- |
+| opt | `send_ack` | `bool` |
+| opt | `seq` | `type` |
+| opt | `ack` | `type` |
+| opt | `frag_off` | `u16` |
+| collect | `*args` | `bytes` |
+| returns | | `PktGen` |
+
 ## server_raw_segment
 ```resynth
 resynth fn server_raw_segment (
@@ -204,12 +282,23 @@ resynth fn server_raw_segment (
  `bytes` rather than `Pkt`. Use this with `ipv4::frag` to build
  IP-fragmented TCP segments.
 
+| | Name | Type |
+|-| ---- | ---- |
+| opt | `seq` | `type` |
+| opt | `ack` | `type` |
+| collect | `*args` | `bytes` |
+| returns | | `bytes` |
+
 ## server_reset
 ```resynth
 resynth fn server_reset (
 ) -> Pkt;
 ```
  Send a RST packet from the server
+
+| | Name | Type |
+|-| ---- | ---- |
+| returns | | `Pkt` |
 
 ## server_segment
 ```resynth
@@ -223,3 +312,10 @@ resynth fn server_segment (
  Returns a single data segment from server to client, advancing the
  sequence number. Does not emit an ACK. Returns a `Pkt` (complete
  Ethernet+IP+TCP packet) rather than a `PktGen`.
+
+| | Name | Type |
+|-| ---- | ---- |
+| opt | `seq` | `type` |
+| opt | `ack` | `type` |
+| collect | `*args` | `bytes` |
+| returns | | `Pkt` |
