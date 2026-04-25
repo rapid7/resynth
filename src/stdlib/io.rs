@@ -69,7 +69,8 @@ where
 }
 
 const BUFIO_READ: FuncDef = func!(
-    /// Read some bytes out of a buffer
+    /// Read the next `bytes` bytes from the buffer, advancing the read position.
+    /// If fewer than `bytes` bytes remain, returns what is left.
     resynth fn read(
         bytes: U64,
         =>
@@ -86,7 +87,7 @@ const BUFIO_READ: FuncDef = func!(
 );
 
 const BUFIO_READ_ALL: FuncDef = func!(
-    /// Read all remaining bytes out of a buffer
+    /// Read all remaining bytes from the buffer, advancing the read position to the end.
     resynth fn read_all(
         =>
         =>
@@ -102,6 +103,13 @@ const BUFIO_READ_ALL: FuncDef = func!(
 
 const BUFIO_CLASS: ClassDef = class!(
     /// # Buffered I/O
+    ///
+    /// A stateful byte buffer that can be read in sequential chunks. Useful for
+    /// splitting a pre-built payload (such as a TLS record or protocol message)
+    /// across multiple packets without duplicating the content.
+    ///
+    /// Create with `io::bufio(...)`, then call `read(n)` to consume `n` bytes at
+    /// a time, or `read_all()` to consume the remainder.
     resynth class BufIO {
         read => Symbol::Func(&BUFIO_READ),
         read_all => Symbol::Func(&BUFIO_READ_ALL),
@@ -115,7 +123,11 @@ impl Class for BufIo {
 }
 
 const BUFIO: FuncDef = func!(
-    /// Create a buffer from a string, from which you can read parts in sequence
+    /// Create a `BufIO` buffer from one or more byte strings, from which bytes
+    /// can be consumed in sequential chunks using `read(n)` and `read_all()`.
+    /// This is useful for splitting a pre-assembled payload across multiple
+    /// packets — for example, sending the first 15 bytes of a TLS record in one
+    /// TCP segment and the rest in another.
     resynth fn bufio(
         =>
         =>

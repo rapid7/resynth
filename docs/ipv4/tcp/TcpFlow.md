@@ -1,4 +1,21 @@
  # TCP Connection
+
+ Represents a TCP flow between a client and server socket address. The
+ flow tracks sequence and acknowledgement numbers automatically.
+
+ ## Method overview
+
+ | Method | Returns | Description |
+ |--------|---------|-------------|
+ | `open` | `PktGen` | Full 3-way handshake |
+ | `client_message` / `server_message` | `PktGen` | Data segment(s) + optional auto-ACK; advances sequence numbers |
+ | `client_segment` / `server_segment` | `Pkt` | Single data segment, no auto-ACK; advances sequence numbers |
+ | `client_raw_segment` / `server_raw_segment` | `bytes` | TCP+payload bytes only (no IP header); use with `ipv4::frag` |
+ | `client_hdr` / `server_hdr` | `bytes` | TCP header only (no IP header, no payload); use with `ipv4::frag` |
+ | `client_ack` / `server_ack` | `Pkt` | Bare ACK packet |
+ | `client_hole` / `server_hole` | `void` | Advance sequence number without emitting a packet, simulating a missing segment |
+ | `client_close` / `server_close` | `PktGen` | Full FIN/ACK/FIN/ACK teardown |
+ | `client_reset` / `server_reset` | `Pkt` | RST packet |
 ## Index
 
 
@@ -46,7 +63,12 @@ resynth fn client_hdr (
     bytes: u32 = 0x00000000,
 ) -> bytes;
 ```
- Returns only the TCP header, from client to server
+ Returns a TCP header only (no payload, no IP header) for a
+ client-to-server segment, as `bytes`. The optional `bytes` argument
+ declares how many payload bytes the header should account for in the
+ sequence number, without actually emitting them. Use with `ipv4::frag`
+ to craft fragmented packets where the TCP header lands in one fragment
+ and the payload in another.
 
 ## client_hole
 ```resynth
@@ -68,7 +90,10 @@ resynth fn client_message (
     *collect_args: bytes,
 ) -> PktGen;
 ```
- Sends a message from client to server, may also send an ACK in response
+ Sends a message from client to server, advancing the sequence number.
+ By default also emits an ACK from the server in response (`send_ack: true`).
+ Use `send_ack: false` to suppress the ACK, for example when building
+ out-of-order or reassembly test cases.
 
 ## client_raw_segment
 ```resynth
@@ -79,7 +104,10 @@ resynth fn client_raw_segment (
     *collect_args: bytes,
 ) -> bytes;
 ```
- Returns a single segment, minus the IP header, from client to server
+ Returns TCP header + payload bytes only (no Ethernet or IP header) for
+ a client-to-server segment, advancing the sequence number. Returns
+ `bytes` rather than `Pkt`. Use this with `ipv4::frag` to build
+ IP-fragmented TCP segments.
 
 ## client_reset
 ```resynth
@@ -97,7 +125,9 @@ resynth fn client_segment (
     *collect_args: bytes,
 ) -> Pkt;
 ```
- Returns a single segment from client to server
+ Returns a single data segment from client to server, advancing the
+ sequence number. Does not emit an ACK. Returns a `Pkt` (complete
+ Ethernet+IP+TCP packet) rather than a `PktGen`.
 
 ## open
 ```resynth
@@ -128,7 +158,12 @@ resynth fn server_hdr (
     bytes: u32 = 0x00000000,
 ) -> bytes;
 ```
- Returns only the TCP header, from server to client
+ Returns a TCP header only (no payload, no IP header) for a
+ server-to-client segment, as `bytes`. The optional `bytes` argument
+ declares how many payload bytes the header should account for in the
+ sequence number, without actually emitting them. Use with `ipv4::frag`
+ to craft fragmented packets where the TCP header lands in one fragment
+ and the payload in another.
 
 ## server_hole
 ```resynth
@@ -150,7 +185,10 @@ resynth fn server_message (
     *collect_args: bytes,
 ) -> PktGen;
 ```
- Sends a message from server to client, may also send an ACK in response
+ Sends a message from server to client, advancing the sequence number.
+ By default also emits an ACK from the client in response (`send_ack: true`).
+ Use `send_ack: false` to suppress the ACK, for example when building
+ out-of-order or reassembly test cases.
 
 ## server_raw_segment
 ```resynth
@@ -161,7 +199,10 @@ resynth fn server_raw_segment (
     *collect_args: bytes,
 ) -> bytes;
 ```
- Returns a single segment, minus the IP header, from server to client
+ Returns TCP header + payload bytes only (no Ethernet or IP header) for
+ a server-to-client segment, advancing the sequence number. Returns
+ `bytes` rather than `Pkt`. Use this with `ipv4::frag` to build
+ IP-fragmented TCP segments.
 
 ## server_reset
 ```resynth
@@ -179,4 +220,6 @@ resynth fn server_segment (
     *collect_args: bytes,
 ) -> Pkt;
 ```
- Returns a single segment from server to client
+ Returns a single data segment from server to client, advancing the
+ sequence number. Does not emit an ACK. Returns a `Pkt` (complete
+ Ethernet+IP+TCP packet) rather than a `PktGen`.

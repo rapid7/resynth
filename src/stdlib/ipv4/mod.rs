@@ -169,6 +169,18 @@ const FRAG_DATAGRAM: FuncDef = func!(
 
 const IPFRAG: ClassDef = class!(
     /// # IP Packet Fragment Builder
+    ///
+    /// Represents a single IP datagram that can be emitted either whole or split
+    /// into multiple fragments. Create one with `ipv4::frag(src, dst, ..., payload)`,
+    /// then emit fragments in the desired order:
+    ///
+    /// - `fragment(frag_off, len)` — emits a fragment with the MF (more-fragments) bit set
+    /// - `tail(frag_off)` — emits the final fragment (MF clear), inferring the length
+    /// - `datagram()` — emits the whole datagram unfragmented
+    ///
+    /// `frag_off` is in 8-byte units as per the IP specification. Fragments can be
+    /// emitted out of order and with time gaps (using `time::jump_*`) to test
+    /// reassembly timeout handling.
     resynth class IpFrag {
         fragment => Symbol::Func(&FRAG_FRAGMENT),
         tail => Symbol::Func(&FRAG_TAIL),

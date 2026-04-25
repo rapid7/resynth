@@ -20,7 +20,11 @@ resynth fn bufio (
     *collect_args: bytes,
 ) -> Obj;
 ```
- Create a buffer from a string, from which you can read parts in sequence
+ Create a `BufIO` buffer from one or more byte strings, from which bytes
+ can be consumed in sequential chunks using `read(n)` and `read_all()`.
+ This is useful for splitting a pre-assembled payload across multiple
+ packets — for example, sending the first 15 bytes of a TLS record in one
+ TCP segment and the rest in another.
 
 ## file
 ```resynth
