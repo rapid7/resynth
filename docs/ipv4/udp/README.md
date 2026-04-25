@@ -34,7 +34,7 @@ resynth fn flow (
     cl: Sock4,
     sv: Sock4,
     raw: bool = false,
-) -> Obj;
+) -> UdpFlow;
 ```
  Create a UDP flow context, from which other packets can be created
 

@@ -55,7 +55,7 @@ const SESSION: FuncDef = func!(
         raw: Bool = false,
         =>
         Void
-    ) -> Obj
+    ) -> Class(&GRE)
     |mut args| {
         let cl = args.next();
         let sv = args.next();

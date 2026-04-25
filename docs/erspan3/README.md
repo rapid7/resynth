@@ -22,6 +22,6 @@ resynth fn session (
     sgt: u32 = 0x00000000,
     granularity: u32 = 0x00000000,
     direction: u32 = 0x00000000,
-) -> Obj;
+) -> Erspan3;
 ```
  Create an erspan3 session

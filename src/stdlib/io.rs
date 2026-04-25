@@ -132,7 +132,7 @@ const BUFIO: FuncDef = func!(
         =>
         =>
         Str
-    ) -> Obj
+    ) -> Class(&BUFIO_CLASS)
     |mut args| {
         let bytes: Buf = args.join_extra(b"").into();
         Ok(Val::from(BufIo::from(bytes.as_ref())))

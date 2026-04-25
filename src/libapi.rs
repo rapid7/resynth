@@ -195,6 +195,13 @@ pub struct ClassDef {
     pub doc: &'static str,
 }
 
+impl Eq for ClassDef {}
+impl PartialEq for ClassDef {
+    fn eq(&self, other: &ClassDef) -> bool {
+        std::ptr::eq(self as *const ClassDef, other as *const ClassDef)
+    }
+}
+
 impl Documented for ClassDef {
     fn symtab(&self) -> &'static [SymDesc] {
         self.symtab

@@ -18,6 +18,6 @@ resynth fn flow (
     cl: Ip4,
     sv: Ip4,
     raw: bool = false,
-) -> Obj;
+) -> Icmp;
 ```
  Create an ICMP flow
