@@ -1,0 +1,47 @@
+import ipv4;
+import std;
+import netbios;
+import dns;
+
+let querier = 192.168.1.1;
+let ceo_ws  = 192.168.1.50;
+
+let flow = ipv4::udp::flow(querier/137, ceo_ws/137);
+
+# NBSTAT request: query node status of the CEO workstation
+flow.client_dgram(
+  dns::hdr(
+    0x5678,
+    netbios::ns::flags(netbios::ns::opcode::QUERY, rd: true),
+    qdcount: 1,
+  ),
+  dns::question(
+    dns::name(netbios::name::encode("CEO")),
+    qtype: netbios::ns::rrtype::NBSTAT,
+  ),
+);
+
+# NBSTAT response: CEO workstation reports all registered names.
+# CEO<00> is the workstation service; BILLG<03> is the messenger service
+# suffix (logged-in user), confirming BILLG is the active session.
+flow.server_dgram(
+  dns::hdr(
+    0x5678,
+    netbios::ns::flags(
+      netbios::ns::opcode::QUERY,
+      response: true,
+      aa: true,
+      ra: true,
+    ),
+    ancount: 1,
+  ),
+  dns::answer(
+    dns::name(netbios::name::encode("CEO")),
+    atype: netbios::ns::rrtype::NBSTAT,
+    ttl:   0,
+    netbios::ns::nbstat_rdata(
+      netbios::ns::name_entry("CEO"),                   # workstation service
+      netbios::ns::name_entry(suffix: netbios::name::suffix::MESSENGER, "BILLG"),
+    ),
+  ),
+);
