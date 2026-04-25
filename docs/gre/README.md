@@ -21,6 +21,6 @@ resynth fn session (
     sv: Ip4,
     ethertype: u16,
     raw: bool = false,
-) -> Obj;
+) -> Gre;
 ```
  Create a GRETAP session

@@ -50,6 +50,6 @@ resynth fn frag (
     proto: u8 = 0x11,
     =>
     *collect_args: bytes,
-) -> Obj;
+) -> IpFrag;
 ```
  Create a context for a packet which can be arbitrarily fragmented

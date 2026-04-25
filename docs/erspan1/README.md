@@ -18,6 +18,6 @@ resynth fn session (
     cl: Ip4,
     sv: Ip4,
     raw: bool = false,
-) -> Obj;
+) -> Erspan1;
 ```
  Create an ERSPAN session

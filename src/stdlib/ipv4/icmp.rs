@@ -61,7 +61,7 @@ const ICMP_FLOW: FuncDef = func!(
         raw: Bool = false,
         =>
         Void
-    ) -> Obj
+    ) -> Class(&ICMP)
     |mut args| {
         let cl = args.next();
         let sv = args.next();

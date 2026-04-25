@@ -452,7 +452,7 @@ const FLOW: FuncDef = func!(
         raw: Bool = false,
         =>
         Void
-    ) -> Obj
+    ) -> Class(&TCP_FLOW)
     |mut args| {
         let cl = args.next();
         let sv = args.next();

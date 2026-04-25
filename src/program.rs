@@ -192,8 +192,7 @@ impl<'a> Program<'a> {
         /* Finally, we're ready to make the call */
         let ret = (func.exec)(args)?;
 
-        /* This is an assert because the stdlib is not user-defined */
-        //println!("{}: {:?} {:?}", func.name, ret.val_type(), func.return_type);
+        /* This is a debug_assert because the stdlib is not user-defined */
         debug_assert!(ret.val_type() == func.return_type);
         //println!();
 

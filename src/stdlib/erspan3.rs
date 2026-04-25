@@ -58,7 +58,7 @@ const SESSION: FuncDef = func!(
         direction: U32 = 0,
         =>
         Void
-    ) -> Obj
+    ) -> Class(&ERSPAN3)
     |mut args| {
         let cl = args.next();
         let sv = args.next();

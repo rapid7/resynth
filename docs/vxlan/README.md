@@ -27,6 +27,6 @@ resynth fn session (
     sv: Sock4,
     sessionid: u32 = 0x00000000,
     raw: bool = false,
-) -> Obj;
+) -> Vxlan;
 ```
  Create a VXLAN session

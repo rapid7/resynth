@@ -207,7 +207,7 @@ const FRAG: FuncDef = func!(
         proto: U8 = proto::UDP,
         =>
         Str
-    ) -> Obj
+    ) -> Class(&IPFRAG)
     |mut args| {
         let src: Ipv4Addr = args.next().into();
         let dst: Ipv4Addr = args.next().into();

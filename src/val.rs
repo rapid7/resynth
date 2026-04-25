@@ -9,7 +9,7 @@ use pkt::Packet;
 use crate::err::Error;
 use crate::err::Error::{NameError, ParseError, TypeError};
 use crate::lex::{TokType, Token};
-use crate::libapi::FuncDef;
+use crate::libapi::{ClassDef, FuncDef};
 use crate::object::{Obj, ObjRef};
 use crate::str::Buf;
 use crate::sym::Symbol;
@@ -48,7 +48,10 @@ pub enum ValType {
     #[display("type")]
     Type,
 
+    #[display("<obj>")]
     Obj,
+    #[display("{}", _0.name)]
+    Class(&'static ClassDef),
     Func,
     Method,
     Pkt,
@@ -523,7 +526,7 @@ impl Typed for Val {
             Val::Ip4(..) => Ip4,
             Val::Sock4(..) => Sock4,
             Val::Str(..) => Str,
-            Val::Obj(..) => Obj,
+            Val::Obj(obj) => Class(obj.borrow().def()),
             Val::Func(..) => Func,
             Val::Method(..) => Method,
             Val::Pkt(..) => Pkt,

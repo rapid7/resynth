@@ -20,6 +20,6 @@ resynth fn flow (
     cl_seq: u32 = 0x00000001,
     sv_seq: u32 = 0x00000001,
     raw: bool = false,
-) -> Obj;
+) -> TcpFlow;
 ```
  Create a [TCP flow context](TcpFlow.md), from which packets can be created

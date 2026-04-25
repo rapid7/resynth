@@ -18,7 +18,7 @@
 resynth fn bufio (
     =>
     *collect_args: bytes,
-) -> Obj;
+) -> BufIO;
 ```
  Create a `BufIO` buffer from one or more byte strings, from which bytes
  can be consumed in sequential chunks using `read(n)` and `read_all()`.

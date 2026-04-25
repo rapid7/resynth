@@ -45,6 +45,54 @@ macro_rules! func {
             $($dfl_name:ident : $dfl_type:ident = $dfl_init:expr),* $(,)*
             =>
             $collect_type:ident
+        ) -> Class($cls:expr)
+        $exec:expr
+    ) => {
+        {
+            #[allow(unused)]
+            use $crate::libapi::{FuncDef, ArgDesc, ArgDecl};
+            #[allow(unused)]
+            use $crate::val::ValType;
+
+            #[allow(non_camel_case_types,unused)]
+            enum ArgName {
+               $($arg_name,)*
+               $($dfl_name,)*
+            }
+
+            fn arg_pos(name: &str) -> Option<usize> {
+                match name {
+                    $(stringify!($arg_name) => Some(ArgName::$arg_name as usize),)*
+                    $(stringify!($dfl_name) => Some(ArgName::$dfl_name as usize),)*
+                    _ => None,
+                }
+            }
+
+            FuncDef {
+                name: stringify!($name),
+                return_type: ValType::Class($cls),
+                args: &[
+                    $(func!(@pos $arg_name $arg_type),)*
+                    $(func!(@opt $dfl_name $dfl_type $dfl_init),)*
+                ],
+                arg_pos,
+                min_args: func!(@len $($arg_name)*),
+                collect_type: ValType::$collect_type,
+                exec: $exec,
+                doc: concat_with::concat_line!($($doc),+),
+            }
+        }
+    };
+
+    (
+        $(#[doc = $doc:literal])+
+        resynth fn $name:ident
+        (
+            $($arg_name:ident : $arg_type:ident),* $(,)*
+            =>
+            $($dfl_name:ident : $dfl_type:ident = $dfl_init:expr),* $(,)*
+            =>
+            $collect_type:ident
         ) -> $return_type:ident
         $exec:expr
     ) => {
