@@ -50,7 +50,6 @@ regex = "1.12.3"
 concat-with = "0.2.9"
 
 # For cli
-atty = { version = "0.2.14", optional = true}
 termcolor = {version = "1.4", optional = true}
 clap = {version = "4.6", optional = true, features = ["cargo", "derive"]}
 bytemuck = { version = "1.25.0", features = ["derive"] }
@@ -67,4 +66,4 @@ required-features = ["cli"]
 default = [
   "cli",
 ]
-cli = ["clap", "atty", "termcolor"]
+cli = ["clap", "termcolor"]
