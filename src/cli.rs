@@ -5,7 +5,7 @@ use resynth::{EOF, Error, Lexer, Loc, Parser, Program};
 use resynth::{error, ok, warn};
 
 use std::borrow::Cow;
-use std::io::BufRead;
+use std::io::{BufRead, IsTerminal};
 use std::path::{Path, PathBuf};
 use std::{fs, io};
 
@@ -151,7 +151,7 @@ fn resynth() -> Result<(), ()> {
         "always" => ColorChoice::Always,
         "ansi" => ColorChoice::AlwaysAnsi,
         "auto" => {
-            if atty::is(atty::Stream::Stdout) {
+            if std::io::stdout().is_terminal() {
                 ColorChoice::Auto
             } else {
                 ColorChoice::Never
